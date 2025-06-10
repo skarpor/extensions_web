@@ -1,0 +1,413 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category }} - 帮助中心{% endblock %}
+
+{% block head %}
+<style>
+  .category-header {
+    background-color: #f8f9fa;
+    padding: 30px 0;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #dee2e6;
+  }
+  
+  .document-item {
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    background-color: #fff;
+    border-radius: 4px;
+  }
+  
+  .document-item:hover {
+    border-left-color: #007bff;
+    background-color: #f8f9fa;
+  }
+  
+  .document-meta {
+    font-size: 0.85rem;
+    color: #6c757d;
+  }
+  
+  .tag {
+    display: inline-block;
+    background-color: #e9ecef;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    margin-right: 5px;
+  }
+  
+  .badge-new {
+    background-color: #28a745;
+  }
+  
+  .badge-updated {
+    background-color: #17a2b8;
+  }
+  
+  .category-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    color: #6c757d;
+  }
+  
+  .category-description {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- 分类头部 -->
+<div class="category-header">
+  <div class="container text-center">
+    <div class="category-icon">
+      {% if category == "用户指南" %}
+        <i class="fas fa-book"></i>
+      {% elif category == "API参考" %}
+        <i class="fas fa-code"></i>
+      {% elif category == "教程" %}
+        <i class="fas fa-graduation-cap"></i>
+      {% elif category == "常见问题" %}
+        <i class="fas fa-question-circle"></i>
+      {% elif category == "最佳实践" %}
+        <i class="fas fa-star"></i>
+      {% else %}
+        <i class="fas fa-folder-open"></i>
+      {% endif %}
+    </div>
+    <h1 class="display-5 mb-3">{{ category }}</h1>
+    <div class="category-description">
+      {% if category == "用户指南" %}
+        <p class="lead">系统基础操作和功能介绍，帮助您快速上手并熟悉系统的各项功能。</p>
+      {% elif category == "API参考" %}
+        <p class="lead">API接口文档和使用示例，为开发者提供集成和扩展系统功能的详细指南。</p>
+      {% elif category == "教程" %}
+        <p class="lead">详细的功能使用教程，通过步骤指导和实例演示帮助您掌握系统的高级功能。</p>
+      {% elif category == "常见问题" %}
+        <p class="lead">常见问题解答和疑难解决，解决您在使用过程中可能遇到的典型问题。</p>
+      {% elif category == "最佳实践" %}
+        <p class="lead">系统使用的最佳实践和优化建议，帮助您更高效地使用系统功能。</p>
+      {% else %}
+        <p class="lead">浏览此分类下的所有文档。</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <!-- 主内容区 -->
+    <div class="col-lg-9">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">{{ category }}文档列表</h5>
+          <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <i class="fas fa-sort"></i> 排序
+            </button>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="sortDropdown">
+              <a class="dropdown-item active" href="#"><i class="fas fa-clock"></i> 最近更新</a>
+              <a class="dropdown-item" href="#"><i class="fas fa-sort-alpha-down"></i> 标题升序</a>
+              <a class="dropdown-item" href="#"><i class="fas fa-sort-alpha-up"></i> 标题降序</a>
+              <a class="dropdown-item" href="#"><i class="fas fa-fire"></i> 热门程度</a>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- 文档列表 -->
+          <div class="mb-4">
+            {% if category == "用户指南" %}
+              <div class="document-item">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h5><a href="/help/document?id=1">如何使用查询功能</a> <span class="badge badge-new">新</span></h5>
+                    <div class="document-meta">
+                      <span>更新于：2023-05-16</span>
+                    </div>
+                    <div class="mt-1">
+                      <span class="tag">查询</span>
+                      <span class="tag">高级</span>
+                      <span class="tag">过滤</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="document-item">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h5><a href="/help/document?id=5">用户界面导航指南</a></h5>
+                    <div class="document-meta">
+                      <span>更新于：2023-05-08</span>
+                    </div>
+                    <div class="mt-1">
+                      <span class="tag">界面</span>
+                      <span class="tag">导航</span>
+                      <span class="tag">基础</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="document-item">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h5><a href="/help/document?id=6">数据导入导出功能</a></h5>
+                    <div class="document-meta">
+                      <span>更新于：2023-05-01</span>
+                    </div>
+                    <div class="mt-1">
+                      <span class="tag">导入</span>
+                      <span class="tag">导出</span>
+                      <span class="tag">数据</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% elif category == "API参考" %}
+              <div class="document-item">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h5><a href="/help/document?id=2">API认证和授权指南</a></h5>
+                    <div class="document-meta">
+                      <span>更新于：2023-05-10</span>
+                    </div>
+                    <div class="mt-1">
+                      <span class="tag">API</span>
+                      <span class="tag">认证</span>
+                      <span class="tag">安全</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="document-item">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h5><a href="/help/document?id=7">数据查询API</a></h5>
+                    <div class="document-meta">
+                      <span>更新于：2023-05-05</span>
+                    </div>
+                    <div class="mt-1">
+                      <span class="tag">API</span>
+                      <span class="tag">查询</span>
+                      <span class="tag">数据</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="document-item">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h5><a href="/help/document?id=8">用户管理API</a></h5>
+                    <div class="document-meta">
+                      <span>更新于：2023-04-28</span>
+                    </div>
+                    <div class="mt-1">
+                      <span class="tag">API</span>
+                      <span class="tag">用户</span>
+                      <span class="tag">管理</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% elif category == "教程" %}
+              <div class="document-item">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h5><a href="/help/document?id=3">插件开发入门</a> <span class="badge badge-updated">已更新</span></h5>
+                    <div class="document-meta">
+                      <span>更新于：2023-05-14</span>
+                    </div>
+                    <div class="mt-1">
+                      <span class="tag">插件</span>
+                      <span class="tag">开发</span>
+                      <span class="tag">扩展</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="document-item">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h5><a href="/help/document?id=9">高级数据分析教程</a></h5>
+                    <div class="document-meta">
+                      <span>更新于：2023-05-03</span>
+                    </div>
+                    <div class="mt-1">
+                      <span class="tag">分析</span>
+                      <span class="tag">高级</span>
+                      <span class="tag">数据</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="document-item">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h5><a href="/help/document?id=10">自定义报表创建指南</a></h5>
+                    <div class="document-meta">
+                      <span>更新于：2023-04-25</span>
+                    </div>
+                    <div class="mt-1">
+                      <span class="tag">报表</span>
+                      <span class="tag">自定义</span>
+                      <span class="tag">创建</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% elif category == "常见问题" %}
+              <div class="document-item">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h5><a href="/help/document?id=4">系统常见错误及解决方案</a></h5>
+                    <div class="document-meta">
+                      <span>更新于：2023-05-05</span>
+                    </div>
+                    <div class="mt-1">
+                      <span class="tag">错误</span>
+                      <span class="tag">解决方案</span>
+                      <span class="tag">疑难解答</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="document-item">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h5><a href="/help/document?id=11">账户和权限问题</a></h5>
+                    <div class="document-meta">
+                      <span>更新于：2023-04-30</span>
+                    </div>
+                    <div class="mt-1">
+                      <span class="tag">账户</span>
+                      <span class="tag">权限</span>
+                      <span class="tag">登录</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="document-item">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h5><a href="/help/document?id=12">数据导入导出常见问题</a></h5>
+                    <div class="document-meta">
+                      <span>更新于：2023-04-22</span>
+                    </div>
+                    <div class="mt-1">
+                      <span class="tag">导入</span>
+                      <span class="tag">导出</span>
+                      <span class="tag">问题</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% else %}
+              <div class="alert alert-info">
+                没有找到"{{ category }}"分类下的文档。
+              </div>
+            {% endif %}
+          </div>
+          
+          <!-- 分页 -->
+          <nav aria-label="文档分页">
+            <ul class="pagination justify-content-center">
+              <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1">上一页</a>
+              </li>
+              <li class="page-item active"><a class="page-link" href="#">1</a></li>
+              <li class="page-item"><a class="page-link" href="#">2</a></li>
+              <li class="page-item">
+                <a class="page-link" href="#">下一页</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 右侧边栏 -->
+    <div class="col-lg-3">
+      <!-- 其他分类 -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">其他分类</h5>
+        </div>
+        <div class="list-group list-group-flush">
+          {% if category != "用户指南" %}
+            <a href="/help/category?cat=用户指南" class="list-group-item list-group-item-action">
+              <i class="fas fa-book mr-2"></i> 用户指南
+            </a>
+          {% endif %}
+          
+          {% if category != "API参考" %}
+            <a href="/help/category?cat=API参考" class="list-group-item list-group-item-action">
+              <i class="fas fa-code mr-2"></i> API参考
+            </a>
+          {% endif %}
+          
+          {% if category != "教程" %}
+            <a href="/help/category?cat=教程" class="list-group-item list-group-item-action">
+              <i class="fas fa-graduation-cap mr-2"></i> 教程
+            </a>
+          {% endif %}
+          
+          {% if category != "常见问题" %}
+            <a href="/help/category?cat=常见问题" class="list-group-item list-group-item-action">
+              <i class="fas fa-question-circle mr-2"></i> 常见问题
+            </a>
+          {% endif %}
+          
+          {% if category != "最佳实践" %}
+            <a href="/help/category?cat=最佳实践" class="list-group-item list-group-item-action">
+              <i class="fas fa-star mr-2"></i> 最佳实践
+            </a>
+          {% endif %}
+        </div>
+      </div>
+      
+      <!-- 热门标签 -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">热门标签</h5>
+        </div>
+        <div class="card-body">
+          <a href="/help/search?tag=查询" class="tag">查询</a>
+          <a href="/help/search?tag=API" class="tag">API</a>
+          <a href="/help/search?tag=数据" class="tag">数据</a>
+          <a href="/help/search?tag=高级" class="tag">高级</a>
+          <a href="/help/search?tag=插件" class="tag">插件</a>
+          <a href="/help/search?tag=安全" class="tag">安全</a>
+          <a href="/help/search?tag=导入" class="tag">导入</a>
+          <a href="/help/search?tag=导出" class="tag">导出</a>
+          <a href="/help/search?tag=错误" class="tag">错误</a>
+          <a href="/help/search?tag=基础" class="tag">基础</a>
+        </div>
+      </div>
+      
+      <!-- 快速联系 -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">需要更多帮助？</h5>
+        </div>
+        <div class="card-body">
+          <p>如果您未能在帮助文档中找到所需信息，请通过以下方式联系我们：</p>
+          <a href="/contact" class="btn btn-outline-primary btn-block">
+            <i class="fas fa-envelope"></i> 联系支持团队
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

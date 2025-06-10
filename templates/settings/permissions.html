@@ -1,0 +1,287 @@
+{% extends "settings/base.html" %}
+
+{% block title %}权限管理 - 数据查询系统{% endblock %}
+
+{% block settings_content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">权限管理</h1>
+    
+    <!-- 说明卡片 -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">关于权限管理</h6>
+        </div>
+        <div class="card-body">
+            <p>在此页面，您可以管理不同角色的权限设置。权限由<strong>资源</strong>和<strong>操作</strong>组成。</p>
+            <p>例如，<code>chat:read</code> 表示可以查看聊天，<code>users:edit</code> 表示可以编辑用户信息。</p>
+            <p>管理员角色默认拥有所有权限。</p>
+        </div>
+    </div>
+    
+    <!-- 角色选项卡 -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <ul class="nav nav-tabs card-header-tabs" id="roleTab" role="tablist">
+                {% for role in roles %}
+                <li class="nav-item">
+                    <a class="nav-link {% if loop.first %}active{% endif %}" id="{{ role }}-tab" data-toggle="tab" href="#{{ role }}" role="tab" aria-controls="{{ role }}" aria-selected="{% if loop.first %}true{% else %}false{% endif %}">
+                        {{ role|title }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content" id="roleTabContent">
+                {% for role in roles %}
+                <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="{{ role }}" role="tabpanel" aria-labelledby="{{ role }}-tab">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <h5>{{ role|title }} 角色权限</h5>
+                        </div>
+                        <div class="col-auto">
+                            <button class="btn btn-primary btn-sm add-permission-btn" data-role="{{ role }}">
+                                <i class="fas fa-plus"></i> 添加权限
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {% if role == 'admin' %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 管理员角色拥有所有权限，无需单独设置。
+                    </div>
+                    {% endif %}
+                    
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped" id="{{ role }}-permissions-table">
+                            <thead>
+                                <tr>
+                                    <th>资源</th>
+                                    <th>操作</th>
+                                    <th>创建时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if role in permissions and permissions[role] %}
+                                    {% for perm in permissions[role] %}
+                                    <tr>
+                                        <td>{{ perm.resource }}</td>
+                                        <td>{{ perm.action }}</td>
+                                        <td>{{ perm.created_at }}</td>
+                                        <td>
+                                            {% if not (role == 'admin' and perm.resource == '*' and perm.action == '*') %}
+                                            <button class="btn btn-danger btn-sm delete-permission-btn" 
+                                                    data-role="{{ role }}" 
+                                                    data-resource="{{ perm.resource }}" 
+                                                    data-action="{{ perm.action }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">没有设置权限</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 添加权限模态框 -->
+<div class="modal fade" id="addPermissionModal" tabindex="-1" role="dialog" aria-labelledby="addPermissionModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addPermissionModalLabel">添加权限</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addPermissionForm">
+                    <input type="hidden" id="permissionRole" name="role">
+                    
+                    <div class="form-group">
+                        <label for="permissionResource">资源</label>
+                        <select class="form-control" id="permissionResource" name="resource" required>
+                            <option value="">-- 选择资源 --</option>
+                            <option value="*">所有资源 (*)</option>
+                            <option value="chat">聊天 (chat)</option>
+                            <option value="users">用户管理 (users)</option>
+                            <option value="files">文件管理 (files)</option>
+                            <option value="settings">系统设置 (settings)</option>
+                            <option value="logs">日志管理 (logs)</option>
+                            <option value="extensions">扩展管理 (extensions)</option>
+                            <option value="help">帮助文档 (help)</option>
+                            <option value="permissions">权限管理 (permissions)</option>
+                            <option value="backup">备份管理 (backup)</option>
+                            <option value="email">邮件设置 (email)</option>
+                            <option value="security">安全设置 (security)</option>
+                            <option value="plugins">插件管理 (plugins)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="permissionAction">操作</label>
+                        <select class="form-control" id="permissionAction" name="action" required>
+                            <option value="">-- 选择操作 --</option>
+                            <option value="*">所有操作 (*)</option>
+                            <option value="view">查看 (view)</option>
+                            <option value="create">创建 (create)</option>
+                            <option value="edit">编辑 (edit)</option>
+                            <option value="delete">删除 (delete)</option>
+                            <option value="upload">上传 (upload)</option>
+                            <option value="download">下载 (download)</option>
+                            <option value="read">读取 (read)</option>
+                            <option value="write">写入 (write)</option>
+                            <option value="manage">管理 (manage)</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="savePermissionBtn">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block additional_scripts %}
+<script>
+    $(document).ready(function() {
+        // 添加权限按钮点击事件
+        $('.add-permission-btn').click(function() {
+            const role = $(this).data('role');
+            $('#permissionRole').val(role);
+            $('#addPermissionModalLabel').text(`为 ${role} 角色添加权限`);
+            $('#addPermissionForm')[0].reset();
+            $('#addPermissionModal').modal('show');
+        });
+        
+        // 保存权限按钮点击事件
+        $('#savePermissionBtn').click(function() {
+            const form = $('#addPermissionForm');
+            
+            // 表单验证
+            if (!form[0].checkValidity()) {
+                form.find(':invalid').first().focus();
+                return;
+            }
+            
+            const role = $('#permissionRole').val();
+            const resource = $('#permissionResource').val();
+            const action = $('#permissionAction').val();
+            
+            // 发送添加权限请求
+            $.ajax({
+                url: '/api/settings/permissions',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    role: role,
+                    resource: resource,
+                    action: action
+                }),
+                success: function(response) {
+                    // 关闭模态框
+                    $('#addPermissionModal').modal('hide');
+                    
+                    // 显示成功消息
+                    Swal.fire({
+                        title: '添加成功',
+                        text: '权限已成功添加',
+                        icon: 'success',
+                        confirmButtonText: '确定'
+                    }).then(() => {
+                        // 刷新页面
+                        location.reload();
+                    });
+                },
+                error: function(xhr) {
+                    // 显示错误消息
+                    let errorMessage = '添加权限失败';
+                    if (xhr.responseJSON && xhr.responseJSON.detail) {
+                        errorMessage = xhr.responseJSON.detail;
+                    }
+                    
+                    Swal.fire({
+                        title: '错误',
+                        text: errorMessage,
+                        icon: 'error',
+                        confirmButtonText: '确定'
+                    });
+                }
+            });
+        });
+        
+        // 删除权限按钮点击事件
+        $('.delete-permission-btn').click(function() {
+            const role = $(this).data('role');
+            const resource = $(this).data('resource');
+            const action = $(this).data('action');
+            
+            // 确认删除
+            Swal.fire({
+                title: '确认删除',
+                text: `确定要删除 ${role} 角色的 ${resource}:${action} 权限吗？`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: '删除',
+                cancelButtonText: '取消',
+                confirmButtonColor: '#d33'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // 发送删除权限请求
+                    $.ajax({
+                        url: '/api/settings/permissions',
+                        type: 'DELETE',
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            role: role,
+                            resource: resource,
+                            action: action
+                        }),
+                        success: function(response) {
+                            // 显示成功消息
+                            Swal.fire({
+                                title: '删除成功',
+                                text: '权限已成功删除',
+                                icon: 'success',
+                                confirmButtonText: '确定'
+                            }).then(() => {
+                                // 刷新页面
+                                location.reload();
+                            });
+                        },
+                        error: function(xhr) {
+                            // 显示错误消息
+                            let errorMessage = '删除权限失败';
+                            if (xhr.responseJSON && xhr.responseJSON.detail) {
+                                errorMessage = xhr.responseJSON.detail;
+                            }
+                            
+                            Swal.fire({
+                                title: '错误',
+                                text: errorMessage,
+                                icon: 'error',
+                                confirmButtonText: '确定'
+                            });
+                        }
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %} 

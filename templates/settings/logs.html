@@ -1,0 +1,638 @@
+{% extends "settings/layout.html" %}
+
+{% block title %}系统日志管理{% endblock %}
+
+{% block head %}
+<style>
+  .log-container {
+    margin: 20px 0;
+  }
+  
+  .log-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .log-table th, .log-table td {
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: left;
+  }
+  
+  .log-table th {
+    background-color: #f2f2f2;
+    position: sticky;
+    top: 0;
+  }
+  
+  .log-filters {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+  }
+  
+  .log-content {
+    max-height: 600px;
+    overflow-y: auto;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    font-family: monospace;
+    white-space: pre-wrap;
+    margin-top: 15px;
+  }
+  
+  .log-line {
+    margin: 2px 0;
+    padding: 3px 5px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .log-line:hover {
+    background-color: #e9e9e9;
+  }
+  
+  .log-line.INFO {
+    border-left: 4px solid #28a745;
+  }
+  
+  .log-line.WARNING {
+    border-left: 4px solid #ffc107;
+    background-color: #fff3cd;
+  }
+  
+  .log-line.ERROR {
+    border-left: 4px solid #dc3545;
+    background-color: #f8d7da;
+  }
+  
+  .log-line.DEBUG {
+    border-left: 4px solid #17a2b8;
+  }
+  
+  .pagination {
+    margin-top: 15px;
+    text-align: center;
+  }
+  
+  .pagination button {
+    margin: 0 5px;
+  }
+  
+  .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+  }
+  
+  .form-group {
+    display: flex;
+    align-items: center;
+  }
+  
+  .form-group label {
+    margin-right: 8px;
+    white-space: nowrap;
+  }
+  
+  .actions-col {
+    white-space: nowrap;
+    width: 120px;
+  }
+  
+  .date-col {
+    width: 120px;
+  }
+  
+  .size-col {
+    width: 100px;
+  }
+  
+  .modified-col {
+    width: 180px;
+  }
+  
+  #logModal .modal-dialog {
+    max-width: 90%;
+  }
+  
+  .loading-spinner {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .filter-badge {
+    display: inline-block;
+    background-color: #e9ecef;
+    padding: 3px 8px;
+    margin-right: 5px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    margin-bottom: 5px;
+  }
+  
+  .filter-badge .close {
+    margin-left: 5px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .active-filters {
+    margin-top: 10px;
+  }
+</style>
+{% endblock %}
+
+{% block setting_content %}
+<div class="card">
+  <div class="card-header">
+    <h5 class="card-title mb-0">系统日志管理</h5>
+  </div>
+  <div class="card-body">
+    <div class="card">
+      <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" id="logTabs" role="tablist">
+          <li class="nav-item">
+            <a class="nav-link active" id="list-tab" data-toggle="tab" href="#list" role="tab">日志列表</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="viewer-tab" data-toggle="tab" href="#viewer" role="tab">日志查看器</a>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="card-body">
+        <div class="tab-content" id="logTabContent">
+          <!-- 日志列表标签页 -->
+          <div class="tab-pane fade show active" id="list" role="tabpanel">
+            <div class="table-responsive">
+              <table class="log-table table table-striped">
+                <thead>
+                  <tr>
+                    <th>日志文件</th>
+                    <th class="date-col">日期</th>
+                    <th class="size-col">大小</th>
+                    <th class="modified-col">修改时间</th>
+                    <th class="actions-col">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="logTableBody">
+                  <!-- 日志列表将通过JavaScript动态填充 -->
+                  <tr>
+                    <td colspan="5" class="text-center">
+                      <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">加载中...</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <!-- 日志查看器标签页 -->
+          <div class="tab-pane fade" id="viewer" role="tabpanel">
+            <div class="log-filters">
+              <div class="filter-row">
+                <div class="form-group">
+                  <label for="logFile">日志文件:</label>
+                  <select class="form-control" id="logFile">
+                    <option value="">请选择日志文件</option>
+                    <!-- 文件选项将通过JavaScript动态填充 -->
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label for="logModule">模块:</label>
+                  <select class="form-control" id="logModule">
+                    <option value="">全部</option>
+                    <!-- 模块选项将通过JavaScript动态填充 -->
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label for="logLevel">级别:</label>
+                  <select class="form-control" id="logLevel">
+                    <option value="">全部</option>
+                    <option value="DEBUG">DEBUG</option>
+                    <option value="INFO">INFO</option>
+                    <option value="WARNING">WARNING</option>
+                    <option value="ERROR">ERROR</option>
+                    <option value="CRITICAL">CRITICAL</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="filter-row">
+                <div class="form-group">
+                  <label for="startDate">开始日期:</label>
+                  <input type="date" class="form-control" id="startDate">
+                </div>
+                
+                <div class="form-group">
+                  <label for="endDate">结束日期:</label>
+                  <input type="date" class="form-control" id="endDate">
+                </div>
+                
+                <div class="form-group flex-grow-1">
+                  <label for="keyword">关键字:</label>
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="keyword" placeholder="搜索日志内容">
+                    <div class="input-group-append">
+                      <button class="btn btn-primary" id="searchBtn" type="button">搜索</button>
+                      <button class="btn btn-secondary" id="resetBtn" type="button">重置</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="active-filters" id="activeFilters"></div>
+            </div>
+            
+            <div class="log-content" id="logContent">
+              <div class="loading-spinner">
+                <p>请选择日志文件并应用筛选条件</p>
+              </div>
+            </div>
+            
+            <div class="pagination">
+              <button class="btn btn-outline-primary" id="prevPage" disabled>上一页</button>
+              <span id="pageInfo">第 0/0 页</span>
+              <button class="btn btn-outline-primary" id="nextPage" disabled>下一页</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 确认删除模态框 -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">确认删除</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>确定要删除该日志文件吗？该操作无法撤销。</p>
+        <p id="deleteFileName" class="font-weight-bold"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-danger" id="confirmDelete">删除</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let currentPage = 1;
+  let totalPages = 0;
+  let currentFile = null;
+  let currentFilters = {};
+  
+  // 页面加载时获取日志列表
+  $(document).ready(function() {
+    fetchLogList();
+    
+    // 事件监听
+    $('#logFile').on('change', function() {
+      currentFile = $(this).val();
+      currentPage = 1;
+      if (currentFile) {
+        fetchLogContent();
+      } else {
+        $('#logContent').html('<div class="loading-spinner"><p>请选择日志文件</p></div>');
+      }
+    });
+    
+    $('#searchBtn').on('click', function() {
+      if (currentFile) {
+        currentPage = 1;
+        fetchLogContent();
+      }
+    });
+    
+    $('#resetBtn').on('click', function() {
+      $('#logModule').val('');
+      $('#logLevel').val('');
+      $('#startDate').val('');
+      $('#endDate').val('');
+      $('#keyword').val('');
+      
+      if (currentFile) {
+        currentPage = 1;
+        fetchLogContent();
+      }
+    });
+    
+    $('#prevPage').on('click', function() {
+      if (currentPage > 1) {
+        currentPage--;
+        fetchLogContent();
+      }
+    });
+    
+    $('#nextPage').on('click', function() {
+      if (currentPage < totalPages) {
+        currentPage++;
+        fetchLogContent();
+      }
+    });
+    
+    // 日志查看器标签点击时获取模块列表
+    $('#viewer-tab').on('click', function() {
+      fetchModuleList();
+    });
+    
+    // 处理删除按钮点击事件
+    $(document).on('click', '.delete-log', function() {
+      const filename = $(this).data('filename');
+      $('#deleteFileName').text(filename);
+      $('#deleteModal').modal('show');
+      $('#confirmDelete').data('filename', filename);
+    });
+    
+    // 处理确认删除事件
+    $('#confirmDelete').on('click', function() {
+      const filename = $(this).data('filename');
+      deleteLogFile(filename);
+    });
+  });
+  
+  // 获取日志文件列表
+  function fetchLogList() {
+    $.ajax({
+      url: '/api/logs/list',
+      method: 'GET',
+      success: function(data) {
+        renderLogList(data);
+      },
+      error: function(xhr) {
+        console.error('获取日志列表失败:', xhr.responseText);
+        $('#logTableBody').html(`<tr><td colspan="5" class="text-danger">获取日志列表失败: ${xhr.statusText}</td></tr>`);
+      }
+    });
+  }
+  
+  // 渲染日志列表
+  function renderLogList(logs) {
+    if (logs.length === 0) {
+      $('#logTableBody').html('<tr><td colspan="5" class="text-center">无日志文件</td></tr>');
+      return;
+    }
+    
+    let html = '';
+    logs.forEach(function(log) {
+      html += `
+        <tr>
+          <td>${log.filename}</td>
+          <td>${log.date}</td>
+          <td>${log.size_formatted}</td>
+          <td>${log.modified}</td>
+          <td class="actions-col">
+            <button class="btn btn-sm btn-primary view-log" onclick="viewLog('${log.filename}')">查看</button>
+            <button class="btn btn-sm btn-danger delete-log" data-filename="${log.filename}">删除</button>
+          </td>
+        </tr>
+      `;
+      
+      // 添加到日志文件下拉列表
+      if ($('#logFile option[value="' + log.filename + '"]').length === 0) {
+        $('#logFile').append(`<option value="${log.filename}">${log.filename}</option>`);
+      }
+    });
+    
+    $('#logTableBody').html(html);
+  }
+  
+  // 查看指定日志文件
+  function viewLog(filename) {
+    $('#viewer-tab').tab('show');
+    $('#logFile').val(filename);
+    currentFile = filename;
+    currentPage = 1;
+    fetchLogContent();
+    fetchModuleList();
+  }
+  
+  // 获取日志内容
+  function fetchLogContent() {
+    if (!currentFile) return;
+    
+    // 更新活动过滤器显示
+    updateActiveFilters();
+    
+    // 构建查询参数
+    const params = {
+      module: $('#logModule').val(),
+      level: $('#logLevel').val(),
+      start_date: $('#startDate').val(),
+      end_date: $('#endDate').val(),
+      keyword: $('#keyword').val(),
+      page: currentPage
+    };
+    
+    // 保存当前过滤器
+    currentFilters = {...params};
+    
+    // 显示加载中
+    $('#logContent').html(`
+      <div class="loading-spinner">
+        <div class="spinner-border text-primary" role="status">
+          <span class="sr-only">加载中...</span>
+        </div>
+        <p>正在加载日志内容...</p>
+      </div>
+    `);
+    
+    $.ajax({
+      url: `/api/logs/content/${currentFile}`,
+      method: 'GET',
+      data: params,
+      success: function(data) {
+        renderLogContent(data);
+      },
+      error: function(xhr) {
+        console.error('获取日志内容失败:', xhr.responseText);
+        $('#logContent').html(`<div class="alert alert-danger">获取日志内容失败: ${xhr.statusText}</div>`);
+        $('#prevPage').prop('disabled', true);
+        $('#nextPage').prop('disabled', true);
+        $('#pageInfo').text('第 0/0 页');
+      }
+    });
+  }
+  
+  // 渲染日志内容
+  function renderLogContent(data) {
+    if (!data.lines || data.lines.length === 0) {
+      $('#logContent').html('<p class="text-center">没有符合条件的日志记录</p>');
+      $('#prevPage').prop('disabled', true);
+      $('#nextPage').prop('disabled', true);
+      $('#pageInfo').text('第 0/0 页');
+      return;
+    }
+    
+    let html = '';
+    data.lines.forEach(function(line) {
+      // 确定日志级别
+      let logClass = 'INFO';
+      if (line.includes(' - ERROR - ')) {
+        logClass = 'ERROR';
+      } else if (line.includes(' - WARNING - ')) {
+        logClass = 'WARNING';
+      } else if (line.includes(' - DEBUG - ')) {
+        logClass = 'DEBUG';
+      }
+      
+      // 为关键字添加高亮
+      if (currentFilters.keyword) {
+        const regex = new RegExp(currentFilters.keyword, 'gi');
+        line = line.replace(regex, match => `<span class="bg-warning">${match}</span>`);
+      }
+      
+      html += `<div class="log-line ${logClass}">${line}</div>`;
+    });
+    
+    $('#logContent').html(html);
+    
+    // 更新分页信息
+    totalPages = data.total_pages;
+    $('#pageInfo').text(`第 ${data.page}/${totalPages} 页 (共 ${data.total_lines} 条记录)`);
+    $('#prevPage').prop('disabled', data.page <= 1);
+    $('#nextPage').prop('disabled', data.page >= totalPages);
+    
+    // 更新可用的模块和级别
+    updateModuleOptions(data.available_modules);
+    updateLevelOptions(data.available_levels);
+    
+    // 滚动到顶部
+    $('#logContent').scrollTop(0);
+  }
+  
+  // 获取模块列表
+  function fetchModuleList() {
+    $.ajax({
+      url: '/api/logs/modules',
+      method: 'GET',
+      success: function(modules) {
+        updateModuleOptions(modules);
+      },
+      error: function(xhr) {
+        console.error('获取模块列表失败:', xhr.responseText);
+      }
+    });
+  }
+  
+  // 更新模块选项
+  function updateModuleOptions(modules) {
+    if (!modules || modules.length === 0) return;
+    
+    const currentModule = $('#logModule').val();
+    let options = '<option value="">全部</option>';
+    
+    modules.forEach(function(module) {
+      const selected = module === currentModule ? 'selected' : '';
+      options += `<option value="${module}" ${selected}>${module}</option>`;
+    });
+    
+    $('#logModule').html(options);
+  }
+  
+  // 更新级别选项
+  function updateLevelOptions(levels) {
+    if (!levels || levels.length === 0) return;
+    
+    const currentLevel = $('#logLevel').val();
+    let options = '<option value="">全部</option>';
+    
+    levels.forEach(function(level) {
+      const selected = level === currentLevel ? 'selected' : '';
+      options += `<option value="${level}" ${selected}>${level}</option>`;
+    });
+    
+    $('#logLevel').html(options);
+  }
+  
+  // 删除日志文件
+  function deleteLogFile(filename) {
+    $.ajax({
+      url: `/api/logs/${filename}`,
+      method: 'DELETE',
+      success: function(data) {
+        $('#deleteModal').modal('hide');
+        // 重新加载日志列表
+        fetchLogList();
+        
+        // 如果当前查看的是被删除的文件，清空内容
+        if (currentFile === filename) {
+          currentFile = null;
+          $('#logFile').val('');
+          $('#logContent').html('<div class="loading-spinner"><p>请选择日志文件</p></div>');
+        }
+        
+        // 显示成功消息
+        alert('日志文件删除成功');
+      },
+      error: function(xhr) {
+        $('#deleteModal').modal('hide');
+        console.error('删除日志文件失败:', xhr.responseText);
+        alert(`删除日志文件失败: ${xhr.responseText}`);
+      }
+    });
+  }
+  
+  // 更新活动过滤器显示
+  function updateActiveFilters() {
+    const filters = [];
+    
+    const module = $('#logModule').val();
+    if (module) {
+      filters.push(`模块: ${module}`);
+    }
+    
+    const level = $('#logLevel').val();
+    if (level) {
+      filters.push(`级别: ${level}`);
+    }
+    
+    const startDate = $('#startDate').val();
+    if (startDate) {
+      filters.push(`开始日期: ${startDate}`);
+    }
+    
+    const endDate = $('#endDate').val();
+    if (endDate) {
+      filters.push(`结束日期: ${endDate}`);
+    }
+    
+    const keyword = $('#keyword').val();
+    if (keyword) {
+      filters.push(`关键字: ${keyword}`);
+    }
+    
+    if (filters.length === 0) {
+      $('#activeFilters').html('');
+      return;
+    }
+    
+    let html = '<strong>当前筛选条件:</strong> ';
+    filters.forEach(function(filter) {
+      html += `<span class="filter-badge">${filter}</span>`;
+    });
+    
+    $('#activeFilters').html(html);
+  }
+</script>
+{% endblock %} 

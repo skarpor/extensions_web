@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件上传功能演示</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 20px;
+            padding-bottom: 40px;
+        }
+        .file-upload-demo {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+        .code-block pre {
+            margin: 0;
+        }
+        .tab-content {
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        .result-container {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container file-upload-demo">
+        <h1 class="mb-4">文件上传功能演示</h1>
+        
+        <div class="alert alert-primary" role="alert">
+            此页面演示如何在扩展中使用文件上传功能，包含实际可用的表单和示例代码。
+        </div>
+        
+        <ul class="nav nav-tabs" id="demo-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="form-tab" data-bs-toggle="tab" data-bs-target="#form-panel" type="button" role="tab" aria-controls="form-panel" aria-selected="true">上传演示</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="form-code-tab" data-bs-toggle="tab" data-bs-target="#form-code-panel" type="button" role="tab" aria-controls="form-code-panel" aria-selected="false">表单代码</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="backend-code-tab" data-bs-toggle="tab" data-bs-target="#backend-code-panel" type="button" role="tab" aria-controls="backend-code-panel" aria-selected="false">后端代码</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="guide-tab" data-bs-toggle="tab" data-bs-target="#guide-panel" type="button" role="tab" aria-controls="guide-panel" aria-selected="false">开发指南</button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="demo-content">
+            <!-- 上传演示表单 -->
+            <div class="tab-pane fade show active" id="form-panel" role="tabpanel" aria-labelledby="form-tab">
+                <h3>文件上传表单演示</h3>
+                <p>本演示展示了如何创建一个包含文件上传功能的表单。您可以上传图片、文档和其他支持的文件类型。</p>
+                
+                <form id="upload-form" class="mt-4">
+                    <div class="mb-3">
+                        <label for="main-file" class="form-label">上传主文件</label>
+                        <input type="file" class="form-control" id="main-file" name="main-file" required>
+                        <div class="form-text">支持图片、PDF、文本、Excel和Word文档</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="image-file" class="form-label">上传图片（可选）</label>
+                        <input type="file" class="form-control" id="image-file" name="image-file" accept="image/*">
+                        <div class="form-text">可选的图片文件</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="multiple-files" class="form-label">上传多个文件（可选）</label>
+                        <input type="file" class="form-control" id="multiple-files" name="multiple-files" multiple>
+                        <div class="form-text">可同时选择多个文件</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="file-description" class="form-label">文件描述</label>
+                        <textarea class="form-control" id="file-description" name="file-description" rows="2"></textarea>
+                        <div class="form-text">请输入文件的描述信息</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="file-tags" class="form-label">文件标签</label>
+                        <input type="text" class="form-control" id="file-tags" name="file-tags" placeholder="逗号分隔的标签">
+                        <div class="form-text">用逗号分隔的文件标签</div>
+                </div>
+                    
+                    <button type="submit" class="btn btn-primary">上传文件</button>
+                </form>
+                
+                <div id="upload-result" class="result-container mt-4">
+                    <h4>上传结果</h4>
+                    <pre id="result-json"></pre>
+                    
+                    <div id="thumbnails" class="mt-3">
+                        <h5>图片预览</h5>
+                        <div class="row" id="thumbnail-container"></div>
+                    </div>
+                </div>
+                </div>
+                
+            <!-- 表单代码 -->
+            <div class="tab-pane fade" id="form-code-panel" role="tabpanel" aria-labelledby="form-code-tab">
+                <h3>表单代码示例</h3>
+                <p>以下是文件上传表单的HTML代码示例：</p>
+                
+                <div class="code-block">
+<pre>def get_query_form():
+    """
+    获取查询表单
+    
+    Returns:
+        查询表单HTML
+    """
+    return """
+    &lt;div class="mb-3"&gt;
+        &lt;label for="main_file" class="form-label"&gt;上传主文件&lt;/label&gt;
+        &lt;input type="file" class="form-control" id="main_file" name="main_file" required&gt;
+        &lt;div class="form-text"&gt;支持图片、PDF、文本、Excel和Word文档&lt;/div&gt;
+    &lt;/div&gt;
+    
+    &lt;div class="mb-3"&gt;
+        &lt;label for="image_file" class="form-label"&gt;上传图片（可选）&lt;/label&gt;
+        &lt;input type="file" class="form-control" id="image_file" name="image_file" accept="image/*"&gt;
+        &lt;div class="form-text"&gt;可选的图片文件&lt;/div&gt;
+    &lt;/div&gt;
+    
+    &lt;div class="mb-3"&gt;
+        &lt;label for="file_description" class="form-label"&gt;文件描述&lt;/label&gt;
+        &lt;textarea class="form-control" id="file_description" name="file_description" rows="2"&gt;&lt;/textarea&gt;
+        &lt;div class="form-text"&gt;请输入文件的描述信息&lt;/div&gt;
+    &lt;/div&gt;
+    
+    &lt;div class="mb-3"&gt;
+        &lt;label for="file_tags" class="form-label"&gt;文件标签&lt;/label&gt;
+        &lt;input type="text" class="form-control" id="file_tags" name="file_tags" placeholder="逗号分隔的标签"&gt;
+        &lt;div class="form-text"&gt;用逗号分隔的文件标签&lt;/div&gt;
+    &lt;/div&gt;
+    """</pre>
+                </div>
+                
+                <h4>类型限制示例</h4>
+                <p>使用accept属性限制可上传的文件类型：</p>
+                
+                <div class="code-block">
+<pre>&lt;!-- 仅接受图片 --&gt;
+&lt;input type="file" class="form-control" accept="image/*"&gt;
+
+&lt;!-- 仅接受特定文件类型 --&gt;
+&lt;input type="file" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx"&gt;
+
+&lt;!-- 接受多个文件 --&gt;
+&lt;input type="file" class="form-control" multiple&gt;</pre>
+                </div>
+                
+                <div class="alert alert-info mt-4">
+                    <strong>提示：</strong> 文件输入字段的name属性将作为参数名，用于在后端代码中访问上传的文件。
+                </div>
+                </div>
+                
+            <!-- 后端代码 -->
+            <div class="tab-pane fade" id="backend-code-panel" role="tabpanel" aria-labelledby="backend-code-tab">
+                <h3>后端处理代码示例</h3>
+                <p>以下是处理上传文件的后端Python代码示例：</p>
+                
+                <div class="code-block">
+<pre>def execute_query(params, config):
+    """
+    执行查询
+    
+    Args:
+        params: 查询参数
+        config: 扩展配置
+        
+    Returns:
+        查询结果
+    """
+    result = {
+        "status": "success",
+        "message": "文件处理成功",
+        "files": [],
+        "metadata": {}
+    }
+    
+    try:
+        # 获取文件管理器
+        file_manager = params.get("file_manager")
+        if not file_manager:
+            return {"status": "error", "message": "文件管理器不可用"}
+        
+        # 获取查询参数
+        query = params.get("query", {})
+        files = params.get("files", {})
+        
+        # 获取文件描述和标签
+        file_description = query.get("file_description", "")
+        file_tags = [tag.strip() for tag in query.get("file_tags", "").split(",") if tag.strip()]
+        
+        # 解析配置
+        max_file_size = config.get("max_file_size_mb", 10) * 1024 * 1024  # 转换为字节
+        allowed_types = config.get("allowed_file_types", [])
+        
+        # 处理上传的文件
+        for file_key, file_data in files.items():
+            filename = file_data.get("filename", "未命名文件")
+            content_type = file_data.get("content_type", "application/octet-stream")
+            content = file_data.get("content", b"")
+            
+            # 文件大小检查
+            file_size = len(content)
+            if file_size > max_file_size:
+                result["files"].append({
+                    "name": filename,
+                    "status": "error",
+                    "message": f"文件大小超过限制: {file_size/1024/1024:.2f}MB > {max_file_size/1024/1024}MB"
+                })
+                continue
+            
+            # 文件类型检查
+            if allowed_types and content_type not in allowed_types:
+                result["files"].append({
+                    "name": filename,
+                    "status": "error",
+                    "message": f"不支持的文件类型: {content_type}"
+                })
+                continue
+            
+            # 保存文件
+            saved_file = file_manager.save_file(
+                file_content=content,
+                filename=filename,
+                content_type=content_type,
+                description=file_description
+            )
+            
+            # 添加到结果
+            result["files"].append({
+                "name": filename,
+                "status": "success",
+                "file_id": saved_file.get("id"),
+                "download_url": file_manager.get_file_url(saved_file.get("id"))
+            })
+            
+        return result
+        
+    except Exception as e:
+        result["status"] = "error"
+        result["message"] = f"处理文件时出错: {str(e)}"
+        return result</pre>
+                </div>
+                
+                <h4>文件管理器API使用示例</h4>
+                
+                <div class="code-block">
+<pre># 保存文件
+file_meta = file_manager.save_file(
+    file_content=content,      # 文件二进制内容
+    filename="report.pdf",     # 原始文件名
+    content_type="application/pdf", # MIME类型
+    description="月度报告"     # 文件描述
+)
+
+# 列出文件
+files = file_manager.list_files(limit=50, offset=0)
+
+# 获取文件下载URL
+download_url = file_manager.get_file_url(file_id)</pre>
+                </div>
+                
+                <div class="alert alert-warning mt-4">
+                    <strong>安全提示：</strong> 始终验证文件类型和大小，限制可上传的文件类型，避免处理潜在的恶意文件。
+                </div>
+            </div>
+            
+            <!-- 开发指南 -->
+            <div class="tab-pane fade" id="guide-panel" role="tabpanel" aria-labelledby="guide-tab">
+                <h3>文件上传功能开发指南</h3>
+                
+                <div class="accordion" id="guideAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                1. 文件上传基础知识
+                            </button>
+                        </h2>
+                        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#guideAccordion">
+                            <div class="accordion-body">
+                                <p>文件上传功能允许扩展接收用户上传的文件，并对其进行处理。主要步骤包括：</p>
+                                <ol>
+                                    <li>在HTML表单中添加文件输入字段</li>
+                                    <li>在后端代码中接收和处理上传的文件</li>
+                                    <li>进行安全验证和处理</li>
+                                    <li>返回处理结果</li>
+                                </ol>
+                                <p>系统会自动处理文件的接收和传递，您只需关注业务逻辑实现。</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                2. 安全注意事项
+                            </button>
+                        </h2>
+                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#guideAccordion">
+                            <div class="accordion-body">
+                                <p>处理用户上传的文件时，安全是首要考虑因素：</p>
+                                <ul>
+                                    <li><strong>验证文件类型</strong>：检查MIME类型和文件扩展名</li>
+                                    <li><strong>限制文件大小</strong>：防止过大文件导致资源耗尽</li>
+                                    <li><strong>检查文件内容</strong>：验证文件内容的合法性</li>
+                                    <li><strong>安全处理文件名</strong>：防止路径遍历攻击</li>
+                                    <li><strong>使用沙箱环境</strong>：系统提供的沙箱环境限制了危险操作</li>
+                                </ul>
+                                <div class="alert alert-danger">
+                                    永远不要信任用户上传的文件内容，始终进行验证和安全处理。
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingThree">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                3. 多文件上传处理
+                            </button>
+                        </h2>
+                        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#guideAccordion">
+                            <div class="accordion-body">
+                                <p>有两种方式处理多文件上传：</p>
+                                
+                                <h5>方式1：多个不同的文件字段</h5>
+                                <div class="code-block">
+<pre>&lt;input type="file" name="image_file"&gt;
+&lt;input type="file" name="document_file"&gt;</pre>
+                                </div>
+                                <p>在后端通过不同的字段名区分文件类型：</p>
+                                <div class="code-block">
+<pre>image_file = files.get("image_file")
+document_file = files.get("document_file")</pre>
+                                </div>
+                                
+                                <h5>方式2：单个字段接收多个文件</h5>
+                                <div class="code-block">
+<pre>&lt;input type="file" name="files" multiple&gt;</pre>
+                                </div>
+                                <p>此时后端会接收到文件列表：</p>
+                                <div class="code-block">
+<pre>file_list = files.get("files", [])</pre>
+                                </div>
+                            </div>
+                        </div>
+                                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingFour">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                4. 常见问题与解决方案
+                            </button>
+                        </h2>
+                        <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#guideAccordion">
+                            <div class="accordion-body">
+                                <dl>
+                                    <dt>问题：上传大文件时超时</dt>
+                                    <dd>解决方案：设置合理的文件大小限制，并告知用户这些限制。系统默认限制为50MB。</dd>
+                                    
+                                    <dt>问题：文件类型不被接受</dt>
+                                    <dd>解决方案：检查HTML表单的accept属性和后端验证逻辑是否一致。</dd>
+                                    
+                                    <dt>问题：文件上传后无法处理</dt>
+                                    <dd>解决方案：确保扩展正确处理了上传的文件数据，检查参数名称是否匹配。</dd>
+                                    
+                                    <dt>问题：多文件上传混乱</dt>
+                                    <dd>解决方案：使用明确的字段命名和处理逻辑，区分不同类型的文件。</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <a href="FILE_UPLOAD_GUIDE.md" class="btn btn-outline-primary" target="_blank">查看完整开发指南</a>
+                    <a href="file_upload_demo.py" class="btn btn-outline-secondary" target="_blank">查看示例扩展代码</a>
+                </div>
+        </div>
+    </div>
+</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 模拟上传功能
+        document.getElementById('upload-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // 获取表单数据
+            const mainFile = document.getElementById('main-file').files[0];
+            const imageFile = document.getElementById('image-file').files[0];
+            const multipleFiles = document.getElementById('multiple-files').files;
+            const description = document.getElementById('file-description').value;
+            const tags = document.getElementById('file-tags').value;
+            
+            // 验证是否有文件
+            if (!mainFile && !imageFile && multipleFiles.length === 0) {
+                alert('请至少上传一个文件');
+            return;
+        }
+        
+            // 显示处理结果
+            const resultContainer = document.getElementById('upload-result');
+            resultContainer.style.display = 'block';
+            
+            // 构建模拟结果
+            const result = {
+                status: 'success',
+                message: '文件处理成功',
+                files: [],
+                metadata: {
+                    total_files: 0,
+                    success_count: 0,
+                    error_count: 0,
+                    total_size: 0,
+                    tags: tags.split(',').filter(t => t.trim()).map(t => t.trim())
+                }
+            };
+            
+            // 处理主文件
+            if (mainFile) {
+                addFileToResult(mainFile, 'main_file', result);
+            }
+            
+            // 处理图片文件
+            if (imageFile) {
+                addFileToResult(imageFile, 'image_file', result, true);
+            }
+            
+            // 处理多个文件
+            for (let i = 0; i < multipleFiles.length; i++) {
+                addFileToResult(multipleFiles[i], `multiple_files_${i}`, result, 
+                                multipleFiles[i].type.startsWith('image/'));
+            }
+            
+            // 更新元数据
+            result.metadata.total_files = result.files.length;
+            result.metadata.success_count = result.files.filter(f => f.status === 'success').length;
+            result.metadata.error_count = result.files.filter(f => f.status === 'error').length;
+            
+            // 显示结果
+            document.getElementById('result-json').textContent = JSON.stringify(result, null, 2);
+            
+            // 清空缩略图容器
+            const thumbnailContainer = document.getElementById('thumbnail-container');
+            thumbnailContainer.innerHTML = '';
+            
+            // 添加缩略图
+            result.files.forEach(file => {
+                if (file.thumbnail_url) {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-4 mb-3';
+                    
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    
+                    const img = document.createElement('img');
+                    img.src = file.thumbnail_url;
+                    img.className = 'card-img-top';
+                    img.alt = file.name;
+                    
+                    const cardBody = document.createElement('div');
+                    cardBody.className = 'card-body p-2';
+                    
+                    const title = document.createElement('p');
+                    title.className = 'card-text small mb-0';
+                    title.textContent = file.name;
+                    
+                    cardBody.appendChild(title);
+                    card.appendChild(img);
+                    card.appendChild(cardBody);
+                    col.appendChild(card);
+                    thumbnailContainer.appendChild(col);
+                }
+            });
+            
+            // 如果没有图片，隐藏缩略图部分
+            document.getElementById('thumbnails').style.display = 
+                result.files.some(f => f.thumbnail_url) ? 'block' : 'none';
+        });
+        
+        // 辅助函数：添加文件到结果
+        function addFileToResult(file, key, result, createThumbnail = false) {
+            // 创建文件结果对象
+            const fileResult = {
+                name: file.name,
+                status: 'success',
+                file_id: generateRandomId(),
+                size: file.size,
+                size_readable: formatFileSize(file.size),
+                content_type: file.type,
+                download_url: '#'
+            };
+            
+            // 如果是图片且需要创建缩略图
+            if (createThumbnail && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    fileResult.thumbnail_url = e.target.result;
+                    // 更新结果JSON
+                    document.getElementById('result-json').textContent = JSON.stringify(result, null, 2);
+                    
+                    // 添加缩略图
+                    const thumbnailContainer = document.getElementById('thumbnail-container');
+                    const col = document.createElement('div');
+                    col.className = 'col-md-4 mb-3';
+                    
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'card-img-top';
+                    img.alt = file.name;
+                    
+                    const cardBody = document.createElement('div');
+                    cardBody.className = 'card-body p-2';
+                    
+                    const title = document.createElement('p');
+                    title.className = 'card-text small mb-0';
+                    title.textContent = file.name;
+                    
+                    cardBody.appendChild(title);
+                    card.appendChild(img);
+                    card.appendChild(cardBody);
+                    col.appendChild(card);
+                    thumbnailContainer.appendChild(col);
+                    
+                    // 显示缩略图部分
+                    document.getElementById('thumbnails').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            // 添加到结果
+            result.files.push(fileResult);
+            result.metadata.total_size += file.size;
+        }
+        
+        // 辅助函数：格式化文件大小
+        function formatFileSize(size) {
+            if (size < 1024) {
+                return size + ' B';
+            } else if (size < 1024 * 1024) {
+                return (size / 1024).toFixed(2) + ' KB';
+            } else {
+                return (size / (1024 * 1024)).toFixed(2) + ' MB';
+            }
+        }
+        
+        // 辅助函数：生成随机ID
+        function generateRandomId() {
+            return 'file_' + Math.random().toString(36).substr(2, 9);
+    }
+</script>
+</body>
+</html> 

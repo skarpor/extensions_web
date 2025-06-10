@@ -1,0 +1,336 @@
+{% extends "settings/layout.html" %}
+
+{% block title %}邮箱设置{% endblock %}
+
+{% block setting_content %}
+<div class="card">
+  <div class="card-header">
+    <h5 class="card-title mb-0">邮箱设置</h5>
+  </div>
+  <div class="card-body">
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle mr-2"></i> 配置邮箱服务器信息，用于系统发送通知、报告和验证码等邮件。
+    </div>
+    
+    <form id="emailSettingsForm">
+      <!-- 邮件服务器基本设置 -->
+      <div class="card mb-4">
+        <div class="card-header bg-light">
+          <h6 class="mb-0">基本设置</h6>
+        </div>
+        <div class="card-body">
+          <div class="form-group row">
+            <label for="smtpServer" class="col-sm-3 col-form-label">SMTP 服务器</label>
+            <div class="col-sm-9">
+              <input type="text" class="form-control" id="smtpServer" placeholder="例如: smtp.example.com">
+            </div>
+          </div>
+          
+          <div class="form-group row">
+            <label for="smtpPort" class="col-sm-3 col-form-label">SMTP 端口</label>
+            <div class="col-sm-9">
+              <input type="number" class="form-control" id="smtpPort" placeholder="25, 465 (SSL), 587 (TLS)" value="587">
+            </div>
+          </div>
+          
+          <div class="form-group row">
+            <label for="secureConnection" class="col-sm-3 col-form-label">安全连接</label>
+            <div class="col-sm-9">
+              <select class="form-control" id="secureConnection">
+                <option value="none">无</option>
+                <option value="ssl">SSL</option>
+                <option value="tls" selected>TLS</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 认证设置 -->
+      <div class="card mb-4">
+        <div class="card-header bg-light">
+          <h6 class="mb-0">认证设置</h6>
+        </div>
+        <div class="card-body">
+          <div class="form-group row">
+            <label class="col-sm-3 col-form-label">需要认证</label>
+            <div class="col-sm-9 mt-2">
+              <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="requireAuth" checked>
+                <label class="custom-control-label" for="requireAuth">启用认证</label>
+              </div>
+            </div>
+          </div>
+          
+          <div id="authSection">
+            <div class="form-group row">
+              <label for="smtpUsername" class="col-sm-3 col-form-label">用户名</label>
+              <div class="col-sm-9">
+                <input type="text" class="form-control" id="smtpUsername" placeholder="邮箱地址或用户名">
+              </div>
+            </div>
+            
+            <div class="form-group row">
+              <label for="smtpPassword" class="col-sm-3 col-form-label">密码</label>
+              <div class="col-sm-9">
+                <div class="input-group">
+                  <input type="password" class="form-control" id="smtpPassword" placeholder="SMTP密码或授权码">
+                  <div class="input-group-append">
+                    <button class="btn btn-outline-secondary toggle-password" type="button">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                  </div>
+                </div>
+                <small class="form-text text-muted">对于一些邮件服务商，您可能需要使用应用专用密码或授权码</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 发件人设置 -->
+      <div class="card mb-4">
+        <div class="card-header bg-light">
+          <h6 class="mb-0">发件人设置</h6>
+        </div>
+        <div class="card-body">
+          <div class="form-group row">
+            <label for="fromEmail" class="col-sm-3 col-form-label">发件人邮箱</label>
+            <div class="col-sm-9">
+              <input type="email" class="form-control" id="fromEmail" placeholder="system@example.com">
+            </div>
+          </div>
+          
+          <div class="form-group row">
+            <label for="fromName" class="col-sm-3 col-form-label">发件人名称</label>
+            <div class="col-sm-9">
+              <input type="text" class="form-control" id="fromName" placeholder="数据查询系统">
+            </div>
+          </div>
+          
+          <div class="form-group row">
+            <label for="replyTo" class="col-sm-3 col-form-label">回复地址</label>
+            <div class="col-sm-9">
+              <input type="email" class="form-control" id="replyTo" placeholder="support@example.com">
+              <small class="form-text text-muted">可选，留空则使用发件人邮箱</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 高级设置 -->
+      <div class="card mb-4">
+        <div class="card-header bg-light">
+          <h6 class="mb-0">高级设置</h6>
+        </div>
+        <div class="card-body">
+          <div class="form-group row">
+            <label for="emailTemplate" class="col-sm-3 col-form-label">默认邮件模板</label>
+            <div class="col-sm-9">
+              <select class="form-control" id="emailTemplate">
+                <option value="default" selected>系统默认模板</option>
+                <option value="simple">简约模板</option>
+                <option value="corporate">企业风格</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group row">
+            <label for="maxRetries" class="col-sm-3 col-form-label">发送失败重试次数</label>
+            <div class="col-sm-9">
+              <input type="number" class="form-control" id="maxRetries" min="0" max="10" value="3">
+            </div>
+          </div>
+          
+          <div class="form-group row">
+            <label class="col-sm-3 col-form-label">发送失败通知</label>
+            <div class="col-sm-9 mt-2">
+              <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="failureAlert" checked>
+                <label class="custom-control-label" for="failureAlert">开启通知</label>
+              </div>
+              <small class="form-text text-muted">当邮件发送失败时，系统将通知管理员</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group row">
+        <div class="col-sm-9 offset-sm-3">
+          <button type="submit" class="btn btn-primary">保存设置</button>
+          <button type="button" class="btn btn-info ml-2" id="testEmailBtn">发送测试邮件</button>
+          <button type="reset" class="btn btn-secondary ml-2">重置</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 测试邮件模态框 -->
+<div class="modal fade" id="testEmailModal" tabindex="-1" role="dialog" aria-labelledby="testEmailModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="testEmailModalLabel">发送测试邮件</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="testEmailForm">
+          <div class="form-group">
+            <label for="testEmailAddress">接收邮箱</label>
+            <input type="email" class="form-control" id="testEmailAddress" required>
+            <small class="form-text text-muted">请输入一个有效的邮箱地址用于接收测试邮件</small>
+          </div>
+          <div class="form-group">
+            <label for="testEmailSubject">邮件主题</label>
+            <input type="text" class="form-control" id="testEmailSubject" value="测试邮件 - 数据查询系统" required>
+          </div>
+          <div class="form-group">
+            <label for="testEmailContent">邮件内容</label>
+            <textarea class="form-control" id="testEmailContent" rows="5" required>这是一封来自数据查询系统的测试邮件。如果您收到此邮件，说明邮箱设置正确。</textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-primary" id="sendTestEmailBtn">发送</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(document).ready(function() {
+    // 加载邮箱设置
+    loadEmailSettings();
+    
+    // 认证设置开关
+    $('#requireAuth').on('change', function() {
+      if ($(this).is(':checked')) {
+        $('#authSection').slideDown();
+      } else {
+        $('#authSection').slideUp();
+      }
+    });
+    
+    // 切换密码显示/隐藏
+    $('.toggle-password').on('click', function() {
+      const passwordInput = $('#smtpPassword');
+      const icon = $(this).find('i');
+      
+      if (passwordInput.attr('type') === 'password') {
+        passwordInput.attr('type', 'text');
+        icon.removeClass('fa-eye').addClass('fa-eye-slash');
+      } else {
+        passwordInput.attr('type', 'password');
+        icon.removeClass('fa-eye-slash').addClass('fa-eye');
+      }
+    });
+    
+    // 提交邮箱设置表单
+    $('#emailSettingsForm').on('submit', function(e) {
+      e.preventDefault();
+      saveEmailSettings();
+    });
+    
+    // 测试邮件按钮
+    $('#testEmailBtn').on('click', function() {
+      // 预填充测试邮件表单
+      if ($('#fromEmail').val()) {
+        $('#testEmailAddress').val($('#fromEmail').val());
+      }
+      $('#testEmailModal').modal('show');
+    });
+    
+    // 发送测试邮件
+    $('#sendTestEmailBtn').on('click', function() {
+      sendTestEmail();
+    });
+  });
+  
+  // 加载邮箱设置
+  function loadEmailSettings() {
+    // 模拟加载邮箱设置
+    setTimeout(function() {
+      $('#smtpServer').val('smtp.example.com');
+      $('#smtpPort').val('587');
+      $('#secureConnection').val('tls');
+      $('#requireAuth').prop('checked', true);
+      $('#smtpUsername').val('admin@example.com');
+      $('#smtpPassword').val('password123');
+      $('#fromEmail').val('system@example.com');
+      $('#fromName').val('数据查询系统');
+      $('#replyTo').val('');
+      $('#emailTemplate').val('default');
+      $('#maxRetries').val('3');
+      $('#failureAlert').prop('checked', true);
+    }, 500);
+  }
+  
+  // 保存邮箱设置
+  function saveEmailSettings() {
+    // 获取表单数据
+    const settings = {
+      smtp_server: $('#smtpServer').val(),
+      smtp_port: $('#smtpPort').val(),
+      secure_connection: $('#secureConnection').val(),
+      require_auth: $('#requireAuth').is(':checked'),
+      smtp_username: $('#smtpUsername').val(),
+      smtp_password: $('#smtpPassword').val(),
+      from_email: $('#fromEmail').val(),
+      from_name: $('#fromName').val(),
+      reply_to: $('#replyTo').val(),
+      email_template: $('#emailTemplate').val(),
+      max_retries: $('#maxRetries').val(),
+      failure_alert: $('#failureAlert').is(':checked')
+    };
+    
+    // 显示保存中的提示
+    const saveBtn = $('#emailSettingsForm button[type="submit"]');
+    const originalText = saveBtn.text();
+    saveBtn.prop('disabled', true).text('保存中...');
+    
+    // 模拟保存过程
+    setTimeout(function() {
+      saveBtn.text('已保存!').removeClass('btn-primary').addClass('btn-success');
+      setTimeout(function() {
+        saveBtn.text(originalText).removeClass('btn-success').addClass('btn-primary').prop('disabled', false);
+      }, 1500);
+    }, 1000);
+  }
+  
+  // 发送测试邮件
+  function sendTestEmail() {
+    const testEmail = {
+      to: $('#testEmailAddress').val(),
+      subject: $('#testEmailSubject').val(),
+      content: $('#testEmailContent').val()
+    };
+    
+    if (!testEmail.to) {
+      alert('请输入接收邮箱地址');
+      return;
+    }
+    
+    // 显示发送中的提示
+    const sendBtn = $('#sendTestEmailBtn');
+    const originalText = sendBtn.text();
+    sendBtn.prop('disabled', true).text('发送中...');
+    
+    // 模拟发送测试邮件
+    setTimeout(function() {
+      $('#testEmailModal').modal('hide');
+      sendBtn.text(originalText).prop('disabled', false);
+      
+      // 显示成功提示
+      setTimeout(function() {
+        alert('测试邮件已发送，请检查收件箱。');
+      }, 500);
+    }, 2000);
+  }
+</script>
+{% endblock %} 

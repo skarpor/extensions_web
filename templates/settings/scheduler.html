@@ -1,0 +1,636 @@
+{% extends "base.html" %}
+
+{% block title %}定时任务设置{% endblock %}
+
+{% block additional_styles %}
+<style>
+  .settings-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  .settings-title {
+    margin-bottom: 25px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+  }
+  .settings-card {
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  .form-label {
+    font-weight: 500;
+  }
+  .settings-help {
+    color: #6c757d;
+    font-size: 0.85rem;
+  }
+  .task-item-disabled {
+    opacity: 0.6;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+  <h2 class="settings-title">定时任务设置</h2>
+
+  <!-- 设置导航 -->
+  <ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+      <a class="nav-link" href="/settings">通用设置</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link active" href="/settings/scheduler">定时任务设置</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/settings/plugins">插件管理</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/settings/security">安全设置</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/settings/logs">日志管理</a>
+    </li>
+  </ul>
+
+  <div class="row">
+    <!-- 左侧内容：通用设置和函数注册 -->
+    <div class="col-md-7">
+      <!-- 通用设置卡片 -->
+      <div class="card settings-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">通用设置</h5>
+        </div>
+        <div class="card-body">
+          <form id="generalSettingsForm">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="max_jobs" class="form-label">最大任务数量</label>
+                <input type="number" class="form-control" id="max_jobs" name="max_jobs" value="100" min="1">
+                <div class="settings-help">系统同时可执行的最大任务数量</div>
+              </div>
+              <div class="col-md-6">
+                <label for="default_timezone" class="form-label">默认时区</label>
+                <select class="form-select" id="default_timezone" name="default_timezone">
+                  <option value="Asia/Shanghai">中国标准时间 (UTC+8)</option>
+                  <option value="UTC">协调世界时 (UTC)</option>
+                  <option value="America/New_York">美国东部时间</option>
+                  <option value="Europe/London">英国时间</option>
+                </select>
+                <div class="settings-help">定时任务的默认时区设置</div>
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="enable_scheduler" name="enable_scheduler" checked>
+                  <label class="form-check-label" for="enable_scheduler">启用定时任务调度器</label>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="persist_jobs" name="persist_jobs" checked>
+                  <label class="form-check-label" for="persist_jobs">持久化任务状态</label>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="log_job_execution" name="log_job_execution" checked>
+                  <label class="form-check-label" for="log_job_execution">记录执行日志</label>
+                </div>
+              </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">保存通用设置</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- 任务函数注册卡片 -->
+      <div class="card settings-card mt-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">任务函数注册</h5>
+          <button class="btn btn-sm btn-primary" id="registerTaskBtn">注册新函数</button>
+        </div>
+        <div class="card-body">
+          <form id="registerTaskForm" class="mb-4 d-none">
+            <div class="mb-3">
+              <label for="func_path" class="form-label">函数路径</label>
+              <input type="text" class="form-control" id="func_path" name="func_path" placeholder="例如: app.tasks.send_email" required>
+              <div class="settings-help">完整的函数导入路径，格式为：模块.子模块.函数名</div>
+            </div>
+            <div class="mb-3">
+              <label for="func_name" class="form-label">显示名称</label>
+              <input type="text" class="form-control" id="func_name" name="func_name" placeholder="例如: 发送邮件" required>
+              <div class="settings-help">用于在界面上显示的函数友好名称</div>
+            </div>
+            <div class="mb-3">
+              <label for="func_desc" class="form-label">功能描述</label>
+              <textarea class="form-control" id="func_desc" name="func_desc" rows="2" placeholder="请简要描述此函数的功能..."></textarea>
+              <div class="settings-help">函数的功能说明，帮助用户理解任务用途</div>
+            </div>
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary">保存</button>
+              <button type="button" class="btn btn-outline-secondary" id="cancelRegisterBtn">取消</button>
+              <button type="button" class="btn btn-outline-info" id="testFunctionBtn">测试函数</button>
+            </div>
+          </form>
+
+          <!-- 已注册函数列表 -->
+          <div id="registeredTasksContainer">
+            {% if registered_tasks %}
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>函数名称</th>
+                    <th>路径</th>
+                    <th>描述</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for path, task in registered_tasks.items() %}
+                  <tr class="{{ 'task-item-disabled' if not task.enabled }}">
+                    <td>{{ task.func_name }}</td>
+                    <td><small class="text-muted">{{ task.func_path }}</small></td>
+                    <td>{{ task.func_desc }}</td>
+                    <td>
+                      <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-info btn-test-func" data-path="{{ task.func_path }}">测试</button>
+                        <button class="btn btn-outline-danger btn-delete-func" data-path="{{ task.func_path }}">删除</button>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            {% else %}
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>尚未注册任何任务函数，请点击"注册新函数"添加
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧内容：执行设置 -->
+    <div class="col-md-5">
+      <!-- 执行设置卡片 -->
+      <div class="card settings-card">
+        <div class="card-header">
+          <h5 class="mb-0">执行设置</h5>
+        </div>
+        <div class="card-body">
+          <form id="executionSettingsForm">
+            <div class="mb-3">
+              <label for="max_instances" class="form-label">最大并发实例</label>
+              <input type="number" class="form-control" id="max_instances" name="max_instances" value="3" min="1">
+              <div class="settings-help">单个任务允许的最大并发执行数量</div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="job_timeout" class="form-label">任务超时时间（秒）</label>
+              <input type="number" class="form-control" id="job_timeout" name="job_timeout" value="300" min="1">
+              <div class="settings-help">任务执行的最大允许时间，超时将被强制终止</div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-6">
+                <label for="retry_attempts" class="form-label">重试次数</label>
+                <input type="number" class="form-control" id="retry_attempts" name="retry_attempts" value="3" min="0">
+              </div>
+              <div class="col-6">
+                <label for="retry_delay" class="form-label">重试延迟（秒）</label>
+                <input type="number" class="form-control" id="retry_delay" name="retry_delay" value="60" min="1">
+              </div>
+              <div class="settings-help">任务失败后的重试策略</div>
+            </div>
+            
+            <hr>
+            
+            <div class="mb-3">
+              <label for="notification_email" class="form-label">通知邮箱</label>
+              <input type="email" class="form-control" id="notification_email" name="notification_email" placeholder="example@example.com">
+              <div class="settings-help">任务执行状态通知的接收邮箱</div>
+            </div>
+            
+            <div class="mb-3">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="notify_on_success" name="notify_on_success">
+                <label class="form-check-label" for="notify_on_success">成功执行时通知</label>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="notify_on_failure" name="notify_on_failure" checked>
+                <label class="form-check-label" for="notify_on_failure">执行失败时通知</label>
+              </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">保存执行设置</button>
+          </form>
+        </div>
+      </div>
+      
+      <!-- 执行记录和统计信息 -->
+      <div class="card settings-card mt-4">
+        <div class="card-header">
+          <h5 class="mb-0">使用帮助</h5>
+        </div>
+        <div class="card-body">
+          <h6 class="mb-2">支持的任务类型</h6>
+          <ul>
+            <li><strong>Cron任务</strong> - 基于cron表达式的定时任务</li>
+            <li><strong>间隔任务</strong> - 按固定时间间隔执行</li>
+            <li><strong>一次性任务</strong> - 在指定时间执行一次</li>
+          </ul>
+          
+          <h6 class="mb-2">常见问题</h6>
+          <div class="accordion" id="helpAccordion">
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#helpOne">
+                  如何创建一个定时任务？
+                </button>
+              </h2>
+              <div id="helpOne" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                <div class="accordion-body">
+                  首先需要注册任务函数，然后前往<a href="/scheduler">任务管理</a>页面创建定时任务。
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#helpTwo">
+                  Cron表达式怎么写？
+                </button>
+              </h2>
+              <div id="helpTwo" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                <div class="accordion-body">
+                  Cron表达式格式为：<code>秒 分 时 日 月 周</code>，例如<code>0 0 12 * * *</code>表示每天中午12点执行。
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#helpThree">
+                  任务失败怎么办？
+                </button>
+              </h2>
+              <div id="helpThree" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                <div class="accordion-body">
+                  可以设置任务的重试策略，并开启失败通知。还可以在<a href="/settings/logs">日志管理</a>中查看详细执行记录。
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 测试函数结果模态框 -->
+<div class="modal fade" id="testResultModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">函数测试结果</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="testingIndicator" class="text-center p-3">
+          <div class="spinner-border text-primary" role="status"></div>
+          <p class="mt-2">正在测试函数，请稍候...</p>
+        </div>
+        <div id="testResultContent" class="d-none">
+          <div class="mb-3">
+            <div class="d-flex justify-content-between mb-1">
+              <span>函数路径:</span>
+              <span id="testFuncPath" class="text-muted"></span>
+            </div>
+            <div class="d-flex justify-content-between mb-1">
+              <span>执行状态:</span>
+              <span id="testStatus"></span>
+            </div>
+            <div class="d-flex justify-content-between mb-1">
+              <span>执行时间:</span>
+              <span id="testDuration"></span>
+            </div>
+          </div>
+          <div id="testResultOutput" class="border rounded p-3 bg-light">
+            <pre class="mb-0"><code id="testResultCode"></code></pre>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 删除确认模态框 -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">确认删除</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>确定要删除函数 <span id="deleteTaskName" class="fw-bold"></span> 吗？</p>
+        <p class="text-danger">此操作不可撤销，如果有使用此函数的任务，将会失效。</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">确认删除</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast 通知 -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="operationToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header">
+      <span class="rounded me-2" id="toastIcon"></span>
+      <strong class="me-auto" id="toastTitle">通知</strong>
+      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="关闭"></button>
+    </div>
+    <div class="toast-body" id="toastMessage"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block additional_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // 表单显示/隐藏逻辑
+    const registerTaskBtn = document.getElementById('registerTaskBtn');
+    const registerTaskForm = document.getElementById('registerTaskForm');
+    const cancelRegisterBtn = document.getElementById('cancelRegisterBtn');
+    
+    registerTaskBtn.addEventListener('click', function() {
+      registerTaskForm.classList.remove('d-none');
+      registerTaskBtn.classList.add('d-none');
+      // 清空表单
+      document.getElementById('func_path').value = '';
+      document.getElementById('func_name').value = '';
+      document.getElementById('func_desc').value = '';
+    });
+    
+    cancelRegisterBtn.addEventListener('click', function() {
+      registerTaskForm.classList.add('d-none');
+      registerTaskBtn.classList.remove('d-none');
+    });
+    
+    // Toast 通知函数
+    function showToast(title, message, type = 'success') {
+      const toast = document.getElementById('operationToast');
+      const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toast);
+      
+      document.getElementById('toastTitle').textContent = title;
+      document.getElementById('toastMessage').textContent = message;
+      
+      const iconSpan = document.getElementById('toastIcon');
+      iconSpan.className = 'rounded me-2';
+      
+      if (type === 'success') {
+        iconSpan.innerHTML = '✅';
+      } else if (type === 'error') {
+        iconSpan.innerHTML = '❌';
+      } else if (type === 'warning') {
+        iconSpan.innerHTML = '⚠️';
+      } else {
+        iconSpan.innerHTML = 'ℹ️';
+      }
+      
+      toastBootstrap.show();
+    }
+    
+    // 注册任务表单提交
+    registerTaskForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      
+      try {
+        const response = await fetch('/settings/api/scheduler/tasks', {
+          method: 'POST',
+          body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          showToast('成功', result.message);
+          // 重新加载页面以显示新注册的任务
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          showToast('错误', result.detail || '注册任务函数失败', 'error');
+        }
+      } catch (error) {
+        showToast('错误', '请求失败: ' + error.message, 'error');
+      }
+    });
+    
+    // 测试函数逻辑
+    const testFunctionBtn = document.getElementById('testFunctionBtn');
+    const testResultModal = new bootstrap.Modal(document.getElementById('testResultModal'));
+    
+    async function testFunction(funcPath) {
+      // 显示测试中状态
+      document.getElementById('testingIndicator').classList.remove('d-none');
+      document.getElementById('testResultContent').classList.add('d-none');
+      testResultModal.show();
+      
+      try {
+        const response = await fetch('/settings/api/scheduler/tasks/test', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ func_path: funcPath })
+        });
+        
+        const result = await response.json();
+        
+        // 更新测试结果UI
+        document.getElementById('testFuncPath').textContent = funcPath;
+        
+        if (result.success) {
+          document.getElementById('testStatus').textContent = '成功';
+          document.getElementById('testStatus').className = 'text-success';
+        } else {
+          document.getElementById('testStatus').textContent = '失败';
+          document.getElementById('testStatus').className = 'text-danger';
+        }
+        
+        document.getElementById('testDuration').textContent = 
+          result.duration ? `${result.duration.toFixed(2)} 秒` : 'N/A';
+        
+        // 显示结果内容
+        let resultContent = '';
+        if (result.success) {
+          resultContent = JSON.stringify(result.result, null, 2);
+        } else {
+          resultContent = result.error || '未知错误';
+        }
+        
+        document.getElementById('testResultCode').textContent = resultContent;
+        
+        // 隐藏加载，显示结果
+        document.getElementById('testingIndicator').classList.add('d-none');
+        document.getElementById('testResultContent').classList.remove('d-none');
+        
+      } catch (error) {
+        // 处理请求错误
+        document.getElementById('testingIndicator').classList.add('d-none');
+        document.getElementById('testResultContent').classList.remove('d-none');
+        document.getElementById('testStatus').textContent = '请求错误';
+        document.getElementById('testStatus').className = 'text-danger';
+        document.getElementById('testDuration').textContent = 'N/A';
+        document.getElementById('testResultCode').textContent = error.message;
+      }
+    }
+    
+    // 表单中的测试按钮
+    testFunctionBtn.addEventListener('click', function() {
+      const funcPath = document.getElementById('func_path').value;
+      if (!funcPath) {
+        showToast('警告', '请先填写函数路径', 'warning');
+        return;
+      }
+      testFunction(funcPath);
+    });
+    
+    // 已注册函数的测试按钮
+    document.querySelectorAll('.btn-test-func').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const funcPath = this.getAttribute('data-path');
+        testFunction(funcPath);
+      });
+    });
+    
+    // 删除函数逻辑
+    const deleteConfirmModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    let currentDeletePath = null;
+    
+    document.querySelectorAll('.btn-delete-func').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const funcPath = this.getAttribute('data-path');
+        currentDeletePath = funcPath;
+        
+        // 获取函数名显示在确认框中
+        const row = this.closest('tr');
+        const funcName = row.querySelector('td:first-child').textContent;
+        document.getElementById('deleteTaskName').textContent = funcName;
+        
+        deleteConfirmModal.show();
+      });
+    });
+    
+    // 确认删除按钮
+    document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
+      if (!currentDeletePath) return;
+      
+      try {
+        const response = await fetch(`/settings/api/scheduler/tasks/${encodeURIComponent(currentDeletePath)}`, {
+          method: 'DELETE'
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          deleteConfirmModal.hide();
+          showToast('成功', result.message);
+          // 重新加载页面以更新任务列表
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          showToast('错误', result.detail || '删除任务函数失败', 'error');
+          deleteConfirmModal.hide();
+        }
+      } catch (error) {
+        showToast('错误', '请求失败: ' + error.message, 'error');
+        deleteConfirmModal.hide();
+      }
+    });
+    
+    // 通用设置表单提交
+    document.getElementById('generalSettingsForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      const data = {
+        max_jobs: parseInt(formData.get('max_jobs')),
+        default_timezone: formData.get('default_timezone'),
+        enable_scheduler: formData.get('enable_scheduler') === 'on',
+        persist_jobs: formData.get('persist_jobs') === 'on',
+        log_job_execution: formData.get('log_job_execution') === 'on'
+      };
+      
+      try {
+        const response = await fetch('/settings/api/scheduler/general', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          showToast('成功', result.message);
+        } else {
+          showToast('错误', result.detail || '保存通用设置失败', 'error');
+        }
+      } catch (error) {
+        showToast('错误', '请求失败: ' + error.message, 'error');
+      }
+    });
+    
+    // 执行设置表单提交
+    document.getElementById('executionSettingsForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      const data = {
+        max_instances: parseInt(formData.get('max_instances')),
+        job_timeout: parseInt(formData.get('job_timeout')),
+        retry_attempts: parseInt(formData.get('retry_attempts')),
+        retry_delay: parseInt(formData.get('retry_delay')),
+        notification_email: formData.get('notification_email') || null,
+        notify_on_success: formData.get('notify_on_success') === 'on',
+        notify_on_failure: formData.get('notify_on_failure') === 'on'
+      };
+      
+      try {
+        const response = await fetch('/settings/api/scheduler/execution', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          showToast('成功', result.message);
+        } else {
+          showToast('错误', result.detail || '保存执行设置失败', 'error');
+        }
+      } catch (error) {
+        showToast('错误', '请求失败: ' + error.message, 'error');
+      }
+    });
+  });
+</script>
+{% endblock %}

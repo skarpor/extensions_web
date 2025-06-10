@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - 查看文档{% endblock %}
+
+{% block additional_css %}
+<link rel="stylesheet" href="/static/prism.css">
+{% endblock %}
+
+{% block additional_styles %}
+<style>
+.doc-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.doc-title {
+    color: var(--primary-color);
+    margin: 0;
+}
+
+.doc-content {
+    padding: 20px;
+    line-height: 1.6;
+    overflow-x: auto;
+}
+
+.doc-content h1, .doc-content h2, .doc-content h3 {
+    color: var(--primary-color);
+    margin-top: 1.5em;
+    margin-bottom: 0.8em;
+}
+
+.doc-content h1 {
+    font-size: 2rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.3em;
+}
+
+.doc-content h2 {
+    font-size: 1.5rem;
+}
+
+.doc-content h3 {
+    font-size: 1.2rem;
+}
+
+.doc-content code {
+    background-color: var(--secondary-color);
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.9em;
+}
+
+.doc-content pre {
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+    padding: 15px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 1.5em 0;
+}
+
+.doc-content pre code {
+    background-color: transparent;
+    padding: 0;
+    color: inherit;
+}
+
+.doc-content blockquote {
+    border-left: 4px solid var(--primary-color);
+    padding-left: 15px;
+    color: #666;
+    margin: 1.5em 0;
+}
+
+.doc-content ul, .doc-content ol {
+    padding-left: 2em;
+}
+
+.doc-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1.5em 0;
+}
+
+.doc-content table th, .doc-content table td {
+    border: 1px solid var(--border-color);
+    padding: 8px 12px;
+    text-align: left;
+}
+
+.doc-content table th {
+    background-color: var(--secondary-color);
+}
+
+.doc-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1.5em auto;
+}
+
+.back-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.back-btn:hover {
+    background-color: var(--accent-color);
+    transform: translateY(-1px);
+    color: white;
+    text-decoration: none;
+}
+
+.file-type {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    margin-left: 10px;
+    display: inline-block;
+}
+
+.file-type-doc {
+    background-color: #e3f2fd;
+    color: #0d47a1;
+}
+
+.file-type-extension {
+    background-color: #e8f5e9;
+    color: #1b5e20;
+}
+
+.file-type-page {
+    background-color: #fff3e0;
+    color: #e65100;
+}
+
+.file-type-other {
+    background-color: #f5f5f5;
+    color: #616161;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="doc-header">
+    <div>
+        <h1 class="doc-title">
+            {{ filename }}
+            <span class="file-type 
+                {% if file_type == '文档' %}file-type-doc
+                {% elif file_type == '示例扩展' %}file-type-extension
+                {% elif file_type == '示例页面' %}file-type-page
+                {% else %}file-type-other{% endif %}">
+                {{ file_type }}
+            </span>
+        </h1>
+        <div class="text-muted mt-2">最后修改时间: {{ modified_time }}</div>
+    </div>
+    <a href="/" class="back-btn">
+        <i class="fas fa-arrow-left"></i> 返回首页
+    </a>
+</div>
+
+<div class="doc-content">
+    {% if content_type == 'html' %}
+        {{ content|safe }}
+    {% elif content_type == 'markdown' %}
+        {{ content|safe }}
+    {% elif content_type == 'python' or content_type == 'text/x-python' %}
+        <pre><code class="language-python">{{ content }}</code></pre>
+    {% elif content_type == 'json' or content_type == 'application/json' %}
+        <pre><code class="language-json">{{ content }}</code></pre>
+    {% elif content_type == 'yaml' or content_type == 'text/yaml' %}
+        <pre><code class="language-yaml">{{ content }}</code></pre>
+    {% elif content_type == 'toml' or content_type == 'text/toml' %}
+        <pre><code class="language-toml">{{ content }}</code></pre>
+    {% elif content_type == 'ini' or content_type == 'text/ini' %}
+        <pre><code class="language-ini">{{ content }}</code></pre>
+    {% elif content_type == 'xml' or content_type == 'text/xml' %}
+        <pre><code class="language-xml">{{ content }}</code></pre>
+    {% elif content_type == 'css' or content_type == 'text/css' %}
+        <pre><code class="language-css">{{ content }}</code></pre>
+    {% elif content_type == 'javascript' or content_type == 'text/javascript' %}
+        <pre><code class="language-javascript">{{ content }}</code></pre>
+    {% elif content_type == 'typescript' or content_type == 'text/typescript' %}
+        <pre><code class="language-typescript">{{ content }}</code></pre>
+    {% elif content_type == 'php' or content_type == 'text/php' %}
+        <pre><code class="language-php">{{ content }}</code></pre>
+    {% elif content_type == 'ruby' or content_type == 'text/ruby' %}
+        <pre><code class="language-ruby">{{ content }}</code></pre>
+    {% elif content_type == 'go' or content_type == 'text/go' %}
+        <pre><code class="language-go">{{ content }}</code></pre>
+    {% elif content_type == 'rust' or content_type == 'text/rust' %}
+        <pre><code class="language-rust">{{ content }}</code></pre>
+    {% elif content_type == 'swift' or content_type == 'text/swift' %}
+        <pre><code class="language-swift">{{ content }}</code></pre>
+    {% elif content_type == 'kotlin' or content_type == 'text/kotlin' %}
+        <pre><code class="language-kotlin">{{ content }}</code></pre>
+    {% elif content_type == 'scala' or content_type == 'text/scala' %}
+        <pre><code class="language-scala">{{ content }}</code></pre>
+    {% elif content_type == 'haskell' or content_type == 'text/haskell' %}
+        <pre><code class="language-haskell">{{ content }}</code></pre>
+    {% elif content_type == 'lua' or content_type == 'text/lua' %}
+        <pre><code class="language-lua">{{ content }}</code></pre>
+    {% elif content_type == 'bash' or content_type == 'text/x-sh' %}
+        <pre><code class="language-bash">{{ content }}</code></pre>
+    {% elif content_type == 'powershell' or content_type == 'text/x-powershell' %}
+        <pre><code class="language-powershell">{{ content }}</code></pre>
+    {% elif content_type == 'sql' or content_type == 'text/x-sql' %}
+        <pre><code class="language-sql">{{ content }}</code></pre>
+    {% elif content_type == 'yaml' or content_type == 'text/yaml' %}
+        <pre><code class="language-yaml">{{ content }}</code></pre>
+    {% elif content_type == 'toml' or content_type == 'text/toml' %}
+        <pre><code class="language-toml">{{ content }}</code></pre>
+    {% elif content_type == 'ini' or content_type == 'text/ini' %}
+        <pre><code class="language-ini">{{ content }}</code></pre>
+    {% elif content_type == 'xml' or content_type == 'text/xml' %}
+        <pre><code class="language-xml">{{ content }}</code></pre>
+    {% elif content_type == 'css' or content_type == 'text/css' %}
+        <pre><code class="language-css">{{ content }}</code></pre>
+    {% else %}
+
+        <pre><code>{{ content }}</code></pre>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block additional_scripts %}
+<script src="/static/prism.js"></script>
+{% endblock %} 

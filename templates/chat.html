@@ -1,0 +1,1675 @@
+{% extends "base.html" %}
+
+{% block title %}实时聊天{% endblock %}
+
+{% block additional_css %}
+<style>
+  :root {
+    --chat-primary: #4e73df;
+    --chat-bg: #f8f9fa;
+    --chat-border: #e3e6f0;
+    --chat-text: #333;
+    --chat-self-bg: #4e73df;
+    --chat-self-text: white;
+    --chat-other-bg: #f0f0f0;
+    --chat-other-text: #333;
+    --chat-status-bg: #e9ecef;
+    --chat-status-text: #6c757d;
+    --chat-hover: #eaecf4;
+    --chat-active: #dddfeb;
+    --chat-unread: #e74a3b;
+  }
+
+  .chat-container {
+    height: calc(100vh - 150px);
+    min-height: 500px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--chat-border);
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+  }
+  
+  .chat-sidebar {
+    background-color: white;
+    border-right: 1px solid var(--chat-border);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  
+  .rooms-header, .users-header {
+    padding: 15px;
+    border-bottom: 1px solid var(--chat-border);
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .room-list, .user-list {
+    overflow-y: auto;
+    flex-grow: 1;
+  }
+  
+  .room-item, .user-item {
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--chat-border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s;
+  }
+  
+  .room-item:hover, .user-item:hover {
+    background-color: var(--chat-hover);
+  }
+  
+  .room-item.active, .user-item.active {
+    background-color: var(--chat-active);
+  }
+  
+  .room-item .badge, .user-item .badge {
+    margin-left: auto;
+  }
+  
+  .room-avatar, .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    background-color: #e0e0e0;
+  }
+  
+  .room-info, .user-info {
+    flex-grow: 1;
+    min-width: 0;
+  }
+  
+  .room-name, .user-name {
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .room-last-message, .user-status {
+    font-size: 0.8em;
+    color: #6c757d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .tabs-container {
+    border-bottom: 1px solid var(--chat-border);
+  }
+  
+  .chat-tabs {
+    display: flex;
+  }
+  
+  .chat-tab {
+    padding: 15px;
+    flex-grow: 1;
+    text-align: center;
+    cursor: pointer;
+    font-weight: bold;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+  }
+  
+  .chat-tab.active {
+    border-bottom-color: var(--chat-primary);
+    color: var(--chat-primary);
+  }
+  
+  .chat-main {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: #fff;
+  }
+  
+  .chat-header {
+    padding: 15px;
+    border-bottom: 1px solid var(--chat-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: white;
+  }
+  
+  .chat-header-info {
+    display: flex;
+    align-items: center;
+  }
+  
+  .chat-header-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 15px;
+  }
+  
+  .chat-header-name {
+    font-weight: bold;
+    font-size: 1.1em;
+  }
+  
+  .chat-header-status {
+    font-size: 0.8em;
+    color: #6c757d;
+  }
+  
+  .chat-header-actions .btn {
+    margin-left: 10px;
+  }
+  
+  .chat-window {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 15px;
+    background-color: var(--chat-bg);
+  }
+  
+  .chat-message {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    max-width: 75%;
+    clear: both;
+  }
+  
+  .message-self {
+    align-items: flex-end;
+    float: right;
+  }
+  
+  .message-other {
+    align-items: flex-start;
+    float: left;
+  }
+  
+  .message-content {
+    padding: 10px 15px;
+    border-radius: 18px;
+    position: relative;
+    word-break: break-word;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+  
+  .message-self .message-content {
+    background-color: var(--chat-self-bg);
+    color: var(--chat-self-text);
+    border-bottom-right-radius: 5px;
+  }
+  
+  .message-other .message-content {
+    background-color: var(--chat-other-bg);
+    color: var(--chat-other-text);
+    border-bottom-left-radius: 5px;
+  }
+  
+  .message-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+  }
+  
+  .message-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  
+  .message-username {
+    font-weight: bold;
+    font-size: 0.9em;
+  }
+  
+  .message-time {
+    font-size: 0.7em;
+    margin-top: 5px;
+    opacity: 0.7;
+  }
+  
+  .message-image {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 10px;
+    margin-top: 5px;
+    cursor: pointer;
+  }
+  
+  .message-status {
+    text-align: center;
+    padding: 8px 12px;
+    margin: 10px 0;
+    font-size: 0.8em;
+    color: var(--chat-status-text);
+    background-color: var(--chat-status-bg);
+    border-radius: 10px;
+    clear: both;
+    max-width: 70%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .typing-indicator {
+    text-align: center;
+    padding: 5px;
+    font-style: italic;
+    color: #6c757d;
+    visibility: hidden;
+    clear: both;
+  }
+  
+  .typing-indicator.visible {
+    visibility: visible;
+  }
+  
+  .chat-input {
+    padding: 15px;
+    border-top: 1px solid var(--chat-border);
+    background-color: white;
+  }
+  
+  .chat-input-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .chat-input-actions {
+    display: flex;
+    margin-right: 10px;
+  }
+  
+  .chat-input-action {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: #6c757d;
+  }
+  
+  .chat-input-action:hover {
+    background-color: var(--chat-hover);
+    color: var(--chat-primary);
+  }
+  
+  .chat-input-box {
+    flex-grow: 1;
+    position: relative;
+  }
+  
+  #messageInput {
+    padding-right: 50px;
+    resize: none;
+    border-radius: 20px;
+    height: 40px;
+    max-height: 120px;
+    overflow-y: auto;
+  }
+  
+  .chat-send-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: var(--chat-primary);
+    color: white;
+    margin-left: 10px;
+  }
+  
+  .chat-send-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+  
+  .emoji-panel {
+    display: none;
+    position: absolute;
+    bottom: 45px;
+    left: 0;
+    width: 250px;
+    height: 200px;
+    background-color: white;
+    border: 1px solid var(--chat-border);
+    border-radius: 5px;
+    padding: 10px;
+    z-index: 1000;
+    overflow-y: auto;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  }
+  
+  .emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 5px;
+  }
+  
+  .emoji-item {
+    font-size: 1.5em;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    padding: 5px;
+    border-radius: 5px;
+  }
+  
+  .emoji-item:hover {
+    background-color: var(--chat-hover);
+  }
+  
+  /* Create room modal */
+  .modal-header {
+    background-color: var(--chat-primary);
+    color: white;
+  }
+  
+  .modal-footer .btn-primary {
+    background-color: var(--chat-primary);
+    border-color: var(--chat-primary);
+  }
+  
+  /* Badge for unread messages */
+  .unread-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: var(--chat-unread);
+    color: white;
+    font-size: 0.7em;
+    font-weight: bold;
+  }
+  
+  /* Welcome message */
+  .welcome-message {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    color: #6c757d;
+  }
+  
+  .welcome-icon {
+    font-size: 4em;
+    color: var(--chat-primary);
+    margin-bottom: 20px;
+  }
+  
+  .welcome-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .welcome-text {
+    max-width: 500px;
+    margin-bottom: 20px;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .chat-sidebar {
+      position: fixed;
+      top: 0;
+      left: -300px;
+      width: 300px;
+      height: 100vh;
+      z-index: 1050;
+      transition: left 0.3s;
+    }
+    
+    .chat-sidebar.show {
+      left: 0;
+    }
+    
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1040;
+    }
+    
+    .sidebar-backdrop.show {
+      display: block;
+    }
+    
+    .chat-main {
+      width: 100%;
+    }
+    
+    .toggle-sidebar {
+      display: inline-block !important;
+    }
+  }
+  
+  .toggle-sidebar {
+    display: none;
+  }
+  
+  /* Image preview */
+  .image-preview {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.8);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .image-preview img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 5px;
+  }
+  
+  .close-preview {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: white;
+    font-size: 2em;
+    cursor: pointer;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- 图片预览 -->
+<div class="image-preview" id="imagePreview">
+  <div class="close-preview" id="closePreview">&times;</div>
+  <img src="" id="previewImage" alt="预览图片">
+</div>
+
+<!-- 聊天容器 -->
+<div class="row">
+  <div class="col-12">
+    <div class="chat-container d-flex">
+      <!-- 侧边栏 -->
+      <div class="chat-sidebar" id="chatSidebar">
+        <div class="tabs-container">
+          <div class="chat-tabs">
+            <div class="chat-tab active" data-tab="rooms">聊天室</div>
+            <div class="chat-tab" data-tab="users">用户</div>
+        </div>
+        </div>
+        
+        <!-- 聊天室列表 -->
+        <div class="tab-content" id="roomsTab">
+          <div class="rooms-header">
+            <span>我的聊天室</span>
+            <button class="btn btn-sm btn-primary" id="createRoomBtn">
+              <i class="fas fa-plus"></i>
+          </button>
+        </div>
+          <div class="room-list" id="roomList">
+            <!-- 聊天室列表项将动态添加 -->
+          </div>
+      </div>
+      
+        <!-- 用户列表 -->
+        <div class="tab-content" id="usersTab" style="display: none;">
+          <div class="users-header">
+            <span>在线用户</span>
+            <span id="onlineCount" class="badge badge-primary">0</span>
+          </div>
+          <div class="user-list" id="userList">
+            <!-- 用户列表项将动态添加 -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- 侧边栏背景遮罩 (移动端) -->
+      <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+      
+      <!-- 主聊天区域 -->
+      <div class="chat-main flex-grow-1">
+        <!-- 初始欢迎消息 -->
+        <div class="welcome-message" id="welcomeMessage">
+          <div class="welcome-icon">
+            <i class="fas fa-comments"></i>
+          </div>
+          <h3 class="welcome-title">欢迎使用实时聊天系统</h3>
+          <p class="welcome-text">
+            请从左侧选择一个聊天室或用户开始聊天。您也可以创建自己的聊天室或与其他在线用户私聊。
+          </p>
+          <button class="btn btn-primary" id="createRoomBtnWelcome">
+            <i class="fas fa-plus mr-2"></i> 创建聊天室
+          </button>
+      </div>
+        
+        <!-- 聊天界面 (初始隐藏) -->
+        <div id="chatInterface" style="display: none; height: 100%;">
+          <div class="chat-header">
+            <div class="chat-header-info">
+              <button class="toggle-sidebar btn btn-sm btn-light mr-2">
+                <i class="fas fa-bars"></i>
+              </button>
+              <img src="" alt="" class="chat-header-avatar" id="currentChatAvatar">
+              <div>
+                <div class="chat-header-name" id="currentChatName"></div>
+                <div class="chat-header-status" id="currentChatStatus"></div>
+              </div>
+            </div>
+            <div class="chat-header-actions">
+              <button class="btn btn-sm btn-outline-secondary" id="viewMembersBtn">
+                <i class="fas fa-users"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-secondary" id="clearChatBtn">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="chat-window" id="chatWindow">
+            <!-- 消息将动态添加 -->
+          </div>
+          
+          <div class="typing-indicator" id="typingIndicator">有人正在输入...</div>
+      
+      <div class="chat-input">
+            <form id="messageForm">
+              <div class="chat-input-container">
+                <div class="chat-input-actions">
+                  <div class="chat-input-action" id="emojiBtn">
+                    <i class="far fa-smile"></i>
+                  </div>
+                  <div class="chat-input-action" id="imageBtn">
+                    <i class="far fa-image"></i>
+                  </div>
+                </div>
+                <div class="chat-input-box">
+                  <textarea class="form-control" id="messageInput" placeholder="输入消息..." rows="1"></textarea>
+                <div class="emoji-panel" id="emojiPanel">
+                  <div class="emoji-grid">
+                    <div class="emoji-item">😊</div>
+                    <div class="emoji-item">😂</div>
+                    <div class="emoji-item">😍</div>
+                    <div class="emoji-item">🤔</div>
+                    <div class="emoji-item">😎</div>
+                    <div class="emoji-item">😢</div>
+                    <div class="emoji-item">😡</div>
+                    <div class="emoji-item">👍</div>
+                    <div class="emoji-item">👎</div>
+                    <div class="emoji-item">❤️</div>
+                    <div class="emoji-item">👏</div>
+                    <div class="emoji-item">🙏</div>
+                    <div class="emoji-item">🎉</div>
+                    <div class="emoji-item">🌟</div>
+                    <div class="emoji-item">🔥</div>
+                    <div class="emoji-item">💯</div>
+                    <div class="emoji-item">🤣</div>
+                    <div class="emoji-item">😭</div>
+                  </div>
+                </div>
+                  <input type="file" id="imageInput" accept="image/*" style="display: none;">
+              </div>
+                <button type="submit" class="chat-send-btn">
+                  <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 创建聊天室模态框 -->
+<div class="modal fade" id="createRoomModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">创建聊天室</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="createRoomForm">
+          <div class="form-group">
+            <label for="roomName">聊天室名称</label>
+            <input type="text" class="form-control" id="roomName" required>
+          </div>
+          <div class="form-group">
+            <label for="roomDescription">描述</label>
+            <textarea class="form-control" id="roomDescription" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <div class="custom-control custom-switch">
+              <input type="checkbox" class="custom-control-input" id="roomIsPrivate">
+              <label class="custom-control-label" for="roomIsPrivate">私密聊天室</label>
+              <small class="form-text text-muted">私密聊天室只对受邀用户可见</small>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-primary" id="saveRoomBtn">创建</button>
+      </div>
+      </div>
+    </div>
+  </div>
+  
+<!-- 查看成员模态框 -->
+<div class="modal fade" id="membersModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">聊天室成员</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ul class="list-group" id="membersList">
+          <!-- 成员列表将动态添加 -->
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+      </div>
+        </div>
+      </div>
+    </div>
+    
+<!-- 聊天设置模态框 -->
+<div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">聊天设置</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="settingsForm">
+          <div class="form-group">
+            <label for="userNickname">昵称</label>
+            <input type="text" class="form-control" id="userNickname">
+            <small class="form-text text-muted">留空将使用系统用户名</small>
+          </div>
+          <div class="form-group">
+            <div class="custom-control custom-switch">
+          <input type="checkbox" class="custom-control-input" id="soundEnabled" checked>
+          <label class="custom-control-label" for="soundEnabled">消息提示音</label>
+        </div>
+          </div>
+          <div class="form-group">
+            <div class="custom-control custom-switch">
+          <input type="checkbox" class="custom-control-input" id="showTimestamp" checked>
+          <label class="custom-control-label" for="showTimestamp">显示时间戳</label>
+        </div>
+        </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+        <button type="button" class="btn btn-primary" id="saveSettingsBtn">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block additional_scripts %}
+<script>
+  // ===== 全局变量 =====
+  let ws;
+  let username = '{{ user.username }}';
+  let nickname = '{{ user.nickname }}' || username;
+  let userId = parseInt('{{ user.id }}');
+  let currentRoomId = null;
+  let currentChatType = null; // 'room' 或 'private'
+  let currentChatId = null;
+  let isConnected = false;
+  let isTyping = false;
+  let typingTimeout;
+  let lastTypingTime = 0;
+  const TYPING_TIMER_LENGTH = 3000; // 3秒
+  let rooms = {}; // 聊天室信息：{id: {name, description, is_private, ...}}
+  let users = {}; // 用户信息：{id: {username, nickname, online, ...}}
+  let unreadMessages = {}; // 未读消息计数：{room_id: count, user_id: count}
+  let messageHistory = {}; // 消息历史：{room_id: [messages], user_id: [messages]}
+  
+  // 页面加载完成
+  $(document).ready(function() {
+    // 初始化UI
+    initUI();
+    
+    // 加载用户设置
+    loadUserSettings();
+    
+    // 连接WebSocket
+    connectWebSocket();
+    
+    // 获取聊天室列表
+    fetchChatRooms();
+    
+    // 绑定事件处理
+    bindEvents();
+  });
+  
+  // ===== 初始化和配置 =====
+  
+  // 初始化UI
+  function initUI() {
+    // 调整聊天窗口高度
+    adjustChatHeight();
+    $(window).on('resize', adjustChatHeight);
+    
+    // 移动端侧边栏切换
+    $('.toggle-sidebar').on('click', toggleSidebar);
+    $('#sidebarBackdrop').on('click', toggleSidebar);
+    
+    // 选项卡切换
+    $('.chat-tab').on('click', function() {
+      $('.chat-tab').removeClass('active');
+      $(this).addClass('active');
+      
+      const tab = $(this).data('tab');
+      $('.tab-content').hide();
+      $(`#${tab}Tab`).show();
+    });
+    
+    // 自动调整文本域高度
+    $('#messageInput').on('input', function() {
+      this.style.height = 'auto';
+      this.style.height = (this.scrollHeight < 120 ? this.scrollHeight : 120) + 'px';
+    });
+  }
+  
+  // 调整聊天窗口高度
+  function adjustChatHeight() {
+    const windowHeight = window.innerHeight;
+    const headerHeight = $('nav').outerHeight();
+    const footerHeight = $('footer').outerHeight() || 0;
+    const containerPadding = 50;
+    
+    $('.chat-container').css('height', (windowHeight - headerHeight - footerHeight - containerPadding) + 'px');
+  }
+  
+  // 获取用户头像URL
+  function getUserAvatarUrl(username, nickname, size = 128) {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(nickname || username)}&background=random&color=fff&size=${size}`;
+  }
+  
+  // 获取聊天室头像URL
+  function getRoomAvatarUrl(name, size = 128) {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=4e73df&color=fff&size=${size}`;
+  }
+  
+  // 切换侧边栏（移动端）
+  function toggleSidebar() {
+    $('#chatSidebar').toggleClass('show');
+    $('#sidebarBackdrop').toggleClass('show');
+  }
+  
+  // 显示Toast消息
+  function showToast(message) {
+    // 创建Toast元素
+    const toast = $(`
+      <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-delay="3000">
+        <div class="toast-header">
+          <strong class="mr-auto">提示</strong>
+          <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="toast-body">
+          ${message}
+        </div>
+      </div>
+    `);
+    
+    // 添加到页面
+    if ($('#toastContainer').length === 0) {
+      $('body').append('<div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>');
+    }
+    
+    $('#toastContainer').append(toast);
+    
+    // 显示Toast
+    toast.toast('show');
+    
+    // 自动移除
+    toast.on('hidden.bs.toast', function() {
+      $(this).remove();
+    });
+  }
+  
+  // 绑定事件处理
+  function bindEvents() {
+    // 表单提交
+    $('#messageForm').on('submit', function(e) {
+      e.preventDefault();
+      sendMessage();
+    });
+    
+    // 监听输入框变化来发送正在输入状态
+    $('#messageInput').on('input', handleTypingStatus);
+    
+    // 打开/关闭Emoji面板
+    $('#emojiBtn').on('click', function() {
+      $('#emojiPanel').toggle();
+    });
+    
+    // 点击其他地方关闭emoji面板
+    $(document).on('click', function(e) {
+      if (!$(e.target).closest('#emojiBtn, #emojiPanel').length) {
+        $('#emojiPanel').hide();
+      }
+    });
+    
+    // 插入emoji
+    $('.emoji-item').on('click', function() {
+      const emoji = $(this).text();
+      const input = $('#messageInput');
+      input.val(input.val() + emoji);
+      input.focus();
+      // 触发input事件来自动调整高度
+      input.trigger('input');
+    });
+    
+    // 图片上传
+    $('#imageBtn').on('click', function() {
+      $('#imageInput').click();
+    });
+    
+    $('#imageInput').on('change', function(e) {
+      if (e.target.files.length > 0) {
+        uploadImage(e.target.files[0]);
+      }
+    });
+    
+    // 清空聊天
+    $('#clearChatBtn').on('click', function() {
+      if (confirm('确定要清空聊天记录吗？这将只清空您的本地显示，不会删除服务器上的消息。')) {
+        $('#chatWindow').html('');
+        if (currentChatId) {
+          messageHistory[currentChatId] = [];
+        }
+      }
+    });
+    
+    // 创建聊天室按钮
+    $('#createRoomBtn, #createRoomBtnWelcome').on('click', function() {
+      $('#createRoomModal').modal('show');
+    });
+    
+    // 保存聊天室按钮
+    $('#saveRoomBtn').on('click', createChatRoom);
+    
+    // 查看成员按钮
+    $('#viewMembersBtn').on('click', function() {
+      if (currentChatType === 'room') {
+        fetchRoomMembers(currentRoomId);
+        $('#membersModal').modal('show');
+      }
+    });
+    
+    // 图片预览
+    $(document).on('click', '.message-image', function() {
+      const imgSrc = $(this).attr('src');
+      $('#previewImage').attr('src', imgSrc);
+      $('#imagePreview').css('display', 'flex');
+    });
+    
+    $('#closePreview').on('click', function() {
+      $('#imagePreview').hide();
+    });
+    
+    // 保存设置按钮
+    $('#saveSettingsBtn').on('click', saveUserSettings);
+    
+    // 点击聊天室
+    $(document).on('click', '.room-item', function() {
+      const roomId = $(this).data('id');
+      openChat('room', roomId);
+    });
+    
+    // 点击用户
+    $(document).on('click', '.user-item', function() {
+      const userId = $(this).data('id');
+      // 不能和自己聊天
+      if (userId === parseInt('{{ user.id }}')) {
+        showToast('无法与自己进行私聊');
+        return;
+      }
+      openChat('private', userId);
+    });
+  }
+  
+  // 加载用户设置
+  function loadUserSettings() {
+    // 加载昵称
+    const savedNickname = localStorage.getItem('chat_nickname');
+    if (savedNickname) {
+      nickname = savedNickname;
+      $('#userNickname').val(savedNickname);
+    }
+    
+    // 加载时间戳设置
+    const showTimestamp = localStorage.getItem('chat_show_timestamp') !== 'false';
+    $('#showTimestamp').prop('checked', showTimestamp);
+    
+    // 加载声音设置
+    const soundEnabled = localStorage.getItem('chat_sound_enabled') !== 'false';
+    $('#soundEnabled').prop('checked', soundEnabled);
+  }
+  
+  // 保存用户设置
+  function saveUserSettings() {
+    const newNickname = $('#userNickname').val().trim() || username;
+    const showTimestamp = $('#showTimestamp').is(':checked');
+    const soundEnabled = $('#soundEnabled').is(':checked');
+    
+    // 保存到本地存储
+    localStorage.setItem('chat_nickname', newNickname);
+    localStorage.setItem('chat_show_timestamp', showTimestamp);
+    localStorage.setItem('chat_sound_enabled', soundEnabled);
+    
+    // 更新昵称
+    if (nickname !== newNickname) {
+      nickname = newNickname;
+      
+      // 通知服务器昵称变更
+      if (isConnected) {
+        ws.send(JSON.stringify({
+          type: 'nickname',
+          nickname: nickname
+        }));
+      }
+    }
+    
+    // 更新时间戳显示
+      $('.message-time').toggle(showTimestamp);
+    
+    $('#settingsModal').modal('hide');
+    
+    // 显示提示
+    showToast('设置已保存');
+  }
+  
+  // ===== 聊天界面操作 =====
+  
+  // 打开聊天
+  function openChat(type, id) {
+    // 如果是当前聊天，不做任何操作
+    if (currentChatType === type && currentChatId === id) {
+      return;
+    }
+    
+    // 如果有当前聊天，离开当前聊天室
+    if (currentChatType === 'room' && currentChatId) {
+      leaveRoom(currentChatId);
+    }
+    
+    // 更新当前聊天信息
+    currentChatType = type;
+    currentChatId = id;
+    
+    if (type === 'room') {
+      currentRoomId = id;
+      const room = rooms[id];
+      
+      // 加入聊天室
+      joinRoom(id);
+      
+      // 更新聊天界面标题
+      $('#currentChatAvatar').attr('src', getRoomAvatarUrl(room.name));
+      $('#currentChatName').text(room.name);
+      $('#currentChatStatus').text(room.description || '');
+      
+      // 显示/隐藏成员按钮
+      $('#viewMembersBtn').show();
+    } else {
+      const user = users[id];
+      
+      // 更新聊天界面标题
+      $('#currentChatAvatar').attr('src', getUserAvatarUrl(user.username, user.nickname));
+      $('#currentChatName').text(user.nickname || user.username);
+      $('#currentChatStatus').text(user.online ? '在线' : '离线');
+      
+      // 隐藏成员按钮
+      $('#viewMembersBtn').hide();
+    }
+    
+    // 清空聊天窗口
+    $('#chatWindow').empty();
+    
+    // 显示聊天界面
+    $('#welcomeMessage').hide();
+    $('#chatInterface').show();
+    
+    // 显示历史消息
+    if (messageHistory[id]) {
+      for (const message of messageHistory[id]) {
+        appendChatMessage(message);
+      }
+    }
+    
+    // 清除未读消息计数
+    unreadMessages[id] = 0;
+    updateUnreadBadge(id);
+    
+    // 滚动到底部
+    scrollToBottom();
+    
+    // 移动端自动隐藏侧边栏
+    if (window.innerWidth < 768) {
+      toggleSidebar();
+    }
+    
+    // 聚焦到输入框
+    $('#messageInput').focus();
+  }
+  
+  // 更新未读消息徽章
+  function updateUnreadBadge(chatId) {
+    const count = unreadMessages[chatId] || 0;
+    const selector = currentChatType === 'room' 
+      ? `.room-item[data-id="${chatId}"] .unread-badge` 
+      : `.user-item[data-id="${chatId}"] .unread-badge`;
+    
+    if (count > 0) {
+      // 显示未读徽章
+      if ($(selector).length === 0) {
+        const badgeHtml = `<span class="unread-badge">${count}</span>`;
+        if (currentChatType === 'room') {
+          $(`.room-item[data-id="${chatId}"]`).append(badgeHtml);
+        } else {
+          $(`.user-item[data-id="${chatId}"]`).append(badgeHtml);
+        }
+      } else {
+        $(selector).text(count);
+      }
+    } else {
+      // 移除未读徽章
+      $(selector).remove();
+    }
+  }
+  
+  // 更新聊天室列表
+  function updateRoomsList(roomsList) {
+    const roomList = $('#roomList');
+    roomList.empty();
+    
+    if (roomsList.length === 0) {
+      roomList.html('<div class="p-3 text-center text-muted">没有可用的聊天室</div>');
+      return;
+    }
+    
+    roomsList.forEach(function(room) {
+      rooms[room.id] = room;
+      
+      const isActive = currentChatType === 'room' && currentChatId === room.id;
+      const roomHtml = `
+        <div class="room-item ${isActive ? 'active' : ''}" data-id="${room.id}">
+          <img src="${getRoomAvatarUrl(room.name)}" class="room-avatar" alt="${room.name}">
+          <div class="room-info">
+            <div class="room-name">${room.name}</div>
+            <div class="room-last-message">${room.description || ''}</div>
+          </div>
+          ${unreadMessages[room.id] ? `<span class="unread-badge">${unreadMessages[room.id]}</span>` : ''}
+        </div>
+      `;
+      roomList.append(roomHtml);
+    });
+  }
+  
+  // 更新用户列表
+  function updateUsersList(usersList) {
+    const userList = $('#userList');
+    userList.empty();
+    
+    if (usersList.length === 0) {
+      userList.html('<div class="p-3 text-center text-muted">没有在线用户</div>');
+      $('#onlineCount').text('0');
+      return;
+    }
+    
+    // 更新在线用户数
+    const onlineCount = usersList.filter(user => user.online).length;
+    $('#onlineCount').text(onlineCount.toString());
+    
+    usersList.forEach(function(user) {
+      // 跳过自己
+      if (user.username === username) {
+        return;
+      }
+      
+      users[user.id] = user;
+      
+      const isActive = currentChatType === 'private' && currentChatId === user.id;
+      const statusClass = user.online ? 'status-online' : 'status-offline';
+      const userHtml = `
+        <div class="user-item ${isActive ? 'active' : ''}" data-id="${user.id}">
+          <img src="${getUserAvatarUrl(user.username, user.nickname)}" class="user-avatar" alt="${user.nickname || user.username}">
+          <div class="user-info">
+            <div class="user-name">${user.nickname || user.username}</div>
+            <div class="user-status"><span class="online-status ${statusClass}"></span> ${user.online ? '在线' : '离线'}</div>
+          </div>
+          ${unreadMessages[user.id] ? `<span class="unread-badge">${unreadMessages[user.id]}</span>` : ''}
+        </div>
+      `;
+      userList.append(userHtml);
+    });
+  }
+  
+  // 更新成员列表
+  function updateMembersList(members) {
+    const membersList = $('#membersList');
+    membersList.empty();
+    
+    if (members.length === 0) {
+      membersList.html('<li class="list-group-item text-center">没有成员</li>');
+      return;
+    }
+    
+    members.forEach(function(member) {
+      const statusClass = member.online ? 'status-online' : 'status-offline';
+      const memberHtml = `
+        <li class="list-group-item d-flex align-items-center">
+          <img src="${getUserAvatarUrl(member.username, member.nickname)}" class="mr-3" style="width: 30px; height: 30px; border-radius: 50%;" alt="${member.nickname || member.username}">
+          <div>
+            <div>${member.nickname || member.username}</div>
+            <small><span class="online-status ${statusClass}"></span> ${member.online ? '在线' : '离线'}</small>
+          </div>
+        </li>
+      `;
+      membersList.append(memberHtml);
+    });
+  }
+  
+  // ===== WebSocket连接和消息处理 =====
+  
+  // 连接WebSocket
+  function connectWebSocket() {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws/chat/${username}`;
+    
+    ws = new WebSocket(wsUrl);
+    
+    ws.onopen = function() {
+      isConnected = true;
+      showToast('已连接到聊天服务器');
+      
+      // 发送用户信息
+      ws.send(JSON.stringify({
+        type: 'user_info',
+        nickname: nickname
+      }));
+      
+      // 如果当前在聊天室中，重新加入
+      if (currentChatType === 'room' && currentRoomId) {
+        joinRoom(currentRoomId);
+      }
+    };
+    
+    ws.onmessage = function(event) {
+      const data = JSON.parse(event.data);
+      handleMessage(data);
+    };
+    
+    ws.onclose = function() {
+      isConnected = false;
+      showToast('已断开连接，正在尝试重新连接...');
+      
+      // 5秒后尝试重新连接
+      setTimeout(connectWebSocket, 5000);
+    };
+    
+    ws.onerror = function(error) {
+      console.error('WebSocket错误:', error);
+      showToast('WebSocket连接错误');
+    };
+  }
+  
+  // 处理接收到的消息
+  function handleMessage(data) {
+    console.log('收到消息:', data);
+    
+    switch (data.type) {
+      case 'chat':
+        // 处理聊天消息
+        handleChatMessage(data);
+        break;
+        
+      case 'system':
+        // 处理系统消息
+        showSystemMessage(data.message);
+        break;
+        
+      case 'user_join':
+        // 用户加入聊天室
+        showSystemMessage(`${data.nickname || data.username} 加入了聊天`);
+        break;
+        
+      case 'user_leave':
+        // 用户离开聊天室
+        showSystemMessage(`${data.nickname || data.username} 离开了聊天`);
+        break;
+        
+      case 'rooms_list':
+        // 更新聊天室列表
+        updateRoomsList(data.rooms);
+        break;
+        
+      case 'users_list':
+        // 更新用户列表
+        updateUsersList(data.users);
+        break;
+        
+      case 'members_list':
+        // 更新成员列表
+        updateMembersList(data.members);
+        break;
+        
+      case 'typing':
+        // 显示用户正在输入
+        showTypingIndicator(data);
+        break;
+        
+      default:
+        console.log('未知消息类型:', data.type);
+    }
+  }
+  
+  // 处理聊天消息
+  function handleChatMessage(data) {
+    // 存储消息历史
+    if (!messageHistory[data.sender_id]) {
+      messageHistory[data.sender_id] = [];
+    }
+    messageHistory[data.sender_id].push(data);
+    
+    // 如果是当前聊天，直接显示
+    if ((currentChatType === 'room' && data.room_id === currentRoomId) || 
+        (currentChatType === 'private' && data.sender_id === currentChatId) || 
+        (currentChatType === 'private' && data.receiver_id === currentChatId)) {
+      appendChatMessage(data);
+      scrollToBottom();
+      
+      // 播放消息提示音
+      if (localStorage.getItem('chat_sound_enabled') !== 'false') {
+        playMessageSound(data.sender_id === userId);
+      }
+    } else {
+      // 增加未读消息计数
+      const chatId = data.room_id || data.sender_id;
+      unreadMessages[chatId] = (unreadMessages[chatId] || 0) + 1;
+      updateUnreadBadge(chatId);
+      
+      // 播放消息提示音
+      if (localStorage.getItem('chat_sound_enabled') !== 'false') {
+        playMessageSound(false);
+      }
+    }
+  }
+  
+  // 添加消息到聊天窗口
+  function appendChatMessage(data) {
+    const isSelf = data.sender_id === userId;
+    const senderName = isSelf ? '你' : (data.nickname || data.username);
+    const messageDate = new Date(data.timestamp);
+    const formattedTime = messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const showTimestamp = localStorage.getItem('chat_show_timestamp') !== 'false';
+    
+    let messageContent = '';
+    
+    if (data.message_type === 'text') {
+      // 文本消息
+      messageContent = `<div class="message-text">${formatMessage(data.message)}</div>`;
+    } else if (data.message_type === 'image') {
+      // 图片消息
+      messageContent = `
+        <div class="message-image-container">
+          <img src="${data.message}" class="message-image" alt="图片消息">
+      </div>
+      `;
+    }
+    
+    const messageHtml = `
+      <div class="message ${isSelf ? 'message-self' : ''}">
+        ${!isSelf ? `<img src="${getUserAvatarUrl(data.username, data.nickname)}" class="message-avatar" alt="${senderName}">` : ''}
+        <div class="message-content">
+          <div class="message-header">
+            <span class="message-sender">${senderName}</span>
+            <span class="message-time" ${!showTimestamp ? 'style="display:none"' : ''}>${formattedTime}</span>
+          </div>
+          ${messageContent}
+        </div>
+        ${isSelf ? `<img src="${getUserAvatarUrl(username, nickname)}" class="message-avatar" alt="${senderName}">` : ''}
+      </div>
+    `;
+    
+    $('#chatWindow').append(messageHtml);
+  }
+  
+  // 格式化消息文本（转义HTML并添加表情和链接）
+  function formatMessage(message) {
+    // 转义HTML
+    let formatted = $('<div>').text(message).html();
+    
+    // 将URL转换为链接
+    formatted = formatted.replace(
+      /(https?:\/\/[^\s]+)/g, 
+      '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+    );
+    
+    // 将换行符转换为<br>
+    formatted = formatted.replace(/\n/g, '<br>');
+    
+    return formatted;
+  }
+  
+  // 显示系统消息
+  function showSystemMessage(message) {
+    const systemMessageHtml = `
+      <div class="system-message">
+        <div class="system-message-content">${message}</div>
+      </div>
+    `;
+    
+    $('#chatWindow').append(systemMessageHtml);
+    scrollToBottom();
+  }
+  
+  // 显示正在输入提示
+  function showTypingIndicator(data) {
+    // 如果不是当前聊天，忽略
+    if ((currentChatType === 'room' && data.room_id !== currentRoomId) || 
+        (currentChatType === 'private' && data.sender_id !== currentChatId)) {
+      return;
+    }
+    
+    // 不显示自己的输入状态
+    if (data.sender_id === userId) {
+      return;
+    }
+    
+    if (data.isTyping) {
+      // 如果输入指示器不存在，创建一个
+      if ($('#typingIndicator').length === 0) {
+        const indicatorHtml = `
+          <div id="typingIndicator" class="typing-indicator">
+            <span class="typing-name">${data.nickname || data.username}</span> 正在输入...
+          </div>
+        `;
+        $('#chatWindow').append(indicatorHtml);
+    scrollToBottom();
+      } else {
+        // 更新正在输入的用户名称
+        $('#typingIndicator .typing-name').text(data.nickname || data.username);
+      }
+    } else {
+      // 移除输入指示器
+      $('#typingIndicator').remove();
+    }
+  }
+  
+  // 处理输入状态
+  function handleTypingStatus() {
+    // 如果没有连接或没有当前聊天，不发送状态
+    if (!isConnected || !currentChatId) {
+      return;
+    }
+    
+    // 检查最后一次输入时间
+    const now = Date.now();
+    if (!isTyping) {
+      isTyping = true;
+      sendTypingStatus(true);
+    } else if (now - lastTypingTime > TYPING_TIMER_LENGTH) {
+      // 如果上次输入时间超过3秒，再次发送输入状态
+      sendTypingStatus(true);
+    }
+    
+    // 更新最后输入时间
+    lastTypingTime = now;
+    
+    // 清除之前的超时计时器
+    clearTimeout(typingTimeout);
+    
+    // 设置新的超时计时器
+    typingTimeout = setTimeout(function() {
+      isTyping = false;
+      sendTypingStatus(false);
+    }, TYPING_TIMER_LENGTH);
+  }
+  
+  // 发送输入状态
+  function sendTypingStatus(isTyping) {
+    if (!isConnected) return;
+    
+    const message = {
+      type: 'typing',
+      isTyping: isTyping
+    };
+    
+    if (currentChatType === 'room') {
+      message.room_id = currentRoomId;
+    } else {
+      message.receiver_id = currentChatId;
+    }
+    
+    ws.send(JSON.stringify(message));
+  }
+  
+  // 播放消息提示音
+  function playMessageSound(isSelf) {
+    const soundUrl = isSelf ? '/static/sounds/message-sent.mp3' : '/static/sounds/message-received.mp3';
+    
+    try {
+      const audio = new Audio(soundUrl);
+      audio.volume = 0.5;
+      audio.play().catch(function(error) {
+        console.log('无法播放提示音:', error);
+      });
+    } catch (error) {
+      console.log('不支持音频播放:', error);
+    }
+  }
+  
+  // 滚动到底部
+  function scrollToBottom() {
+    const chatWindow = document.getElementById('chatWindow');
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  }
+  
+  // ===== 消息发送和聊天室操作 =====
+  
+  // 发送消息
+  function sendMessage() {
+    // 获取消息内容
+    const messageInput = $('#messageInput');
+    const message = messageInput.val().trim();
+    
+    // 空消息不发送
+    if (message === '' || !isConnected || !currentChatId) {
+      return;
+    }
+    
+    // 构建消息对象
+    const messageObj = {
+      type: 'chat',
+      message_type: 'text',
+      message: message
+    };
+    
+    // 根据聊天类型设置接收者
+    if (currentChatType === 'room') {
+      messageObj.room_id = currentRoomId;
+    } else {
+      messageObj.receiver_id = currentChatId;
+    }
+    
+    // 发送消息
+    ws.send(JSON.stringify(messageObj));
+    
+    // 清空输入框
+    messageInput.val('');
+    messageInput.trigger('input');
+    
+    // 重置输入状态
+    isTyping = false;
+    clearTimeout(typingTimeout);
+    sendTypingStatus(false);
+    
+    // 聚焦到输入框
+    messageInput.focus();
+  }
+  
+  // 上传图片
+  function uploadImage(file) {
+    // 检查文件类型
+    if (!file.type.match('image.*')) {
+      showToast('只能上传图片文件');
+      return;
+    }
+    
+    // 检查文件大小（最大5MB）
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('图片大小不能超过5MB');
+      return;
+    }
+    
+    // 创建FormData对象
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    // 显示上传中提示
+    showToast('正在上传图片...');
+    
+    // 发起上传请求,axios
+    axios.post('/api/chat/upload_image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    }).then(function (response) {
+      // 发送图片消息
+      const messageObj = {
+        type: 'chat',
+        message_type: 'image',
+        message: response.data.image_url
+      };
+      
+      // 根据聊天类型设置接收者
+      if (currentChatType === 'room') {
+        messageObj.room_id = currentRoomId;
+      } else {
+        messageObj.receiver_id = currentChatId;
+      }
+      
+      // 发送消息
+      ws.send(JSON.stringify(messageObj));
+    }).catch(function (error) {
+      showToast('图片上传失败：' + (error.responseJSON?.message || error));
+    });
+  }
+  
+  // 获取聊天室列表
+  function fetchChatRooms() {
+    axios.get('/api/chat/rooms').then(function (response) {
+      updateRoomsList(response.data.rooms);
+    }).catch(function (error) {
+      showToast('获取聊天室列表失败：' + (error.responseJSON?.message || error));
+    });
+  }
+  
+  // 创建聊天室
+  function createChatRoom() {
+    const roomName = $('#roomName').val().trim();
+    const roomDescription = $('#roomDescription').val().trim();
+    const isPrivate = $('#roomIsPrivate').is(':checked');
+    
+    if (roomName === '') {
+      showToast('请输入聊天室名称');
+      return;
+    }
+    
+    const roomData = {
+      name: roomName,
+      description: roomDescription,
+      is_private: isPrivate
+    };
+    
+    axios.post('/api/chat/rooms', roomData).then(function (response) {
+        showToast('聊天室创建成功');
+        $('#createRoomModal').modal('hide');
+        
+        // 清空表单
+        $('#roomName').val('');
+        $('#roomDescription').val('');
+        $('#roomIsPrivate').prop('checked', false);
+        
+        // 刷新聊天室列表
+        fetchChatRooms();
+        
+        // 打开新创建的聊天室
+        openChat('room', response.room.id);
+      }).catch(function (error) {
+        showToast('创建聊天室失败：' + (error.responseJSON?.message || error));
+      });
+  }
+  
+  // 加入聊天室
+  function joinRoom(roomId) {
+    if (!isConnected) return;
+    
+    ws.send(JSON.stringify({
+      type: 'join_room',
+      room_id: roomId
+    }));
+  }
+  
+  // 离开聊天室
+  function leaveRoom(roomId) {
+    if (!isConnected) return;
+    
+    ws.send(JSON.stringify({
+      type: 'leave_room',
+      room_id: roomId
+    }));
+  }
+  
+  // 获取聊天室成员
+  function fetchRoomMembers(roomId) {
+    if (!isConnected) return;
+    
+    ws.send(JSON.stringify({
+      type: 'get_members',
+      room_id: roomId
+    }));
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Display</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .qr-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        #qrImage {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 5px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .control-btn {
+            padding: 8px 12px;
+            background-color: #008CBA;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .status {
+            margin-top: 10px;
+            font-style: italic;
+            color: #666;
+        }
+        .progress {
+            width: 100%;
+            background-color: #f1f1f1;
+            border-radius: 4px;
+        }
+        #progressBar {
+            height: 20px;
+            background-color: #4CAF50;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>QR Code Display</h1>
+
+        <div class="qr-display">
+            <img id="qrImage" src="" alt="QR Code will appear here">
+
+            <div class="controls">
+                <button class="control-btn" id="prevBtn" disabled>Previous</button>
+                <button class="control-btn" id="nextBtn" disabled>Next</button>
+                <button class="control-btn" id="autoBtn">Auto Play</button>
+            </div>
+
+            <p id="qrStatus" class="status">Receiving QR codes...</p>
+            <p id="qrIndex" class="status">QR Code: 0/0</p>
+
+            <div class="progress">
+                <div id="progressBar"></div>
+            </div>
+            <p id="progressText" class="status">Progress: 0%</p>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let qrCodes = [];
+        let currentIndex = 0;
+        let eventSource = null;
+        let autoPlayInterval = null;
+        let totalChunks = 0;
+        let receivedChunks = 0;
+
+        // DOM 元素
+        const qrImage = document.getElementById('qrImage');
+        const qrStatus = document.getElementById('qrStatus');
+        const qrIndex = document.getElementById('qrIndex');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const autoBtn = document.getElementById('autoBtn');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+
+        // 页面加载时连接SSE
+        window.onload = function() {
+            connectToSSE();
+        };
+
+        // 连接SSE
+        function connectToSSE() {
+            eventSource = new EventSource('/trans/upload-and-stream-qr');
+
+            eventSource.onmessage = function(e) {
+                if (e.data === 'QR code generation completed') {
+                    qrStatus.textContent = 'All QR codes generated!';
+                    if (autoPlayInterval === null) {
+                        autoPlay(); // 自动播放
+                    }
+                    return;
+                }
+
+                if (e.data.startsWith('data:')) {
+                    // 添加新的QR码到数组
+                    const qrData = e.data.substring(6).trim();
+                    qrCodes.push(qrData);
+                    receivedChunks++;
+
+                    // 更新进度
+                    const progress = Math.round((receivedChunks / (receivedChunks + 10)) * 100);
+                    progressBar.style.width = `${progress}%`;
+                    progressText.textContent = `Progress: ${progress}% (${receivedChunks} chunks)`;
+
+                    updateUI();
+                }
+            };
+
+            eventSource.onerror = function() {
+                qrStatus.textContent = 'Error occurred during QR code generation';
+                eventSource.close();
+            };
+        }
+
+        // 更新UI显示当前QR码
+        function updateUI() {
+            if (qrCodes.length === 0) return;
+
+            qrImage.src = `data:image/png;base64,${qrCodes[currentIndex]}`;
+            qrIndex.textContent = `QR Code: ${currentIndex + 1}/${qrCodes.length}`;
+
+            // 更新按钮状态
+            prevBtn.disabled = currentIndex <= 0;
+            nextBtn.disabled = currentIndex >= qrCodes.length - 1;
+        }
+
+        // 导航按钮事件
+        prevBtn.addEventListener('click', function() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateUI();
+                resetAutoPlay();
+            }
+        });
+
+        nextBtn.addEventListener('click', function() {
+            if (currentIndex < qrCodes.length - 1) {
+                currentIndex++;
+                updateUI();
+                resetAutoPlay();
+            }
+        });
+
+        // 自动播放按钮
+        autoBtn.addEventListener('click', function() {
+            if (autoPlayInterval) {
+                stopAutoPlay();
+            } else {
+                autoPlay();
+            }
+        });
+
+        // 自动播放功能
+        function autoPlay() {
+            if (qrCodes.length === 0) return;
+
+            autoBtn.textContent = 'Stop';
+            autoPlayInterval = setInterval(function() {
+                if (currentIndex < qrCodes.length - 1) {
+                    currentIndex++;
+                } else {
+                    currentIndex = 0; // 循环播放
+                }
+                updateUI();
+            }, 1000); // 每秒切换一次
+        }
+
+        // 停止自动播放
+        function stopAutoPlay() {
+            clearInterval(autoPlayInterval);
+            autoPlayInterval = null;
+            autoBtn.textContent = 'Auto Play';
+        }
+
+        // 重置自动播放
+        function resetAutoPlay() {
+            if (autoPlayInterval) {
+                stopAutoPlay();
+                autoPlay();
+            }
+        }
+    </script>
+</body>
+</html>

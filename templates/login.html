@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <div class="page-header">
+        <h1>管理员登录</h1>
+        <p>登录到数据查询系统</p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-center">
+                <div class="col-md-3">
+                    <form id="login-form" method="post">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">用户名</label>
+                            <input type="text" name="username" class="form-control" id="username" placeholder="请输入用户名">
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">密码</label>
+                            <input type="password" name="password" class="form-control" id="password"
+                                   placeholder="请输入密码">
+                        </div>
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-primary">登录</button>
+                        </div>
+                        <div class="mb-3">
+                            <a href="/register" class="btn btn-secondary">注册</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block additional_scripts %}
+    <script>
+        const loginForm = document.getElementById('login-form');
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(loginForm);
+            try {
+                const response = await axios.post('/api/auth/token', formData);
+                console.log(response);
+                if (response.status === 200) {
+                    localStorage.setItem('token', response.data.access_token);
+                    //localStorage.setItem('username', response.data.username);
+                    //localStorage.setItem('role', response.data.role);
+                    showToast('登录成功,即将跳转!', 'success');
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                showToast(`${error?.response?.data?.detail}`, 'danger');
+            }
+
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,417 @@
+2025-06-06 20:38:21,026 - app - INFO - 正在加载应用配置...
+2025-06-06 20:38:21,028 - app - INFO - 尝试加载配置文件...
+2025-06-06 20:38:21,028 - app - INFO - 配置文件加载成功
+2025-06-06 20:38:21,029 - app - INFO - 配置加载完成。服务将运行在 0.0.0.0:8000
+2025-06-06 20:38:21,029 - app - INFO - 应用程序启动
+2025-06-06 20:38:21,030 - app - INFO - 启动服务器: 0.0.0.0:8000
+2025-06-06 20:40:19,895 - app - INFO - 正在加载应用配置...
+2025-06-06 20:40:19,901 - app - INFO - 尝试加载配置文件...
+2025-06-06 20:40:19,902 - app - INFO - 配置文件加载成功
+2025-06-06 20:40:19,903 - app - INFO - 配置加载完成。服务将运行在 0.0.0.0:8000
+2025-06-06 20:40:19,904 - app - INFO - 应用程序启动
+2025-06-06 20:40:19,905 - app - INFO - 启动服务器: 0.0.0.0:8000
+2025-06-06 20:40:20,288 - app - INFO - 应用程序关闭
+2025-06-06 20:40:55,589 - app - INFO - 应用程序关闭
+2025-06-06 20:41:06,403 - app - INFO - 正在加载应用配置...
+2025-06-06 20:41:06,404 - app - INFO - 尝试加载配置文件...
+2025-06-06 20:41:06,405 - app - INFO - 配置文件加载成功
+2025-06-06 20:41:06,405 - app - INFO - 配置加载完成。服务将运行在 0.0.0.0:8000
+2025-06-06 20:41:06,406 - app - INFO - 应用程序启动
+2025-06-06 20:41:06,406 - app - INFO - 启动服务器: 0.0.0.0:8000
+2025-06-06 20:41:31,031 - app - INFO - 正在加载应用配置...
+2025-06-06 20:41:31,034 - app - INFO - 尝试加载配置文件...
+2025-06-06 20:41:31,035 - app - INFO - 配置文件加载成功
+2025-06-06 20:41:31,036 - app - INFO - 配置加载完成。服务将运行在 0.0.0.0:8000
+2025-06-06 20:41:31,037 - app - INFO - 应用程序启动
+2025-06-06 20:41:31,038 - app - INFO - 启动服务器: 0.0.0.0:8000
+2025-06-06 20:41:31,083 - app - INFO - 应用程序关闭
+2025-06-06 20:41:33,575 - app - INFO - 应用程序关闭
+2025-06-06 20:41:41,439 - app - INFO - 正在加载应用配置...
+2025-06-06 20:41:41,443 - app - INFO - 尝试加载配置文件...
+2025-06-06 20:41:41,443 - app - INFO - 配置文件加载成功
+2025-06-06 20:41:41,444 - app - INFO - 配置加载完成。服务将运行在 0.0.0.0:8000
+2025-06-06 20:41:41,445 - app - INFO - 应用程序启动
+2025-06-06 20:41:41,445 - app - INFO - 启动服务器: 0.0.0.0:8000
+2025-06-06 20:41:47,148 - app - INFO - 应用程序关闭
+2025-06-06 20:41:53,865 - app - INFO - 正在加载应用配置...
+2025-06-06 20:41:53,869 - app - INFO - 尝试加载配置文件...
+2025-06-06 20:41:53,870 - app - INFO - 配置文件加载成功
+2025-06-06 20:41:53,870 - app - INFO - 配置加载完成。服务将运行在 0.0.0.0:8000
+2025-06-06 20:41:53,871 - app - INFO - 应用程序启动
+2025-06-06 20:41:53,871 - app - INFO - 启动服务器: 0.0.0.0:8000
+2025-06-06 20:42:06,316 - auth_routes - INFO - 用户尝试登录: admin
+2025-06-06 20:42:06,317 - auth_routes - ERROR - 用户登录过程中发生错误: 'NoneType' object has no attribute 'get_user_by_username'
+2025-06-06 20:42:11,676 - auth_routes - INFO - 用户尝试登录: test
+2025-06-06 20:42:11,679 - auth_routes - ERROR - 用户登录过程中发生错误: 'NoneType' object has no attribute 'get_user_by_username'
+2025-06-06 20:44:09,031 - auth_routes - INFO - 用户尝试登录: admin
+2025-06-06 20:44:09,031 - auth_routes - ERROR - 用户登录过程中发生错误: 'NoneType' object has no attribute 'get_user_by_username'
+2025-06-06 20:44:24,499 - app - INFO - 应用程序关闭
+2025-06-06 20:45:20,874 - app - INFO - 正在加载应用配置...
+2025-06-06 20:45:20,875 - app - INFO - 尝试加载配置文件...
+2025-06-06 20:45:20,876 - app - INFO - 配置文件加载成功
+2025-06-06 20:45:20,876 - app - INFO - 配置加载完成。服务将运行在 0.0.0.0:8000
+2025-06-06 20:45:20,876 - app - INFO - 应用程序启动
+2025-06-06 20:45:20,877 - app - INFO - 启动服务器: 0.0.0.0:8000
+2025-06-06 20:47:38,151 - app - INFO - 正在加载应用配置...
+2025-06-06 20:47:38,151 - app - INFO - 尝试加载配置文件...
+2025-06-06 20:47:38,151 - app - INFO - 配置文件加载成功
+2025-06-06 20:47:38,151 - app - INFO - 配置加载完成。服务将运行在 0.0.0.0:8000
+2025-06-06 20:47:38,151 - app - INFO - 应用程序启动
+2025-06-06 20:47:38,151 - app - INFO - 启动服务器: 0.0.0.0:8000
+2025-06-06 20:47:38,206 - app - INFO - 应用程序关闭
+2025-06-06 20:47:49,333 - app - INFO - 应用程序关闭
+2025-06-06 20:51:54,422 - database - INFO - 数据库初始化完成。路径: G:\cursor_projects\d05\database.sqlite
+2025-06-06 20:51:54,424 - file_manager - INFO - 文件管理器初始化完成，使用数据库存储。文件目录: G:\cursor_projects\d05\files
+2025-06-06 20:51:54,425 - file_routes - INFO - 文件路由初始化完成
+2025-06-06 20:51:54,426 - extension - INFO - 扩展管理器初始化完成。扩展目录: data\extensions
+2025-06-06 20:51:54,426 - extension - INFO - 使用数据库存储扩展配置
+2025-06-06 20:51:54,427 - extension - INFO - 扩展路由初始化完成
+2025-06-06 20:53:05,892 - database - INFO - 数据库初始化完成。路径: G:\cursor_projects\d05\database.sqlite
+2025-06-06 20:53:05,893 - file_manager - INFO - 文件管理器初始化完成，使用数据库存储。文件目录: G:\cursor_projects\d05\files
+2025-06-06 20:53:05,894 - file_routes - INFO - 文件路由初始化完成
+2025-06-06 20:53:05,895 - extension - INFO - 扩展管理器初始化完成。扩展目录: data\extensions
+2025-06-06 20:53:05,896 - extension - INFO - 使用数据库存储扩展配置
+2025-06-06 20:53:05,896 - extension - INFO - 扩展路由初始化完成
+2025-06-06 20:53:05,897 - settings_routes - INFO - 系统设置路由已初始化
+2025-06-06 20:53:05,898 - extension - INFO - 开始加载所有扩展
+2025-06-06 20:53:05,898 - extension - INFO - 开始加载扩展: extension_170f579f_cca0_4465_b310_1ce39226e07f
+2025-06-06 20:53:05,899 - extension - INFO - 尝试在沙箱中加载扩展: extension_170f579f_cca0_4465_b310_1ce39226e07f
+2025-06-06 20:53:05,900 - extension - INFO - 扩展 extension_170f579f_cca0_4465_b310_1ce39226e07f 加载成功
+2025-06-06 20:53:05,901 - extension - INFO - 开始加载扩展: extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca
+2025-06-06 20:53:05,901 - extension - INFO - 尝试在沙箱中加载扩展: extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca
+2025-06-06 20:53:05,902 - extension - INFO - 扩展 extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca 加载成功
+2025-06-06 20:53:05,903 - extension - INFO - 为扩展 extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca 注册API端点: /query/extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca
+2025-06-06 20:53:05,904 - extension - INFO - 扩展 extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca 加载完成
+2025-06-06 20:53:05,904 - extension - INFO - 开始加载扩展: extension_4424446e_6b90_46c2_b8a8_a74d54150190
+2025-06-06 20:53:05,905 - extension - INFO - 尝试在沙箱中加载扩展: extension_4424446e_6b90_46c2_b8a8_a74d54150190
+2025-06-06 20:53:05,906 - extension - INFO - 扩展 extension_4424446e_6b90_46c2_b8a8_a74d54150190 加载成功
+2025-06-06 20:53:05,906 - extension - INFO - 开始加载扩展: extension_53c8355e_ab76_4dc4_8243_d51272703862
+2025-06-06 20:53:05,907 - extension - INFO - 尝试在沙箱中加载扩展: extension_53c8355e_ab76_4dc4_8243_d51272703862
+2025-06-06 20:53:05,908 - extension - INFO - 扩展 extension_53c8355e_ab76_4dc4_8243_d51272703862 加载成功
+2025-06-06 20:53:05,909 - extension - INFO - 为扩展 extension_53c8355e_ab76_4dc4_8243_d51272703862 注册API端点: /query/extension_53c8355e_ab76_4dc4
+2025-06-06 20:53:05,910 - extension - INFO - 扩展 extension_53c8355e_ab76_4dc4_8243_d51272703862 加载完成
+2025-06-06 20:53:05,910 - extension - INFO - 开始加载扩展: extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70
+2025-06-06 20:53:05,911 - extension - INFO - 尝试在沙箱中加载扩展: extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70
+2025-06-06 20:53:05,912 - extension - INFO - 扩展 extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70 加载成功
+2025-06-06 20:53:05,912 - extension - INFO - 开始加载扩展: extension_eab575d7_3f0a_414e_aae6_e156500d0b62
+2025-06-06 20:53:05,913 - extension - INFO - 尝试在沙箱中加载扩展: extension_eab575d7_3f0a_414e_aae6_e156500d0b62
+2025-06-06 20:53:05,914 - extension - INFO - 扩展 extension_eab575d7_3f0a_414e_aae6_e156500d0b62 加载成功
+2025-06-06 20:53:05,914 - extension - INFO - 为扩展 extension_eab575d7_3f0a_414e_aae6_e156500d0b62 注册API端点: /query/extension_eab575d7_3f0a_414e_aae6_e156500d0b62
+2025-06-06 20:53:05,915 - extension - INFO - 扩展 extension_eab575d7_3f0a_414e_aae6_e156500d0b62 加载完成
+2025-06-06 20:53:05,916 - extension - INFO - 开始加载扩展: extension_fc1f9440_8e1c_4b37_9024_b1baf543959c
+2025-06-06 20:53:05,916 - extension - INFO - 尝试在沙箱中加载扩展: extension_fc1f9440_8e1c_4b37_9024_b1baf543959c
+2025-06-06 20:53:05,917 - extension - INFO - 扩展 extension_fc1f9440_8e1c_4b37_9024_b1baf543959c 加载成功
+2025-06-06 20:53:05,918 - extension - INFO - 完成加载所有扩展，共 0 个
+2025-06-06 21:00:47,705 - app - INFO - 正在加载应用配置...
+2025-06-06 21:00:47,706 - app - INFO - 尝试加载配置文件...
+2025-06-06 21:00:47,706 - app - INFO - 配置文件加载成功
+2025-06-06 21:00:47,707 - app - INFO - 配置加载完成。服务将运行在 0.0.0.0:8000
+2025-06-06 21:00:47,707 - app - INFO - 应用程序启动
+2025-06-06 21:00:47,708 - app - INFO - 启动服务器: 0.0.0.0:8000
+2025-06-06 21:00:47,892 - database - INFO - 数据库初始化完成。路径: G:\cursor_projects\d05\database.sqlite
+2025-06-06 21:00:47,893 - file_manager - INFO - 文件管理器初始化完成，使用数据库存储。文件目录: G:\cursor_projects\d05\files
+2025-06-06 21:00:47,895 - file_routes - INFO - 文件路由初始化完成
+2025-06-06 21:00:47,899 - extension - INFO - 扩展管理器初始化完成。扩展目录: data\extensions
+2025-06-06 21:00:47,900 - extension - INFO - 使用数据库存储扩展配置
+2025-06-06 21:00:47,901 - extension - INFO - 扩展路由初始化完成
+2025-06-06 21:00:47,902 - settings_routes - INFO - 系统设置路由已初始化
+2025-06-06 21:00:47,902 - extension - INFO - 开始加载所有扩展
+2025-06-06 21:00:47,903 - extension - INFO - 开始加载扩展: extension_170f579f_cca0_4465_b310_1ce39226e07f
+2025-06-06 21:00:47,906 - extension - INFO - 尝试在沙箱中加载扩展: extension_170f579f_cca0_4465_b310_1ce39226e07f
+2025-06-06 21:00:47,910 - extension - INFO - 扩展 extension_170f579f_cca0_4465_b310_1ce39226e07f 加载成功
+2025-06-06 21:00:47,911 - extension - INFO - 开始加载扩展: extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca
+2025-06-06 21:00:47,911 - extension - INFO - 尝试在沙箱中加载扩展: extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca
+2025-06-06 21:00:47,912 - extension - INFO - 扩展 extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca 加载成功
+2025-06-06 21:00:47,913 - extension - INFO - 为扩展 extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca 注册API端点: /query/extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca
+2025-06-06 21:00:47,914 - extension - INFO - 扩展 extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca 加载完成
+2025-06-06 21:00:47,917 - extension - INFO - 开始加载扩展: extension_4424446e_6b90_46c2_b8a8_a74d54150190
+2025-06-06 21:00:47,920 - extension - INFO - 尝试在沙箱中加载扩展: extension_4424446e_6b90_46c2_b8a8_a74d54150190
+2025-06-06 21:00:47,921 - extension - INFO - 扩展 extension_4424446e_6b90_46c2_b8a8_a74d54150190 加载成功
+2025-06-06 21:00:47,922 - extension - INFO - 开始加载扩展: extension_53c8355e_ab76_4dc4_8243_d51272703862
+2025-06-06 21:00:47,922 - extension - INFO - 尝试在沙箱中加载扩展: extension_53c8355e_ab76_4dc4_8243_d51272703862
+2025-06-06 21:00:47,923 - extension - INFO - 扩展 extension_53c8355e_ab76_4dc4_8243_d51272703862 加载成功
+2025-06-06 21:00:47,924 - extension - INFO - 为扩展 extension_53c8355e_ab76_4dc4_8243_d51272703862 注册API端点: /query/extension_53c8355e_ab76_4dc4
+2025-06-06 21:00:47,925 - extension - INFO - 扩展 extension_53c8355e_ab76_4dc4_8243_d51272703862 加载完成
+2025-06-06 21:00:47,926 - extension - INFO - 开始加载扩展: extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70
+2025-06-06 21:00:47,929 - extension - INFO - 尝试在沙箱中加载扩展: extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70
+2025-06-06 21:00:47,930 - extension - INFO - 扩展 extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70 加载成功
+2025-06-06 21:00:47,932 - extension - INFO - 开始加载扩展: extension_eab575d7_3f0a_414e_aae6_e156500d0b62
+2025-06-06 21:00:47,932 - extension - INFO - 尝试在沙箱中加载扩展: extension_eab575d7_3f0a_414e_aae6_e156500d0b62
+2025-06-06 21:00:47,935 - extension - INFO - 扩展 extension_eab575d7_3f0a_414e_aae6_e156500d0b62 加载成功
+2025-06-06 21:00:47,935 - extension - INFO - 为扩展 extension_eab575d7_3f0a_414e_aae6_e156500d0b62 注册API端点: /query/extension_eab575d7_3f0a_414e_aae6_e156500d0b62
+2025-06-06 21:00:47,939 - extension - INFO - 扩展 extension_eab575d7_3f0a_414e_aae6_e156500d0b62 加载完成
+2025-06-06 21:00:47,940 - extension - INFO - 开始加载扩展: extension_fc1f9440_8e1c_4b37_9024_b1baf543959c
+2025-06-06 21:00:47,941 - extension - INFO - 尝试在沙箱中加载扩展: extension_fc1f9440_8e1c_4b37_9024_b1baf543959c
+2025-06-06 21:00:47,942 - extension - INFO - 扩展 extension_fc1f9440_8e1c_4b37_9024_b1baf543959c 加载成功
+2025-06-06 21:00:47,943 - extension - INFO - 完成加载所有扩展，共 0 个
+2025-06-06 21:00:49,990 - app - INFO - 应用程序关闭
+2025-06-06 21:01:19,087 - app - INFO - 正在加载应用配置...
+2025-06-06 21:01:19,088 - app - INFO - 尝试加载配置文件...
+2025-06-06 21:01:19,089 - app - INFO - 配置文件加载成功
+2025-06-06 21:01:19,090 - app - INFO - 配置加载完成。服务将运行在 0.0.0.0:8000
+2025-06-06 21:01:19,091 - app - INFO - 应用程序启动
+2025-06-06 21:01:19,092 - app - INFO - 启动服务器: 0.0.0.0:8000
+2025-06-06 21:01:19,213 - database - INFO - 数据库初始化完成。路径: G:\cursor_projects\d05\database.sqlite
+2025-06-06 21:01:19,214 - file_manager - INFO - 文件管理器初始化完成，使用数据库存储。文件目录: G:\cursor_projects\d05\files
+2025-06-06 21:01:19,215 - file_routes - INFO - 文件路由初始化完成
+2025-06-06 21:01:19,216 - extension - INFO - 扩展管理器初始化完成。扩展目录: data\extensions
+2025-06-06 21:01:19,216 - extension - INFO - 使用数据库存储扩展配置
+2025-06-06 21:01:19,217 - extension - INFO - 扩展路由初始化完成
+2025-06-06 21:01:19,217 - settings_routes - INFO - 系统设置路由已初始化
+2025-06-06 21:01:19,218 - extension - INFO - 开始加载所有扩展
+2025-06-06 21:01:19,219 - extension - INFO - 开始加载扩展: extension_170f579f_cca0_4465_b310_1ce39226e07f
+2025-06-06 21:01:19,220 - extension - INFO - 尝试在沙箱中加载扩展: extension_170f579f_cca0_4465_b310_1ce39226e07f
+2025-06-06 21:01:19,221 - extension - INFO - 扩展 extension_170f579f_cca0_4465_b310_1ce39226e07f 加载成功
+2025-06-06 21:01:19,222 - extension - INFO - 开始加载扩展: extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca
+2025-06-06 21:01:19,222 - extension - INFO - 尝试在沙箱中加载扩展: extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca
+2025-06-06 21:01:19,223 - extension - INFO - 扩展 extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca 加载成功
+2025-06-06 21:01:19,224 - extension - INFO - 为扩展 extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca 注册API端点: /query/extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca
+2025-06-06 21:01:19,226 - extension - INFO - 扩展 extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca 加载完成
+2025-06-06 21:01:19,228 - extension - INFO - 开始加载扩展: extension_4424446e_6b90_46c2_b8a8_a74d54150190
+2025-06-06 21:01:19,228 - extension - INFO - 尝试在沙箱中加载扩展: extension_4424446e_6b90_46c2_b8a8_a74d54150190
+2025-06-06 21:01:19,229 - extension - INFO - 扩展 extension_4424446e_6b90_46c2_b8a8_a74d54150190 加载成功
+2025-06-06 21:01:19,230 - extension - INFO - 开始加载扩展: extension_53c8355e_ab76_4dc4_8243_d51272703862
+2025-06-06 21:01:19,231 - extension - INFO - 尝试在沙箱中加载扩展: extension_53c8355e_ab76_4dc4_8243_d51272703862
+2025-06-06 21:01:19,232 - extension - INFO - 扩展 extension_53c8355e_ab76_4dc4_8243_d51272703862 加载成功
+2025-06-06 21:01:19,232 - extension - INFO - 为扩展 extension_53c8355e_ab76_4dc4_8243_d51272703862 注册API端点: /query/extension_53c8355e_ab76_4dc4
+2025-06-06 21:01:19,234 - extension - INFO - 扩展 extension_53c8355e_ab76_4dc4_8243_d51272703862 加载完成
+2025-06-06 21:01:19,234 - extension - INFO - 开始加载扩展: extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70
+2025-06-06 21:01:19,235 - extension - INFO - 尝试在沙箱中加载扩展: extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70
+2025-06-06 21:01:19,236 - extension - INFO - 扩展 extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70 加载成功
+2025-06-06 21:01:19,236 - extension - INFO - 开始加载扩展: extension_eab575d7_3f0a_414e_aae6_e156500d0b62
+2025-06-06 21:01:19,237 - extension - INFO - 尝试在沙箱中加载扩展: extension_eab575d7_3f0a_414e_aae6_e156500d0b62
+2025-06-06 21:01:19,238 - extension - INFO - 扩展 extension_eab575d7_3f0a_414e_aae6_e156500d0b62 加载成功
+2025-06-06 21:01:19,239 - extension - INFO - 为扩展 extension_eab575d7_3f0a_414e_aae6_e156500d0b62 注册API端点: /query/extension_eab575d7_3f0a_414e_aae6_e156500d0b62
+2025-06-06 21:01:19,240 - extension - INFO - 扩展 extension_eab575d7_3f0a_414e_aae6_e156500d0b62 加载完成
+2025-06-06 21:01:19,241 - extension - INFO - 开始加载扩展: extension_fc1f9440_8e1c_4b37_9024_b1baf543959c
+2025-06-06 21:01:19,241 - extension - INFO - 尝试在沙箱中加载扩展: extension_fc1f9440_8e1c_4b37_9024_b1baf543959c
+2025-06-06 21:01:19,242 - extension - INFO - 扩展 extension_fc1f9440_8e1c_4b37_9024_b1baf543959c 加载成功
+2025-06-06 21:01:19,243 - extension - INFO - 完成加载所有扩展，共 0 个
+2025-06-06 21:06:15,147 - app - INFO - 正在加载应用配置...
+2025-06-06 21:06:15,147 - app - INFO - 尝试加载配置文件...
+2025-06-06 21:06:15,148 - app - INFO - 配置文件加载成功
+2025-06-06 21:06:15,148 - app - INFO - 配置加载完成。服务将运行在 0.0.0.0:8000
+2025-06-06 21:06:15,149 - app - INFO - 应用程序启动
+2025-06-06 21:06:15,149 - app - INFO - 启动服务器: 0.0.0.0:8000
+2025-06-06 21:06:15,243 - database - INFO - 数据库初始化完成。路径: G:\cursor_projects\d05\database.sqlite
+2025-06-06 21:06:15,243 - file_manager - INFO - 文件管理器初始化完成，使用数据库存储。文件目录: G:\cursor_projects\d05\files
+2025-06-06 21:06:15,244 - file_routes - INFO - 文件路由初始化完成
+2025-06-06 21:06:15,244 - extension - INFO - 扩展管理器初始化完成。扩展目录: data\extensions
+2025-06-06 21:06:15,245 - extension - INFO - 使用数据库存储扩展配置
+2025-06-06 21:06:15,245 - extension - INFO - 扩展路由初始化完成
+2025-06-06 21:06:15,245 - settings_routes - INFO - 系统设置路由已初始化
+2025-06-06 21:06:15,246 - extension - INFO - 开始加载所有扩展
+2025-06-06 21:06:15,246 - extension - INFO - 开始加载扩展: extension_170f579f_cca0_4465_b310_1ce39226e07f
+2025-06-06 21:06:15,247 - extension - INFO - 尝试在沙箱中加载扩展: extension_170f579f_cca0_4465_b310_1ce39226e07f
+2025-06-06 21:06:15,247 - extension - INFO - 扩展 extension_170f579f_cca0_4465_b310_1ce39226e07f 加载成功
+2025-06-06 21:06:15,248 - extension - INFO - 开始加载扩展: extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca
+2025-06-06 21:06:15,248 - extension - INFO - 尝试在沙箱中加载扩展: extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca
+2025-06-06 21:06:15,249 - extension - INFO - 扩展 extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca 加载成功
+2025-06-06 21:06:15,249 - extension - INFO - 为扩展 extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca 注册API端点: /query/extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca
+2025-06-06 21:06:15,251 - extension - INFO - 扩展 extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca 加载完成
+2025-06-06 21:06:15,251 - extension - INFO - 开始加载扩展: extension_4424446e_6b90_46c2_b8a8_a74d54150190
+2025-06-06 21:06:15,251 - extension - INFO - 尝试在沙箱中加载扩展: extension_4424446e_6b90_46c2_b8a8_a74d54150190
+2025-06-06 21:06:15,252 - extension - INFO - 扩展 extension_4424446e_6b90_46c2_b8a8_a74d54150190 加载成功
+2025-06-06 21:06:15,252 - extension - INFO - 开始加载扩展: extension_53c8355e_ab76_4dc4_8243_d51272703862
+2025-06-06 21:06:15,252 - extension - INFO - 尝试在沙箱中加载扩展: extension_53c8355e_ab76_4dc4_8243_d51272703862
+2025-06-06 21:06:15,253 - extension - INFO - 扩展 extension_53c8355e_ab76_4dc4_8243_d51272703862 加载成功
+2025-06-06 21:06:15,253 - extension - INFO - 为扩展 extension_53c8355e_ab76_4dc4_8243_d51272703862 注册API端点: /query/extension_53c8355e_ab76_4dc4
+2025-06-06 21:06:15,254 - extension - INFO - 扩展 extension_53c8355e_ab76_4dc4_8243_d51272703862 加载完成
+2025-06-06 21:06:15,255 - extension - INFO - 开始加载扩展: extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70
+2025-06-06 21:06:15,255 - extension - INFO - 尝试在沙箱中加载扩展: extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70
+2025-06-06 21:06:15,256 - extension - INFO - 扩展 extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70 加载成功
+2025-06-06 21:06:15,257 - extension - INFO - 开始加载扩展: extension_eab575d7_3f0a_414e_aae6_e156500d0b62
+2025-06-06 21:06:15,257 - extension - INFO - 尝试在沙箱中加载扩展: extension_eab575d7_3f0a_414e_aae6_e156500d0b62
+2025-06-06 21:06:15,258 - extension - INFO - 扩展 extension_eab575d7_3f0a_414e_aae6_e156500d0b62 加载成功
+2025-06-06 21:06:15,258 - extension - INFO - 为扩展 extension_eab575d7_3f0a_414e_aae6_e156500d0b62 注册API端点: /query/extension_eab575d7_3f0a_414e_aae6_e156500d0b62
+2025-06-06 21:06:15,259 - extension - INFO - 扩展 extension_eab575d7_3f0a_414e_aae6_e156500d0b62 加载完成
+2025-06-06 21:06:15,260 - extension - INFO - 开始加载扩展: extension_fc1f9440_8e1c_4b37_9024_b1baf543959c
+2025-06-06 21:06:15,260 - extension - INFO - 尝试在沙箱中加载扩展: extension_fc1f9440_8e1c_4b37_9024_b1baf543959c
+2025-06-06 21:06:15,260 - extension - INFO - 扩展 extension_fc1f9440_8e1c_4b37_9024_b1baf543959c 加载成功
+2025-06-06 21:06:15,261 - extension - INFO - 完成加载所有扩展，共 0 个
+2025-06-06 21:06:15,263 - app - INFO - 应用程序关闭
+2025-06-06 21:06:23,124 - app - INFO - 应用程序关闭
+2025-06-06 21:06:30,781 - app - INFO - 正在加载应用配置...
+2025-06-06 21:06:30,782 - app - INFO - 尝试加载配置文件...
+2025-06-06 21:06:30,782 - app - INFO - 配置文件加载成功
+2025-06-06 21:06:30,782 - app - INFO - 配置加载完成。服务将运行在 0.0.0.0:8000
+2025-06-06 21:06:30,782 - app - INFO - 应用程序启动
+2025-06-06 21:06:30,782 - app - INFO - 启动服务器: 0.0.0.0:8000
+2025-06-06 21:06:30,863 - database - INFO - 数据库初始化完成。路径: G:\cursor_projects\d05\database.sqlite
+2025-06-06 21:06:30,864 - file_manager - INFO - 文件管理器初始化完成，使用数据库存储。文件目录: G:\cursor_projects\d05\files
+2025-06-06 21:06:30,865 - file_routes - INFO - 文件路由初始化完成
+2025-06-06 21:06:30,865 - extension - INFO - 扩展管理器初始化完成。扩展目录: data\extensions
+2025-06-06 21:06:30,866 - extension - INFO - 使用数据库存储扩展配置
+2025-06-06 21:06:30,866 - extension - INFO - 扩展路由初始化完成
+2025-06-06 21:06:30,866 - settings_routes - INFO - 系统设置路由已初始化
+2025-06-06 21:06:30,867 - extension - INFO - 开始加载所有扩展
+2025-06-06 21:06:30,867 - extension - INFO - 开始加载扩展: extension_170f579f_cca0_4465_b310_1ce39226e07f
+2025-06-06 21:06:30,867 - extension - INFO - 尝试在沙箱中加载扩展: extension_170f579f_cca0_4465_b310_1ce39226e07f
+2025-06-06 21:06:30,868 - extension - INFO - 扩展 extension_170f579f_cca0_4465_b310_1ce39226e07f 加载成功
+2025-06-06 21:06:30,868 - extension - INFO - 开始加载扩展: extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca
+2025-06-06 21:06:30,869 - extension - INFO - 尝试在沙箱中加载扩展: extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca
+2025-06-06 21:06:30,869 - extension - INFO - 扩展 extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca 加载成功
+2025-06-06 21:06:30,869 - extension - INFO - 为扩展 extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca 注册API端点: /query/extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca
+2025-06-06 21:06:30,870 - extension - INFO - 扩展 extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca 加载完成
+2025-06-06 21:06:30,871 - extension - INFO - 开始加载扩展: extension_4424446e_6b90_46c2_b8a8_a74d54150190
+2025-06-06 21:06:30,871 - extension - INFO - 尝试在沙箱中加载扩展: extension_4424446e_6b90_46c2_b8a8_a74d54150190
+2025-06-06 21:06:30,872 - extension - INFO - 扩展 extension_4424446e_6b90_46c2_b8a8_a74d54150190 加载成功
+2025-06-06 21:06:30,872 - extension - INFO - 开始加载扩展: extension_53c8355e_ab76_4dc4_8243_d51272703862
+2025-06-06 21:06:30,872 - extension - INFO - 尝试在沙箱中加载扩展: extension_53c8355e_ab76_4dc4_8243_d51272703862
+2025-06-06 21:06:30,873 - extension - INFO - 扩展 extension_53c8355e_ab76_4dc4_8243_d51272703862 加载成功
+2025-06-06 21:06:30,873 - extension - INFO - 为扩展 extension_53c8355e_ab76_4dc4_8243_d51272703862 注册API端点: /query/extension_53c8355e_ab76_4dc4
+2025-06-06 21:06:30,874 - extension - INFO - 扩展 extension_53c8355e_ab76_4dc4_8243_d51272703862 加载完成
+2025-06-06 21:06:30,874 - extension - INFO - 开始加载扩展: extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70
+2025-06-06 21:06:30,874 - extension - INFO - 尝试在沙箱中加载扩展: extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70
+2025-06-06 21:06:30,875 - extension - INFO - 扩展 extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70 加载成功
+2025-06-06 21:06:30,875 - extension - INFO - 开始加载扩展: extension_eab575d7_3f0a_414e_aae6_e156500d0b62
+2025-06-06 21:06:30,875 - extension - INFO - 尝试在沙箱中加载扩展: extension_eab575d7_3f0a_414e_aae6_e156500d0b62
+2025-06-06 21:06:30,876 - extension - INFO - 扩展 extension_eab575d7_3f0a_414e_aae6_e156500d0b62 加载成功
+2025-06-06 21:06:30,876 - extension - INFO - 为扩展 extension_eab575d7_3f0a_414e_aae6_e156500d0b62 注册API端点: /query/extension_eab575d7_3f0a_414e_aae6_e156500d0b62
+2025-06-06 21:06:30,877 - extension - INFO - 扩展 extension_eab575d7_3f0a_414e_aae6_e156500d0b62 加载完成
+2025-06-06 21:06:30,877 - extension - INFO - 开始加载扩展: extension_fc1f9440_8e1c_4b37_9024_b1baf543959c
+2025-06-06 21:06:30,877 - extension - INFO - 尝试在沙箱中加载扩展: extension_fc1f9440_8e1c_4b37_9024_b1baf543959c
+2025-06-06 21:06:30,878 - extension - INFO - 扩展 extension_fc1f9440_8e1c_4b37_9024_b1baf543959c 加载成功
+2025-06-06 21:06:30,878 - extension - INFO - 完成加载所有扩展，共 0 个
+2025-06-06 21:06:37,195 - auth_routes - INFO - 用户尝试登录: admin
+2025-06-06 21:06:37,195 - auth_routes - ERROR - 用户登录过程中发生错误: get_user_by_username() missing 1 required positional argument: 'username'
+2025-06-06 21:06:45,878 - auth_routes - INFO - 用户尝试登录: admin
+2025-06-06 21:06:45,878 - auth_routes - ERROR - 用户登录过程中发生错误: get_user_by_username() missing 1 required positional argument: 'username'
+2025-06-06 21:17:15,739 - app - INFO - 应用程序关闭
+2025-06-06 21:18:20,081 - app - INFO - 正在加载应用配置...
+2025-06-06 21:18:20,081 - app - INFO - 尝试加载配置文件...
+2025-06-06 21:18:20,081 - app - INFO - 配置文件加载成功
+2025-06-06 21:18:20,081 - app - INFO - 配置加载完成。服务将运行在 0.0.0.0:8000
+2025-06-06 21:18:20,082 - app - INFO - 应用程序启动
+2025-06-06 21:18:20,082 - app - INFO - 启动服务器: 0.0.0.0:8000
+2025-06-06 21:18:20,172 - database - INFO - 数据库初始化完成。路径: G:\cursor_projects\d05\database.sqlite
+2025-06-06 21:18:20,172 - file_manager - INFO - 文件管理器初始化完成，使用数据库存储。文件目录: G:\cursor_projects\d05\files
+2025-06-06 21:18:20,173 - file_routes - INFO - 文件路由初始化完成
+2025-06-06 21:18:20,174 - extension - INFO - 扩展管理器初始化完成。扩展目录: data\extensions
+2025-06-06 21:18:20,174 - extension - INFO - 使用数据库存储扩展配置
+2025-06-06 21:18:20,174 - extension - INFO - 扩展路由初始化完成
+2025-06-06 21:18:20,174 - settings_routes - INFO - 系统设置路由已初始化
+2025-06-06 21:18:20,175 - extension - INFO - 开始加载所有扩展
+2025-06-06 21:18:20,175 - extension - INFO - 开始加载扩展: extension_170f579f_cca0_4465_b310_1ce39226e07f
+2025-06-06 21:18:20,175 - extension - INFO - 尝试在沙箱中加载扩展: extension_170f579f_cca0_4465_b310_1ce39226e07f
+2025-06-06 21:18:20,176 - extension - INFO - 扩展 extension_170f579f_cca0_4465_b310_1ce39226e07f 加载成功
+2025-06-06 21:18:20,176 - extension - INFO - 开始加载扩展: extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca
+2025-06-06 21:18:20,176 - extension - INFO - 尝试在沙箱中加载扩展: extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca
+2025-06-06 21:18:20,177 - extension - INFO - 扩展 extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca 加载成功
+2025-06-06 21:18:20,177 - extension - INFO - 为扩展 extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca 注册API端点: /query/extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca
+2025-06-06 21:18:20,178 - extension - INFO - 扩展 extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca 加载完成
+2025-06-06 21:18:20,178 - extension - INFO - 开始加载扩展: extension_4424446e_6b90_46c2_b8a8_a74d54150190
+2025-06-06 21:18:20,178 - extension - INFO - 尝试在沙箱中加载扩展: extension_4424446e_6b90_46c2_b8a8_a74d54150190
+2025-06-06 21:18:20,179 - extension - INFO - 扩展 extension_4424446e_6b90_46c2_b8a8_a74d54150190 加载成功
+2025-06-06 21:18:20,179 - extension - INFO - 开始加载扩展: extension_53c8355e_ab76_4dc4_8243_d51272703862
+2025-06-06 21:18:20,179 - extension - INFO - 尝试在沙箱中加载扩展: extension_53c8355e_ab76_4dc4_8243_d51272703862
+2025-06-06 21:18:20,180 - extension - INFO - 扩展 extension_53c8355e_ab76_4dc4_8243_d51272703862 加载成功
+2025-06-06 21:18:20,180 - extension - INFO - 为扩展 extension_53c8355e_ab76_4dc4_8243_d51272703862 注册API端点: /query/extension_53c8355e_ab76_4dc4
+2025-06-06 21:18:20,181 - extension - INFO - 扩展 extension_53c8355e_ab76_4dc4_8243_d51272703862 加载完成
+2025-06-06 21:18:20,181 - extension - INFO - 开始加载扩展: extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70
+2025-06-06 21:18:20,181 - extension - INFO - 尝试在沙箱中加载扩展: extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70
+2025-06-06 21:18:20,182 - extension - INFO - 扩展 extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70 加载成功
+2025-06-06 21:18:20,182 - extension - INFO - 开始加载扩展: extension_eab575d7_3f0a_414e_aae6_e156500d0b62
+2025-06-06 21:18:20,182 - extension - INFO - 尝试在沙箱中加载扩展: extension_eab575d7_3f0a_414e_aae6_e156500d0b62
+2025-06-06 21:18:20,183 - extension - INFO - 扩展 extension_eab575d7_3f0a_414e_aae6_e156500d0b62 加载成功
+2025-06-06 21:18:20,183 - extension - INFO - 为扩展 extension_eab575d7_3f0a_414e_aae6_e156500d0b62 注册API端点: /query/extension_eab575d7_3f0a_414e_aae6_e156500d0b62
+2025-06-06 21:18:20,184 - extension - INFO - 扩展 extension_eab575d7_3f0a_414e_aae6_e156500d0b62 加载完成
+2025-06-06 21:18:20,184 - extension - INFO - 开始加载扩展: extension_fc1f9440_8e1c_4b37_9024_b1baf543959c
+2025-06-06 21:18:20,184 - extension - INFO - 尝试在沙箱中加载扩展: extension_fc1f9440_8e1c_4b37_9024_b1baf543959c
+2025-06-06 21:18:20,185 - extension - INFO - 扩展 extension_fc1f9440_8e1c_4b37_9024_b1baf543959c 加载成功
+2025-06-06 21:18:20,185 - extension - INFO - 完成加载所有扩展，共 0 个
+2025-06-06 21:18:20,185 - app - INFO - 应用初始化成功
+2025-06-06 21:18:23,677 - auth_routes - INFO - 用户尝试登录: admin
+2025-06-06 21:18:31,498 - auth_routes - ERROR - 用户登录过程中发生错误: get_user_by_username() missing 1 required positional argument: 'username'
+2025-06-06 21:24:12,274 - app - INFO - 应用已关闭
+2025-06-06 21:24:12,276 - app - INFO - 应用程序关闭
+2025-06-06 21:24:18,995 - app - INFO - 正在加载应用配置...
+2025-06-06 21:24:18,996 - app - INFO - 尝试加载配置文件...
+2025-06-06 21:24:18,996 - app - INFO - 配置文件加载成功
+2025-06-06 21:24:18,996 - app - INFO - 配置加载完成。服务将运行在 0.0.0.0:8000
+2025-06-06 21:24:18,996 - app - INFO - 应用程序启动
+2025-06-06 21:24:18,996 - app - INFO - 启动服务器: 0.0.0.0:8000
+2025-06-06 21:24:19,073 - database - INFO - 数据库初始化完成。路径: G:\cursor_projects\d05\database.sqlite
+2025-06-06 21:24:19,075 - file_manager - INFO - 文件管理器初始化完成，使用数据库存储。文件目录: G:\cursor_projects\d05\files
+2025-06-06 21:24:19,075 - file_routes - INFO - 文件路由初始化完成
+2025-06-06 21:24:19,076 - extension - INFO - 扩展管理器初始化完成。扩展目录: data\extensions
+2025-06-06 21:24:19,076 - extension - INFO - 使用数据库存储扩展配置
+2025-06-06 21:24:19,077 - extension - INFO - 扩展路由初始化完成
+2025-06-06 21:24:19,077 - settings_routes - INFO - 系统设置路由已初始化
+2025-06-06 21:24:19,077 - extension - INFO - 开始加载所有扩展
+2025-06-06 21:24:19,078 - extension - INFO - 开始加载扩展: extension_170f579f_cca0_4465_b310_1ce39226e07f
+2025-06-06 21:24:19,078 - extension - INFO - 尝试在沙箱中加载扩展: extension_170f579f_cca0_4465_b310_1ce39226e07f
+2025-06-06 21:24:19,079 - extension - INFO - 扩展 extension_170f579f_cca0_4465_b310_1ce39226e07f 加载成功
+2025-06-06 21:24:19,080 - extension - INFO - 开始加载扩展: extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca
+2025-06-06 21:24:19,080 - extension - INFO - 尝试在沙箱中加载扩展: extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca
+2025-06-06 21:24:19,081 - extension - INFO - 扩展 extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca 加载成功
+2025-06-06 21:24:19,081 - extension - INFO - 为扩展 extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca 注册API端点: /query/extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca
+2025-06-06 21:24:19,082 - extension - INFO - 扩展 extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca 加载完成
+2025-06-06 21:24:19,083 - extension - INFO - 开始加载扩展: extension_4424446e_6b90_46c2_b8a8_a74d54150190
+2025-06-06 21:24:19,083 - extension - INFO - 尝试在沙箱中加载扩展: extension_4424446e_6b90_46c2_b8a8_a74d54150190
+2025-06-06 21:24:19,083 - extension - INFO - 扩展 extension_4424446e_6b90_46c2_b8a8_a74d54150190 加载成功
+2025-06-06 21:24:19,084 - extension - INFO - 开始加载扩展: extension_53c8355e_ab76_4dc4_8243_d51272703862
+2025-06-06 21:24:19,084 - extension - INFO - 尝试在沙箱中加载扩展: extension_53c8355e_ab76_4dc4_8243_d51272703862
+2025-06-06 21:24:19,084 - extension - INFO - 扩展 extension_53c8355e_ab76_4dc4_8243_d51272703862 加载成功
+2025-06-06 21:24:19,085 - extension - INFO - 为扩展 extension_53c8355e_ab76_4dc4_8243_d51272703862 注册API端点: /query/extension_53c8355e_ab76_4dc4
+2025-06-06 21:24:19,085 - extension - INFO - 扩展 extension_53c8355e_ab76_4dc4_8243_d51272703862 加载完成
+2025-06-06 21:24:19,086 - extension - INFO - 开始加载扩展: extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70
+2025-06-06 21:24:19,086 - extension - INFO - 尝试在沙箱中加载扩展: extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70
+2025-06-06 21:24:19,086 - extension - INFO - 扩展 extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70 加载成功
+2025-06-06 21:24:19,086 - extension - INFO - 开始加载扩展: extension_eab575d7_3f0a_414e_aae6_e156500d0b62
+2025-06-06 21:24:19,086 - extension - INFO - 尝试在沙箱中加载扩展: extension_eab575d7_3f0a_414e_aae6_e156500d0b62
+2025-06-06 21:24:19,087 - extension - INFO - 扩展 extension_eab575d7_3f0a_414e_aae6_e156500d0b62 加载成功
+2025-06-06 21:24:19,087 - extension - INFO - 为扩展 extension_eab575d7_3f0a_414e_aae6_e156500d0b62 注册API端点: /query/extension_eab575d7_3f0a_414e_aae6_e156500d0b62
+2025-06-06 21:24:19,088 - extension - INFO - 扩展 extension_eab575d7_3f0a_414e_aae6_e156500d0b62 加载完成
+2025-06-06 21:24:19,088 - extension - INFO - 开始加载扩展: extension_fc1f9440_8e1c_4b37_9024_b1baf543959c
+2025-06-06 21:24:19,088 - extension - INFO - 尝试在沙箱中加载扩展: extension_fc1f9440_8e1c_4b37_9024_b1baf543959c
+2025-06-06 21:24:19,089 - extension - INFO - 扩展 extension_fc1f9440_8e1c_4b37_9024_b1baf543959c 加载成功
+2025-06-06 21:24:19,089 - extension - INFO - 完成加载所有扩展，共 0 个
+2025-06-06 21:24:19,089 - app - INFO - 应用初始化成功
+2025-06-06 21:24:26,966 - auth_routes - INFO - 用户尝试登录: admin
+2025-06-06 21:24:26,967 - auth_routes - ERROR - 用户登录过程中发生错误: 'password'
+2025-06-06 21:24:40,976 - auth_routes - INFO - 用户尝试登录: test
+2025-06-06 21:24:40,977 - auth_routes - ERROR - 用户登录过程中发生错误: 'password'
+2025-06-06 21:24:45,535 - auth_routes - INFO - 用户尝试登录: admin
+2025-06-06 21:24:45,535 - auth_routes - ERROR - 用户登录过程中发生错误: 'password'
+2025-06-06 21:27:45,233 - app - INFO - 应用已关闭
+2025-06-06 21:27:45,236 - app - INFO - 应用程序关闭
+2025-06-06 21:27:56,151 - app - INFO - 正在加载应用配置...
+2025-06-06 21:27:56,151 - app - INFO - 尝试加载配置文件...
+2025-06-06 21:27:56,151 - app - INFO - 配置文件加载成功
+2025-06-06 21:27:56,151 - app - INFO - 配置加载完成。服务将运行在 0.0.0.0:8000
+2025-06-06 21:27:56,152 - app - INFO - 应用程序启动
+2025-06-06 21:27:56,152 - app - INFO - 启动服务器: 0.0.0.0:8000
+2025-06-06 21:28:00,151 - database - INFO - 数据库初始化完成。路径: G:\cursor_projects\d05\database.sqlite
+2025-06-06 21:28:00,153 - file_manager - INFO - 文件管理器初始化完成，使用数据库存储。文件目录: G:\cursor_projects\d05\files
+2025-06-06 21:28:00,154 - file_routes - INFO - 文件路由初始化完成
+2025-06-06 21:28:00,156 - extension - INFO - 扩展管理器初始化完成。扩展目录: data\extensions
+2025-06-06 21:28:00,157 - extension - INFO - 使用数据库存储扩展配置
+2025-06-06 21:28:00,157 - extension - INFO - 扩展路由初始化完成
+2025-06-06 21:28:00,158 - settings_routes - INFO - 系统设置路由已初始化
+2025-06-06 21:28:00,159 - extension - INFO - 开始加载所有扩展
+2025-06-06 21:28:00,159 - extension - INFO - 开始加载扩展: extension_170f579f_cca0_4465_b310_1ce39226e07f
+2025-06-06 21:28:00,160 - extension - INFO - 尝试在沙箱中加载扩展: extension_170f579f_cca0_4465_b310_1ce39226e07f
+2025-06-06 21:28:00,161 - extension - INFO - 扩展 extension_170f579f_cca0_4465_b310_1ce39226e07f 加载成功
+2025-06-06 21:28:00,162 - extension - INFO - 开始加载扩展: extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca
+2025-06-06 21:28:00,162 - extension - INFO - 尝试在沙箱中加载扩展: extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca
+2025-06-06 21:28:00,164 - extension - INFO - 扩展 extension_3064a8cc_bda7_4bd7_a2bf_3de79f74a2ca 加载成功
+2025-06-06 21:28:00,165 - extension - INFO - 开始加载扩展: extension_4424446e_6b90_46c2_b8a8_a74d54150190
+2025-06-06 21:28:00,165 - extension - INFO - 尝试在沙箱中加载扩展: extension_4424446e_6b90_46c2_b8a8_a74d54150190
+2025-06-06 21:28:00,166 - extension - INFO - 扩展 extension_4424446e_6b90_46c2_b8a8_a74d54150190 加载成功
+2025-06-06 21:28:00,167 - extension - INFO - 开始加载扩展: extension_53c8355e_ab76_4dc4_8243_d51272703862
+2025-06-06 21:28:00,167 - extension - INFO - 尝试在沙箱中加载扩展: extension_53c8355e_ab76_4dc4_8243_d51272703862
+2025-06-06 21:28:00,169 - extension - INFO - 扩展 extension_53c8355e_ab76_4dc4_8243_d51272703862 加载成功
+2025-06-06 21:28:00,169 - extension - INFO - 开始加载扩展: extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70
+2025-06-06 21:28:00,170 - extension - INFO - 尝试在沙箱中加载扩展: extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70
+2025-06-06 21:28:00,171 - extension - INFO - 扩展 extension_6066f2a2_98d0_4a73_bbf1_1b6cb0eadb70 加载成功
+2025-06-06 21:28:00,171 - extension - INFO - 开始加载扩展: extension_eab575d7_3f0a_414e_aae6_e156500d0b62
+2025-06-06 21:28:00,172 - extension - INFO - 尝试在沙箱中加载扩展: extension_eab575d7_3f0a_414e_aae6_e156500d0b62
+2025-06-06 21:28:00,173 - extension - INFO - 扩展 extension_eab575d7_3f0a_414e_aae6_e156500d0b62 加载成功
+2025-06-06 21:28:00,174 - extension - INFO - 开始加载扩展: extension_fc1f9440_8e1c_4b37_9024_b1baf543959c
+2025-06-06 21:28:00,174 - extension - INFO - 尝试在沙箱中加载扩展: extension_fc1f9440_8e1c_4b37_9024_b1baf543959c
+2025-06-06 21:28:00,175 - extension - INFO - 扩展 extension_fc1f9440_8e1c_4b37_9024_b1baf543959c 加载成功
+2025-06-06 21:28:00,176 - extension - INFO - 完成加载所有扩展，共 0 个
+2025-06-06 21:28:00,176 - app - INFO - 应用初始化成功
+2025-06-06 21:29:11,102 - app - INFO - 应用已关闭
+2025-06-06 21:29:11,105 - app - INFO - 应用程序关闭
