@@ -11,7 +11,7 @@ class Setting(BaseModel):
     key = Column(String(100), nullable=False)
     value = Column(Text, nullable=True)
     description = Column(String(255), nullable=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    # user_id = Column(Integer, ForeignKey("users.id"))
     
     # 关联关系
-    user = relationship("User", back_populates="settings") 
+    # user = relationship("User", back_populates="settings")

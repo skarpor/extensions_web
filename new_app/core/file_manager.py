@@ -12,16 +12,17 @@ from datetime import datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from fastapi import UploadFile
+from fastapi import UploadFile, Depends
 
 from new_app.models import File
 from new_app.core.config import settings
 from new_app.core.logger import get_logger
+from new_app.db.session import get_db
 
 logger = get_logger(__name__)
 
 class FileManager:
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: AsyncSession=Depends(get_db)):
         self.db = db
         self.upload_dir = Path(settings.UPLOAD_DIR)
         self.upload_dir.mkdir(parents=True, exist_ok=True)

@@ -7,10 +7,10 @@ from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from new_app.core import auth
-from new_app.core.websocket_manager import websocket_manager
+from new_app.core.websocket_manager import manager
 from new_app.db.session import get_db
 from new_app.models.user import User as UserModel
-from new_app.crud.crud_user import crud_user
+
 
 router = APIRouter()
 
@@ -50,7 +50,7 @@ async def chat_websocket_endpoint(
             return
             
         # 根据用户名查找用户
-        user = await crud_user.get_by_username(db, username=username)
+        user = await auth.get_by_username(db, username=username)
         if not user:
             await websocket.close(code=4004)
             return
@@ -66,7 +66,7 @@ async def chat_websocket_endpoint(
             return
         
         # 建立连接
-        await websocket_manager.connect(websocket, user.id)
+        await manager.connect(websocket, user.id)
         
         # 发送初始消息
         await websocket.send_json({
@@ -83,7 +83,7 @@ async def chat_websocket_endpoint(
                     "username": f"user_{user_id}",  # 简化处理，实际应从数据库获取
                     "status": "online"
                 }
-                for user_id in websocket_manager.get_active_users()
+                for user_id in manager.get_active_users()
                 if user_id != user.id  # 不包括当前用户
             ]
         })
@@ -101,7 +101,7 @@ async def chat_websocket_endpoint(
                     if "room_id" in data:
                         # 群聊消息
                         room_id = data["room_id"]
-                        await websocket_manager.broadcast_to_room(
+                        await manager.broadcast_to_room(
                             room=f"room_{room_id}",
                             message={
                                 "type": "chat",
@@ -130,7 +130,7 @@ async def chat_websocket_endpoint(
                         }
                         
                         # 发送给接收者
-                        await websocket_manager.send_personal_message(message, receiver_id)
+                        await manager.send_personal_message(message, receiver_id)
                         
                         # 也发送给发送者（回显）
                         await websocket.send_json(message)
@@ -140,10 +140,10 @@ async def chat_websocket_endpoint(
                     room_id = data.get("room_id")
                     if room_id:
                         room_name = f"room_{room_id}"
-                        await websocket_manager.join_room(user.id, room_name)
+                        await manager.join_room(user.id, room_name)
                         
                         # 通知房间其他成员
-                        await websocket_manager.broadcast_to_room(
+                        await manager.broadcast_to_room(
                             room=room_name,
                             message={
                                 "type": "user_join",
@@ -164,7 +164,7 @@ async def chat_websocket_endpoint(
                         room_name = f"room_{room_id}"
                         
                         # 通知房间其他成员
-                        await websocket_manager.broadcast_to_room(
+                        await manager.broadcast_to_room(
                             room=room_name,
                             message={
                                 "type": "user_leave",
@@ -174,14 +174,14 @@ async def chat_websocket_endpoint(
                             exclude_user=user.id
                         )
                         
-                        await websocket_manager.leave_room(user.id, room_name)
+                        await manager.leave_room(user.id, room_name)
                 
                 elif message_type == "typing":
                     # 正在输入状态
                     if "room_id" in data:
                         # 群聊中的输入状态
                         room_id = data["room_id"]
-                        await websocket_manager.broadcast_to_room(
+                        await manager.broadcast_to_room(
                             room=f"room_{room_id}",
                             message={
                                 "type": "typing",
@@ -196,7 +196,7 @@ async def chat_websocket_endpoint(
                     elif "receiver_id" in data:
                         # 私聊中的输入状态
                         receiver_id = data["receiver_id"]
-                        await websocket_manager.send_personal_message(
+                        await manager.send_personal_message(
                             {
                                 "type": "typing",
                                 "sender_id": user.id,
@@ -212,7 +212,7 @@ async def chat_websocket_endpoint(
                     room_id = data.get("room_id")
                     if room_id:
                         room_name = f"room_{room_id}"
-                        members = websocket_manager.get_room_users(room_name)
+                        members = manager.get_room_users(room_name)
                         
                         # 简化处理，实际应从数据库获取用户详情
                         await websocket.send_json({
@@ -232,6 +232,12 @@ async def chat_websocket_endpoint(
                     # 心跳检测
                     await websocket.send_json({"type": "pong"})
                 
+                elif message_type == "get_online_users":
+                    # 获取在线用户列表
+                    await websocket.send_json({
+                        "type": "users_list",
+                        "users": manager.get_online_users()
+                    })
                 else:
                     # 未知消息类型，回显
                     await websocket.send_json({
@@ -241,9 +247,9 @@ async def chat_websocket_endpoint(
         
         except WebSocketDisconnect:
             # 处理WebSocket断开连接
-            for room in websocket_manager.get_user_rooms(user.id):
+            for room in manager.get_user_rooms(user.id):
                 # 通知房间其他成员
-                await websocket_manager.broadcast_to_room(
+                await manager.broadcast_to_room(
                     room=room,
                     message={
                         "type": "user_leave",
@@ -254,7 +260,7 @@ async def chat_websocket_endpoint(
                 )
             
             # 断开连接
-            await websocket_manager.disconnect(websocket, user.id)
+            await manager.disconnect(websocket, user.id)
     
     except Exception as e:
         # 记录错误并关闭连接
@@ -275,5 +281,5 @@ async def get_active_users(
         含活跃用户ID列表的字典
     """
     return {
-        "active_users": websocket_manager.get_active_users()
+        "active_users": manager.get_active_users()
     } 

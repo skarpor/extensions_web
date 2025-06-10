@@ -10,7 +10,6 @@ from fastapi import FastAPI, HTTPException, status, UploadFile, Request
 from fastapi.routing import APIRoute
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from new_app.models.to_del_extension import UpdateExtension
 from new_app.core.logger import get_logger
 from new_app.core.sandbox import load_module_in_sandbox, execute_query_in_sandbox, SandboxException
 from new_app.core.file_manager import FileManager
@@ -21,9 +20,8 @@ logger = get_logger("extension_manager")
 class ExtensionManager:
     """扩展管理器类"""
     
-    def __init__(self, app: FastAPI, extensions_dir: str, config_dir: str, file_manager: Optional[FileManager] = None):
+    def __init__(self, extensions_dir: str, config_dir: str, file_manager: Optional[FileManager] = None):
         """初始化扩展管理器"""
-        self.app = app
         self.extensions_dir = extensions_dir
         self.loaded_extensions: Dict[str, dict] = {}
         self.file_manager = file_manager

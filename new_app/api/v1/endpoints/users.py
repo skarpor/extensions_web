@@ -9,10 +9,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from new_app.core import auth
 from new_app.db.session import get_db
 from new_app.schemas.user import User, UserUpdate, UserCreate
-from new_app.crud import crud_user
 from new_app.models.user import User as UserModel
+from new_app.core.logger import get_logger
 
 router = APIRouter()
+logger = get_logger("users")
 
 @router.get("/me", response_model=User)
 async def read_user_me(
@@ -33,7 +34,7 @@ async def update_user_me(
     """
     更新当前用户信息
     """
-    user = await crud_user.update(db, db_obj=current_user, obj_in=user_in)
+    user = await auth.update_user(db, db_obj=current_user, obj_in=user_in)
     return user
 
 @router.get("", response_model=List[User])
@@ -46,7 +47,7 @@ async def read_users(
     """
     获取用户列表（仅超级管理员）
     """
-    users = await crud_user.get_multi(db, skip=skip, limit=limit)
+    users = await auth.get_users(db, skip=skip, limit=limit)
     return users
 
 @router.post("", response_model=User)
@@ -59,13 +60,13 @@ async def create_user(
     """
     创建新用户（仅超级管理员）
     """
-    user = await crud_user.get_by_email(db, email=user_in.email)
+    user = await auth.get_user_by_email(db, email=user_in.email)
     if user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="该邮箱已注册"
         )
-    user = await crud_user.create(db, obj_in=user_in)
+    user = await auth.create_user(db, obj_in=user_in)
     return user
 
 @router.get("/{user_id}", response_model=User)
@@ -77,7 +78,7 @@ async def read_user_by_id(
     """
     通过ID获取用户信息
     """
-    user = await crud_user.get(db, id=user_id)
+    user = await auth.get_user_by_id(db, id=user_id)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -101,11 +102,11 @@ async def update_user(
     """
     更新用户信息（仅超级管理员）
     """
-    user = await crud_user.get(db, id=user_id)
+    user = await auth.get_user_by_id(db, id=user_id)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="用户不存在"
         )
-    user = await crud_user.update(db, db_obj=user, obj_in=user_in)
+    user = await auth.update_user(db, db_obj=user, obj_in=user_in)
     return user 

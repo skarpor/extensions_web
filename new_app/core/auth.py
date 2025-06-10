@@ -9,11 +9,13 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from new_app.core.config import settings
 from new_app.core.logger import get_logger
 from new_app.db.session import get_db
 from new_app.models.user import User
+from new_app.schemas.user import UserCreate
 
 
 logger = get_logger("auth")
@@ -71,9 +73,9 @@ def create_access_token(
     
     # 设置过期时间
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
@@ -96,13 +98,7 @@ async def get_current_user(
             raise credentials_exception
         
         # 尝试将subject解析为用户ID
-        try:
-            user_id = int(subject)
-            user = await crud_user.get(db, id=user_id)
-        except (ValueError, TypeError):
-            # 如果不是ID，则尝试作为用户名查询
-            user = await crud_user.get_by_username(db, username=subject)
-        
+        user = await get_user_by_username(db, username=subject)
         if user is None:
             raise credentials_exception
     except JWTError:
@@ -182,6 +178,7 @@ def has_role(user: User, role: str) -> bool:
     return role in user.roles
 
 def get_user_info(user: User) -> Dict[str, Any]:
+
     """获取用户信息"""
     return {
         "id": user.id,
@@ -194,3 +191,52 @@ def get_user_info(user: User) -> Dict[str, Any]:
         "created_at": user.created_at.isoformat() if user.created_at else None,
         "updated_at": user.updated_at.isoformat() if user.updated_at else None
     } 
+async def authenticate(db: AsyncSession, username: str, password: str) -> Optional[User]:
+    """验证用户凭证,不是邮箱，是账号密码"""
+    user = await db.execute(select(User).where(User.username == username))
+    if not user:
+        return None
+    if not verify_password(password, user.hashed_password):
+        return None
+    return user.scalars().one()
+
+async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
+    """根据邮箱获取用户"""
+    user = await db.execute(select(User).where(User.email == email))
+    return user.scalars().one_or_none()
+async def get_user_by_username(db: AsyncSession, username: str) -> Optional[User]:
+    """根据用户名获取用户"""
+    user = await db.execute(select(User).where(User.username == username))
+    return user.scalars().one_or_none()
+
+async def get_user_by_id(db: AsyncSession, id: int) -> Optional[User]:
+    """根据ID获取用户"""
+    user = await db.execute(select(User).where(User.id == id))
+    return user.scalars().one_or_none()
+
+async def create_user(db: AsyncSession, user_in: UserCreate) -> User:
+    """创建用户"""
+    user = User(**user_in.model_dump())
+    db.add(user)
+    await db.commit()
+    return user
+
+async def update_user(db: AsyncSession, db_obj: User, obj_in: UserCreate) -> User:
+    """更新用户"""
+    user = db_obj
+    user.username = obj_in.username
+    user.email = obj_in.email
+    user.password = get_password_hash(obj_in.password)
+    db.add(user)
+    await db.commit()
+    return user
+
+async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[User]:
+    """获取用户列表"""
+    users = await db.execute(select(User).offset(skip).limit(limit))
+    return users.scalars().all()
+
+async def delete_user(db: AsyncSession, user: User) -> None:
+    """删除用户"""
+    await db.delete(user)
+    await db.commit()

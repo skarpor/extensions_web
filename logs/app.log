@@ -1,0 +1,232 @@
+2025-06-10 21:18:04,657 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:19:22,116 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:19:25,883 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:19:26,163 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-10 21:19:26,164 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-10 21:19:26,180 - main - INFO - 应用启动...
+2025-06-10 21:19:26,181 - extension_manager - INFO - 开始加载所有扩展
+2025-06-10 21:19:26,181 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-10 21:19:26,182 - main - INFO - 应用启动完成
+2025-06-10 21:19:35,406 - main - INFO - 应用关闭...
+2025-06-10 21:19:37,230 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:19:37,487 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-10 21:19:37,487 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-10 21:19:37,496 - main - INFO - 应用启动...
+2025-06-10 21:19:37,496 - extension_manager - INFO - 开始加载所有扩展
+2025-06-10 21:19:37,497 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-10 21:19:37,498 - main - INFO - 应用启动完成
+2025-06-10 21:30:51,022 - main - INFO - 应用关闭...
+2025-06-10 21:30:53,695 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:30:53,962 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-10 21:30:53,962 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-10 21:30:53,963 - main - INFO - 应用启动...
+2025-06-10 21:30:53,964 - extension_manager - INFO - 开始加载所有扩展
+2025-06-10 21:30:53,964 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-10 21:30:53,964 - main - INFO - 应用启动完成
+2025-06-10 21:31:04,769 - main - INFO - 应用关闭...
+2025-06-10 21:31:06,762 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:31:07,041 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-10 21:31:07,042 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-10 21:31:07,043 - main - INFO - 应用启动...
+2025-06-10 21:31:07,044 - extension_manager - INFO - 开始加载所有扩展
+2025-06-10 21:31:07,044 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-10 21:31:07,044 - main - INFO - 应用启动完成
+2025-06-10 21:31:28,648 - main - INFO - 应用关闭...
+2025-06-10 21:31:30,480 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:31:30,729 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-10 21:31:30,729 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-10 21:31:30,731 - main - INFO - 应用启动...
+2025-06-10 21:31:30,731 - extension_manager - INFO - 开始加载所有扩展
+2025-06-10 21:31:30,732 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-10 21:31:30,732 - main - INFO - 应用启动完成
+2025-06-10 21:31:42,710 - main - INFO - 应用关闭...
+2025-06-10 21:31:44,516 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:31:54,114 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:32:02,708 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:32:23,223 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:32:47,539 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:40:13,988 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:40:56,724 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:40:57,041 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-10 21:40:57,041 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-10 21:40:57,041 - main - INFO - 应用启动...
+2025-06-10 21:40:57,041 - extension_manager - INFO - 开始加载所有扩展
+2025-06-10 21:40:57,041 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-10 21:40:57,041 - main - INFO - 应用启动完成
+2025-06-10 21:43:52,069 - main - INFO - 应用关闭...
+2025-06-10 21:43:53,995 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:43:54,339 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-10 21:43:54,340 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-10 21:43:54,345 - main - INFO - 应用启动...
+2025-06-10 21:43:54,346 - extension_manager - INFO - 开始加载所有扩展
+2025-06-10 21:43:54,346 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-10 21:43:54,347 - main - INFO - 应用启动完成
+2025-06-10 21:47:18,009 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:47:18,408 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-10 21:47:18,409 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-10 21:47:18,410 - main - INFO - 应用启动...
+2025-06-10 21:47:18,410 - extension_manager - INFO - 开始加载所有扩展
+2025-06-10 21:47:18,410 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-10 21:47:18,410 - main - INFO - 应用启动完成
+2025-06-10 21:49:12,000 - main - INFO - 应用关闭...
+2025-06-10 21:49:14,675 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:49:14,987 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-10 21:49:14,987 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-10 21:49:14,988 - main - INFO - 应用启动...
+2025-06-10 21:49:14,988 - extension_manager - INFO - 开始加载所有扩展
+2025-06-10 21:49:14,988 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-10 21:49:14,988 - main - INFO - 应用启动完成
+2025-06-10 21:49:24,423 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:49:24,769 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-10 21:49:24,770 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-10 21:49:24,771 - main - INFO - 应用启动...
+2025-06-10 21:49:24,771 - extension_manager - INFO - 开始加载所有扩展
+2025-06-10 21:49:24,771 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-10 21:49:24,771 - main - INFO - 应用启动完成
+2025-06-10 21:51:12,709 - main - INFO - 应用关闭...
+2025-06-10 21:51:17,963 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:51:18,231 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-10 21:51:18,232 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-10 21:51:18,233 - main - INFO - 应用启动...
+2025-06-10 21:51:18,233 - extension_manager - INFO - 开始加载所有扩展
+2025-06-10 21:51:18,233 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-10 21:51:18,233 - main - INFO - 应用启动完成
+2025-06-10 21:51:19,522 - auth - INFO - 用户尝试登录: admin
+2025-06-10 21:51:19,522 - auth - ERROR - 用户登录过程中发生错误: 'coroutine' object is not subscriptable
+2025-06-10 21:52:37,593 - auth - INFO - 用户尝试登录: admin
+2025-06-10 21:52:37,594 - auth - ERROR - 用户登录过程中发生错误: 'coroutine' object is not subscriptable
+2025-06-10 21:53:17,505 - auth - INFO - 用户尝试登录: admin
+2025-06-10 21:53:17,506 - auth - ERROR - 用户登录过程中发生错误: 'coroutine' object is not subscriptable
+2025-06-10 21:53:25,509 - main - INFO - 应用关闭...
+2025-06-10 21:53:31,687 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:53:31,984 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-10 21:53:31,985 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-10 21:53:31,985 - main - INFO - 应用启动...
+2025-06-10 21:53:31,986 - extension_manager - INFO - 开始加载所有扩展
+2025-06-10 21:53:31,986 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-10 21:53:31,986 - main - INFO - 应用启动完成
+2025-06-10 21:53:32,531 - auth - INFO - 用户尝试登录: admin
+2025-06-10 21:53:32,546 - auth - ERROR - 用户登录过程中发生错误: back_populates on relationship 'Setting.user' refers to attribute 'User.settings' that is not a relationship.  The back_populates parameter should refer to the name of a relationship on the target class.
+2025-06-10 21:55:07,565 - main - INFO - 应用关闭...
+2025-06-10 21:55:10,087 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:55:10,388 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-10 21:55:10,388 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-10 21:55:10,389 - main - INFO - 应用启动...
+2025-06-10 21:55:10,389 - extension_manager - INFO - 开始加载所有扩展
+2025-06-10 21:55:10,389 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-10 21:55:10,389 - main - INFO - 应用启动完成
+2025-06-10 21:55:13,992 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:55:14,329 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-10 21:55:14,329 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-10 21:55:14,330 - main - INFO - 应用启动...
+2025-06-10 21:55:14,330 - extension_manager - INFO - 开始加载所有扩展
+2025-06-10 21:55:14,330 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-10 21:55:14,330 - main - INFO - 应用启动完成
+2025-06-10 21:55:17,749 - auth - INFO - 用户尝试登录: admin
+2025-06-10 21:55:17,773 - auth - ERROR - 用户登录过程中发生错误: (sqlite3.OperationalError) no such column: users.full_name
+[SQL: SELECT users.id, users.username, users.email, users.hashed_password, users.full_name, users.is_active, users.is_superuser, users.roles, users.permissions, users.created_at, users.updated_at, users.settings, users.config 
+FROM users 
+WHERE users.username = ?]
+[parameters: ('admin',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-06-10 21:57:13,856 - auth - INFO - 用户尝试登录: admin
+2025-06-10 21:57:13,866 - auth - ERROR - 用户登录过程中发生错误: (sqlite3.OperationalError) no such column: users.full_name
+[SQL: SELECT users.id, users.username, users.email, users.hashed_password, users.full_name, users.is_active, users.is_superuser, users.roles, users.permissions, users.created_at, users.updated_at, users.settings, users.config 
+FROM users 
+WHERE users.username = ?]
+[parameters: ('admin',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-06-10 21:57:14,024 - main - INFO - 应用关闭...
+2025-06-10 21:57:16,602 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:57:16,923 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-10 21:57:16,924 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-10 21:57:16,925 - main - INFO - 应用启动...
+2025-06-10 21:57:16,925 - extension_manager - INFO - 开始加载所有扩展
+2025-06-10 21:57:16,926 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-10 21:57:16,926 - main - INFO - 应用启动完成
+2025-06-10 21:57:16,933 - auth - INFO - 用户尝试登录: admin
+2025-06-10 21:57:16,963 - auth - ERROR - 用户登录过程中发生错误: (sqlite3.OperationalError) no such column: users.full_name
+[SQL: SELECT users.id, users.username, users.email, users.hashed_password, users.full_name, users.is_active, users.is_superuser, users.roles, users.permissions, users.created_at, users.updated_at, users.settings, users.config 
+FROM users 
+WHERE users.username = ?]
+[parameters: ('admin',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-06-10 21:58:58,766 - main - INFO - 应用关闭...
+2025-06-10 21:59:02,796 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 21:59:03,095 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-10 21:59:03,096 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-10 21:59:03,097 - main - INFO - 应用启动...
+2025-06-10 21:59:03,097 - extension_manager - INFO - 开始加载所有扩展
+2025-06-10 21:59:03,097 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-10 21:59:03,097 - main - INFO - 应用启动完成
+2025-06-10 21:59:11,533 - auth - INFO - 用户尝试登录: admin
+2025-06-10 21:59:11,577 - auth - ERROR - 用户登录过程中发生错误: (sqlite3.OperationalError) no such column: users.full_name
+[SQL: SELECT users.id, users.username, users.email, users.hashed_password, users.full_name, users.is_active, users.is_superuser, users.roles, users.permissions, users.created_at, users.updated_at, users.settings, users.config 
+FROM users 
+WHERE users.username = ?]
+[parameters: ('admin',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-06-10 22:02:26,781 - auth - INFO - 用户尝试登录: admin
+2025-06-10 22:02:26,793 - auth - ERROR - 用户登录过程中发生错误: (sqlite3.OperationalError) no such column: users.full_name
+[SQL: SELECT users.id, users.username, users.email, users.hashed_password, users.full_name, users.is_active, users.is_superuser, users.roles, users.permissions, users.created_at, users.updated_at, users.settings, users.config 
+FROM users 
+WHERE users.username = ?]
+[parameters: ('admin',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-06-10 22:02:26,968 - main - INFO - 应用关闭...
+2025-06-10 22:02:29,517 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 22:02:29,823 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-10 22:02:29,824 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-10 22:02:29,825 - main - INFO - 应用启动...
+2025-06-10 22:02:29,825 - extension_manager - INFO - 开始加载所有扩展
+2025-06-10 22:02:29,825 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-10 22:02:29,825 - main - INFO - 应用启动完成
+2025-06-10 22:02:36,308 - auth - INFO - 用户尝试登录: admin
+2025-06-10 22:02:36,343 - auth - ERROR - 用户登录过程中发生错误: (sqlite3.OperationalError) no such column: users.roles
+[SQL: SELECT users.id, users.username, users.email, users.hashed_password, users.is_active, users.roles, users.permissions, users.created_at, users.updated_at, users.settings, users.config 
+FROM users 
+WHERE users.username = ?]
+[parameters: ('admin',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-06-10 22:04:29,001 - main - INFO - 应用关闭...
+2025-06-10 22:04:31,583 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 22:04:31,867 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-10 22:04:31,868 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-10 22:04:31,869 - main - INFO - 应用启动...
+2025-06-10 22:04:31,869 - extension_manager - INFO - 开始加载所有扩展
+2025-06-10 22:04:31,869 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-10 22:04:31,869 - main - INFO - 应用启动完成
+2025-06-10 22:04:39,000 - auth - INFO - 用户尝试登录: admin
+2025-06-10 22:04:39,019 - auth - ERROR - 用户登录过程中发生错误: Mapper 'Mapper[User(users)]' has no property 'files'.  If this property was indicated from other mappers or configure events, ensure registry.configure() has been called.
+2025-06-10 22:05:01,741 - main - INFO - 应用关闭...
+2025-06-10 22:05:04,102 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 22:05:04,449 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-10 22:05:04,450 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-10 22:05:04,451 - main - INFO - 应用启动...
+2025-06-10 22:05:04,451 - extension_manager - INFO - 开始加载所有扩展
+2025-06-10 22:05:04,451 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-10 22:05:04,451 - main - INFO - 应用启动完成
+2025-06-10 22:06:09,423 - auth - INFO - 用户尝试登录: admin
+2025-06-10 22:06:09,441 - auth - ERROR - 用户登录过程中发生错误: Mapper 'Mapper[User(users)]' has no property 'files'.  If this property was indicated from other mappers or configure events, ensure registry.configure() has been called.
+2025-06-10 22:07:48,408 - auth - INFO - 用户尝试登录: admin
+2025-06-10 22:07:48,416 - auth - ERROR - 用户登录过程中发生错误: One or more mappers failed to initialize - can't proceed with initialization of other mappers. Triggering mapper: 'Mapper[File(files)]'. Original exception was: Mapper 'Mapper[User(users)]' has no property 'files'.  If this property was indicated from other mappers or configure events, ensure registry.configure() has been called.
+2025-06-10 22:07:48,605 - main - INFO - 应用关闭...
+2025-06-10 22:07:51,121 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 22:07:51,422 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-10 22:07:51,422 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-10 22:07:51,423 - main - INFO - 应用启动...
+2025-06-10 22:07:51,423 - extension_manager - INFO - 开始加载所有扩展
+2025-06-10 22:07:51,423 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-10 22:07:51,423 - main - INFO - 应用启动完成
+2025-06-10 22:07:51,429 - auth - INFO - 用户尝试登录: admin
+2025-06-10 22:07:51,437 - auth - ERROR - 用户登录过程中发生错误: Mapper 'Mapper[User(users)]' has no property 'files'.  If this property was indicated from other mappers or configure events, ensure registry.configure() has been called.
+2025-06-10 22:07:53,029 - auth - INFO - 用户尝试登录: admin
+2025-06-10 22:07:53,032 - auth - ERROR - 用户登录过程中发生错误: One or more mappers failed to initialize - can't proceed with initialization of other mappers. Triggering mapper: 'Mapper[File(files)]'. Original exception was: Mapper 'Mapper[User(users)]' has no property 'files'.  If this property was indicated from other mappers or configure events, ensure registry.configure() has been called.
+2025-06-10 22:08:52,085 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-10 22:08:52,388 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-10 22:08:52,389 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-10 22:08:52,389 - main - INFO - 应用启动...
+2025-06-10 22:08:52,389 - extension_manager - INFO - 开始加载所有扩展
+2025-06-10 22:08:52,390 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-10 22:08:52,390 - main - INFO - 应用启动完成
+2025-06-10 22:09:06,570 - main - INFO - 应用关闭...

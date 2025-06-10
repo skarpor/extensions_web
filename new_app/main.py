@@ -41,8 +41,9 @@ def create_app() -> FastAPI:
     if settings.BACKEND_CORS_ORIGINS:
         app.add_middleware(
             CORSMiddleware,
-            allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
-            allow_credentials=True,
+            # allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+            allow_origins=["*"],
+            allow_credentials=False,
             allow_methods=["*"],
             allow_headers=["*"],
         )
@@ -64,9 +65,9 @@ def create_app() -> FastAPI:
     
     # 注册数据库API路由 - 直接使用前端需要的路径
     # app.include_router(database.router, prefix=settings.API_V1_STR + "/db")
-    app.include_router(api_router)
+    app.include_router(api_router,prefix="/api")
     # 初始化文件管理器
-    file_manager = FileManager(db=None)
+    file_manager = FileManager()
 
     # 初始化扩展管理器
     extension_manager = ExtensionManager(

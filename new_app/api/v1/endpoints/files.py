@@ -36,17 +36,17 @@ async def upload_file(
         )
     return db_file
 
-@router.get("/my-files", response_model=List[FileSchema])
-async def read_user_files(
-    *,
-    db: AsyncSession = Depends(get_db),
-    current_user: UserModel = Depends(auth.get_current_active_user),
-) -> Any:
-    """
-    获取当前用户的文件列表
-    """
-    file_manager = FileManager(db)
-    return await file_manager.get_user_files(current_user.id)
+# @router.get("/my-files", response_model=List[FileSchema])
+# async def read_user_files(
+#     *,
+#     db: AsyncSession = Depends(get_db),
+#     current_user: UserModel = Depends(auth.get_current_active_user),
+# ) -> Any:
+#     """
+#     获取当前用户的文件列表
+#     """
+#     file_manager = FileManager(db)
+#     return await file_manager.get_user_files(current_user.id)
 
 @router.get("/{file_id}", response_model=FileSchema)
 async def read_file(

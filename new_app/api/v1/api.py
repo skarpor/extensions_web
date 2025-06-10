@@ -9,6 +9,7 @@ from new_app.api.v1.endpoints.files import router as files_router
 from new_app.api.v1.endpoints.chats import router as chat_router
 from new_app.api.v1.endpoints.settings import router as settings_router
 from new_app.api.v1.endpoints.database import router as database_router
+from new_app.api.v1.endpoints.dashboard import router as dashboard_router
 
 api_router = APIRouter()
 
@@ -19,4 +20,5 @@ api_router.include_router(extensions_router, prefix="/extensions", tags=["扩展
 api_router.include_router(files_router, prefix="/files", tags=["文件"])
 api_router.include_router(chat_router, prefix="/chat", tags=["聊天"])
 api_router.include_router(settings_router, prefix="/settings", tags=["设置"])
-api_router.include_router(database_router, prefix="/db", tags=["数据库"]) 
+api_router.include_router(database_router, prefix="/db", tags=["数据库"])
+api_router.include_router(dashboard_router, prefix="/dashboard", tags=["控制面板"]) 

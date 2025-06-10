@@ -5,7 +5,8 @@
 import os
 import secrets
 from typing import Any, Dict, List, Optional, Union
-from pydantic import BaseSettings, PostgresDsn, validator
+from pydantic import validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic.networks import AnyHttpUrl
 
 class Settings(BaseSettings):
@@ -18,15 +19,15 @@ class Settings(BaseSettings):
     PORT: int = 8000
     
     # BACKEND_CORS_ORIGINS is a comma-separated list of origins
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
+    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = ["http://localhost:5173"]
 
-    @validator("BACKEND_CORS_ORIGINS", pre=True)
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
-        if isinstance(v, str) and not v.startswith("["):
-            return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
-            return v
-        raise ValueError(v)
+    # @validator("BACKEND_CORS_ORIGINS", pre=True)
+    # def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
+    #     if isinstance(v, str) and not v.startswith("["):
+    #         return [i.strip() for i in v.split(",")]
+    #     elif isinstance(v, (list, str)):
+    #         return v
+    #     raise ValueError(v)
 
     # Database configuration
     SQLALCHEMY_DATABASE_URI: Optional[str] = os.getenv(
