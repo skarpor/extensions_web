@@ -11,4 +11,4 @@ class Token(BaseModel):
 
 class TokenPayload(BaseModel):
     """Token载荷模型"""
-    sub: Optional[int] = None 
+    sub: Optional[int] = None

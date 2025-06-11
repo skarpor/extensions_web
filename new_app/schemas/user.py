@@ -8,6 +8,8 @@ from .base import BaseSchema
 
 class UserBase(BaseModel):
     """用户基础模型"""
+    username:str
+    nickname:str
     email: Optional[EmailStr] = None
     is_active: Optional[bool] = True
     # is_superuser: bool = False
@@ -36,4 +38,7 @@ class User(UserInDBBase):
 
 class UserInDB(UserInDBBase):
     """数据库中的用户模型（包含哈希密码）"""
-    hashed_password: str 
+    hashed_password: str
+from .token import Token
+class LoginResponse(Token):
+    user:User

@@ -8,15 +8,16 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.models import Permission
 from new_app.core.config import settings
 from new_app.db.session import get_db
 from new_app.schemas.token import Token
-from new_app.schemas.user import UserCreate, User
+from new_app.schemas.user import UserCreate, User,LoginResponse
 from new_app.core import auth
 from new_app.core.logger import get_logger
 router = APIRouter()
 logger = get_logger("auth")
-@router.post("/login", response_model=Token)
+@router.post("/login", response_model=LoginResponse)
 async def login(
     db: AsyncSession = Depends(get_db),
     form_data: OAuth2PasswordRequestForm = Depends()
@@ -46,7 +47,8 @@ async def login(
     
     return {
         "access_token": access_token,
-        "token_type": "bearer"
+        "token_type": "bearer",
+        "user": user.to_dict()
     }
 
 
@@ -82,6 +84,7 @@ async def login_for_token(
     
     try:
         user =await auth.authenticate(db, form_data.username, form_data.password)
+
         if not user:
             logger.warning(f"用户登录失败: {form_data.username} - 无效凭证")
             raise HTTPException(
@@ -89,10 +92,10 @@ async def login_for_token(
                 detail="Invalid credentials",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-
+        print(user)
         # 创建访问令牌
-        access_token =await auth.create_access_token(
-            data={"sub": user["username"]},
+        access_token = auth.create_access_token(
+            data={"sub": user.username},
             expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         )
         # 设置cookie
@@ -109,15 +112,18 @@ async def login_for_token(
         return {
             "access_token": access_token, 
             "token_type": "bearer", 
-            "username": user["username"], 
-            "role": user["role"],
-            "id": user["id"],
-            "nickname": user.get("nickname") or user["username"]
+            "username": user.username,
+            "email": user.email,
+            # "role": user.roles,
+            # "is_active": user.is_active,
+            # "is_superuser": user.is_superuser,
+            "nickname": user.nickname or user.username
         }
     except HTTPException as e:
         # 直接重新抛出HTTP异常
         raise
     except Exception as e:
+        raise
         logger.error(f"用户登录过程中发生错误: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
@@ -141,7 +147,7 @@ async def logout(response: Response):
 
 
 @router.post("/register")
-async def register(user_data: UserCreate):
+async def register(user_data: UserCreate,db:AsyncSession=Depends(get_db)):
     """
     注册新用户
     
@@ -156,14 +162,14 @@ async def register(user_data: UserCreate):
     """
     try:
         # 检查用户名是否已存在
-        existing_user = auth.get_user_by_username(user_data.username)
+        existing_user = auth.get_user_by_username(db,user_data.username)
         if existing_user:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="用户名已存在"
             )
         # 检查邮箱是否已存在
-        existing_user = auth.get_user_by_email(user_data.email)
+        existing_user = auth.get_user_by_email(db,user_data.email)
         if existing_user:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -215,3 +221,5 @@ async def get_me(current_user: User = Depends(auth.get_current_user)):
     # # 转字典或json
     # current_user_dict = current_user.model_dump()
     return current_user
+
+

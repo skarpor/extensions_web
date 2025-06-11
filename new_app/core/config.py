@@ -6,7 +6,7 @@ import os
 import secrets
 from typing import Any, Dict, List, Optional, Union
 from pydantic import validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import BaseSettings
 from pydantic.networks import AnyHttpUrl
 
 class Settings(BaseSettings):
@@ -38,6 +38,11 @@ class Settings(BaseSettings):
     SECRET_KEY: str = secrets.token_urlsafe(32)
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
+    # 允许的图片类型
+    ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+
+    # 创建上传目录
+    CHAT_UPLOAD_DIR = os.path.join("static", "uploads", "chat")
 
     # File storage
     UPLOAD_DIR: str = "uploads"

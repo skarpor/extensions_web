@@ -14,14 +14,14 @@ from sqlalchemy import select
 from new_app.core.config import settings
 from new_app.core.logger import get_logger
 from new_app.db.session import get_db
-from new_app.models.user import User
+from new_app.models.user import User, Permission
 from new_app.schemas.user import UserCreate
 
 
 logger = get_logger("auth")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
 
 ALGORITHM = "HS256"
 
@@ -194,11 +194,12 @@ def get_user_info(user: User) -> Dict[str, Any]:
 async def authenticate(db: AsyncSession, username: str, password: str) -> Optional[User]:
     """验证用户凭证,不是邮箱，是账号密码"""
     user = await db.execute(select(User).where(User.username == username))
+    user = user.scalar_one_or_none()
     if not user:
         return None
     if not verify_password(password, user.hashed_password):
         return None
-    return user.scalars().one()
+    return user
 
 async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
     """根据邮箱获取用户"""
@@ -239,4 +240,48 @@ async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[U
 async def delete_user(db: AsyncSession, user: User) -> None:
     """删除用户"""
     await db.delete(user)
+    await db.commit()
+
+
+# 通常在数据库迁移脚本或应用启动时执行
+async def init_permissions(db: AsyncSession):
+    """初始化系统权限数据"""
+    # 检查是否已初始化
+    result = await db.execute(select(Permission))
+    if result.scalars().first() is not None:
+        return
+
+    # 系统预定义权限
+    permissions = [
+        Permission(code="user:create", name="创建用户", description="可以创建新用户"),
+        Permission(code="user:read", name="查看用户", description="可以查看用户信息"),
+        Permission(code="user:update", name="更新用户", description="可以更新用户信息"),
+        Permission(code="user:delete", name="删除用户", description="可以删除用户"),
+        Permission(code="role:manage", name="角色管理", description="可以管理角色和权限分配"),
+    ]
+
+    db.add_all(permissions)
+    logger.info("权限初始化完成")
+    await db.commit()
+async def init_users(db: AsyncSession):
+    """初始化系统权限数据"""
+    # 检查是否已初始化
+    result = await db.execute(select(User))
+    if result.scalars().first() is not None:
+        return
+
+    # 系统预定义权限
+    users = [
+        User(
+            username="zxc",
+            nickname="张新宇",
+            email="123@666.com",
+            hashed_password=get_password_hash("123"),
+            is_active=True,
+            is_superuser=True,
+        ),
+    ]
+
+    db.add_all(users)
+    logger.info("用户初始化完成")
     await db.commit()

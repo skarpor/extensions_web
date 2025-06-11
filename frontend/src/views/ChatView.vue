@@ -320,7 +320,7 @@
       connectWebSocket() {
         // 创建WebSocket连接
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-        const wsUrl = `${protocol}//localhost:8000/ws/chat/${this.currentUser.username}`
+        const wsUrl = `${protocol}//localhost:8000/api/ws/chat/${this.currentUser.username}`
         
         this.ws = new WebSocket(wsUrl)
         

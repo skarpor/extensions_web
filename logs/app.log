@@ -230,3 +230,1431 @@ WHERE users.username = ?]
 2025-06-10 22:08:52,390 - extension_manager - INFO - 完成加载所有扩展，共 0 个
 2025-06-10 22:08:52,390 - main - INFO - 应用启动完成
 2025-06-10 22:09:06,570 - main - INFO - 应用关闭...
+2025-06-11 10:43:31,869 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 10:43:54,757 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 10:43:55,208 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 10:43:55,209 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 10:43:55,269 - main - INFO - 应用启动...
+2025-06-11 10:43:55,269 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 10:43:55,269 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 10:43:55,269 - main - INFO - 应用启动完成
+2025-06-11 10:47:21,621 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 10:47:21,819 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 10:47:21,820 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 10:47:21,821 - main - INFO - 应用启动...
+2025-06-11 10:47:21,821 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 10:47:21,821 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 10:47:21,821 - main - INFO - 应用启动完成
+2025-06-11 10:48:48,703 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 10:48:48,913 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 10:48:48,913 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 10:48:48,914 - main - INFO - 应用启动...
+2025-06-11 10:48:48,914 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 10:48:48,915 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 10:48:48,915 - main - INFO - 应用启动完成
+2025-06-11 10:49:42,714 - main - ERROR - 全局异常: Mapper 'Mapper[User(users)]' has no property 'files'.  If this property was indicated from other mappers or configure events, ensure registry.configure() has been called.
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\mapper.py", line 2491, in get_property
+    return self._props[key]
+KeyError: 'files'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 79, in __call__
+    raise exc
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 66, in app
+    response = await func(request)
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 237, in app
+    raw_response = await run_endpoint_function(
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 163, in run_endpoint_function
+    return await dependant.call(**values)
+  File "E:\projects\d08\extensions_web\new_app\api\v1\endpoints\auth.py", line 27, in login
+    user = await auth.authenticate(
+  File "E:\projects\d08\extensions_web\new_app\core\auth.py", line 196, in authenticate
+    user = await db.execute(select(User).where(User.username == username))
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 313, in execute
+    result = await greenlet_spawn(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 167, in greenlet_spawn
+    result = context.switch(value)
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\session.py", line 2229, in execute
+    return self._execute_internal(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\session.py", line 2124, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\context.py", line 252, in orm_execute_statement
+    result = conn.execute(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\engine\base.py", line 1414, in execute
+    return meth(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\sql\elements.py", line 485, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\engine\base.py", line 1630, in _execute_clauseelement
+    compiled_sql, extracted_params, cache_hit = elem._compile_w_cache(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\sql\elements.py", line 651, in _compile_w_cache
+    compiled_sql = self._compiler(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\sql\elements.py", line 290, in _compiler
+    return dialect.statement_compiler(dialect, self, **kw)
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\sql\compiler.py", line 1269, in __init__
+    Compiled.__init__(self, dialect, statement, **kwargs)
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\sql\compiler.py", line 710, in __init__
+    self.string = self.process(self.statement, **compile_kwargs)
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\sql\compiler.py", line 755, in process
+    return obj._compiler_dispatch(self, **kwargs)
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\sql\visitors.py", line 143, in _compiler_dispatch
+    return meth(self, **kw)  # type: ignore  # noqa: E501
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\sql\compiler.py", line 4406, in visit_select
+    compile_state = select_stmt._compile_state_factory(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\sql\base.py", line 650, in create_for_statement
+    return klass.create_for_statement(statement, compiler, **kw)
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\context.py", line 987, in create_for_statement
+    _QueryEntity.to_compile_state(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\context.py", line 2430, in to_compile_state
+    _MapperEntity(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\context.py", line 2510, in __init__
+    entity._post_inspect
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\util\langhelpers.py", line 1254, in __get__
+    obj.__dict__[self.__name__] = result = self.fget(obj)
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\mapper.py", line 2693, in _post_inspect
+    self._check_configure()
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\mapper.py", line 2374, in _check_configure
+    _configure_registries({self.registry}, cascade=True)
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\mapper.py", line 4116, in _configure_registries
+    _do_configure_registries(registries, cascade)
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\mapper.py", line 4158, in _do_configure_registries
+    mapper._post_configure_properties()
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\mapper.py", line 2391, in _post_configure_properties
+    prop.init()
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\interfaces.py", line 544, in init
+    self.do_init()
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\relationships.py", line 1637, in do_init
+    self._generate_backref()
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\relationships.py", line 2128, in _generate_backref
+    self._add_reverse_property(self.back_populates)
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\relationships.py", line 1569, in _add_reverse_property
+    other = self.mapper.get_property(key, _configure_mappers=False)
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\mapper.py", line 2493, in get_property
+    raise sa_exc.InvalidRequestError(
+sqlalchemy.exc.InvalidRequestError: Mapper 'Mapper[User(users)]' has no property 'files'.  If this property was indicated from other mappers or configure events, ensure registry.configure() has been called.
+2025-06-11 10:54:20,943 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 10:54:21,148 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 10:54:21,149 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 10:54:21,150 - main - INFO - 应用启动...
+2025-06-11 10:54:21,150 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 10:54:21,150 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 10:54:21,151 - main - INFO - 应用启动完成
+2025-06-11 10:54:36,356 - main - ERROR - 全局异常: 'ChunkedIteratorResult' object has no attribute 'hashed_password'
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 79, in __call__
+    raise exc
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 66, in app
+    response = await func(request)
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 237, in app
+    raw_response = await run_endpoint_function(
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 163, in run_endpoint_function
+    return await dependant.call(**values)
+  File "E:\projects\d08\extensions_web\new_app\api\v1\endpoints\auth.py", line 27, in login
+    user = await auth.authenticate(
+  File "E:\projects\d08\extensions_web\new_app\core\auth.py", line 199, in authenticate
+    if not verify_password(password, user.hashed_password):
+AttributeError: 'ChunkedIteratorResult' object has no attribute 'hashed_password'
+2025-06-11 10:56:21,414 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 10:56:21,614 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 10:56:21,615 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 10:56:21,616 - main - INFO - 应用启动...
+2025-06-11 10:56:21,616 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 10:56:21,616 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 10:56:21,616 - main - INFO - 应用启动完成
+2025-06-11 10:56:24,809 - main - ERROR - 全局异常: 'coroutine' object has no attribute 'one_or_none'
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 79, in __call__
+    raise exc
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 66, in app
+    response = await func(request)
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 237, in app
+    raw_response = await run_endpoint_function(
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 163, in run_endpoint_function
+    return await dependant.call(**values)
+  File "E:\projects\d08\extensions_web\new_app\api\v1\endpoints\auth.py", line 27, in login
+    user = await auth.authenticate(
+  File "E:\projects\d08\extensions_web\new_app\core\auth.py", line 196, in authenticate
+    user = await db.execute(select(User).where(User.username == username)).one_or_none()
+AttributeError: 'coroutine' object has no attribute 'one_or_none'
+2025-06-11 10:56:37,087 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 10:56:37,286 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 10:56:37,286 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 10:56:37,287 - main - INFO - 应用启动...
+2025-06-11 10:56:37,287 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 10:56:37,287 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 10:56:37,287 - main - INFO - 应用启动完成
+2025-06-11 10:56:50,753 - main - ERROR - 全局异常: tuple indices must be integers or slices, not str
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 79, in __call__
+    raise exc
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 66, in app
+    response = await func(request)
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 237, in app
+    raw_response = await run_endpoint_function(
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 163, in run_endpoint_function
+    return await dependant.call(**values)
+  File "E:\projects\d08\extensions_web\new_app\api\v1\endpoints\auth.py", line 27, in login
+    user = await auth.authenticate(
+  File "E:\projects\d08\extensions_web\new_app\core\auth.py", line 200, in authenticate
+    if not verify_password(password, user['hashed_password']):
+  File "lib\sqlalchemy\cyextension\resultproxy.pyx", line 67, in sqlalchemy.cyextension.resultproxy.BaseRow.__getitem__
+TypeError: tuple indices must be integers or slices, not str
+2025-06-11 10:57:20,231 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 10:57:20,433 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 10:57:20,434 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 10:57:20,434 - main - INFO - 应用启动...
+2025-06-11 10:57:20,435 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 10:57:20,435 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 10:57:20,435 - main - INFO - 应用启动完成
+2025-06-11 10:57:30,222 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 10:57:30,420 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 10:57:30,421 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 10:57:30,421 - main - INFO - 应用启动...
+2025-06-11 10:57:30,422 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 10:57:30,422 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 10:57:30,422 - main - INFO - 应用启动完成
+2025-06-11 10:57:31,739 - main - ERROR - 全局异常: 'User' object is not subscriptable
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 79, in __call__
+    raise exc
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 66, in app
+    response = await func(request)
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 237, in app
+    raw_response = await run_endpoint_function(
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 163, in run_endpoint_function
+    return await dependant.call(**values)
+  File "E:\projects\d08\extensions_web\new_app\api\v1\endpoints\auth.py", line 27, in login
+    user = await auth.authenticate(
+  File "E:\projects\d08\extensions_web\new_app\core\auth.py", line 201, in authenticate
+    if not verify_password(password, user['hashed_password']):
+TypeError: 'User' object is not subscriptable
+2025-06-11 10:58:11,611 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 10:58:11,820 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 10:58:11,821 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 10:58:11,822 - main - INFO - 应用启动...
+2025-06-11 10:58:11,822 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 10:58:11,822 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 10:58:11,822 - main - INFO - 应用启动完成
+2025-06-11 10:58:13,550 - main - ERROR - 全局异常: 'User' object has no attribute 'scalars'
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 79, in __call__
+    raise exc
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 66, in app
+    response = await func(request)
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 237, in app
+    raw_response = await run_endpoint_function(
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 163, in run_endpoint_function
+    return await dependant.call(**values)
+  File "E:\projects\d08\extensions_web\new_app\api\v1\endpoints\auth.py", line 27, in login
+    user = await auth.authenticate(
+  File "E:\projects\d08\extensions_web\new_app\core\auth.py", line 203, in authenticate
+    return user.scalars().one()
+AttributeError: 'User' object has no attribute 'scalars'
+2025-06-11 10:59:00,168 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 10:59:00,367 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 10:59:00,368 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 10:59:00,369 - main - INFO - 应用启动...
+2025-06-11 10:59:00,369 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 10:59:00,369 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 10:59:00,369 - main - INFO - 应用启动完成
+2025-06-11 10:59:30,294 - main - INFO - 应用关闭...
+2025-06-11 10:59:33,769 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 10:59:33,987 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 10:59:33,988 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 10:59:33,989 - main - INFO - 应用启动...
+2025-06-11 10:59:33,989 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 10:59:33,989 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 10:59:33,989 - main - INFO - 应用启动完成
+2025-06-11 11:03:05,644 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 11:03:05,957 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 11:03:05,957 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 11:03:05,958 - main - INFO - 应用启动...
+2025-06-11 11:03:05,958 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 11:03:05,958 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 11:03:05,958 - main - INFO - 应用启动完成
+2025-06-11 11:03:12,904 - auth - INFO - 用户尝试登录: admin
+2025-06-11 11:03:13,314 - auth - ERROR - 用户登录过程中发生错误: 'User' object is not subscriptable
+2025-06-11 11:05:52,086 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 11:05:52,285 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 11:05:52,286 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 11:05:52,287 - main - INFO - 应用启动...
+2025-06-11 11:05:52,287 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 11:05:52,287 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 11:05:52,287 - main - INFO - 应用启动完成
+2025-06-11 11:05:54,649 - auth - INFO - 用户尝试登录: admin
+2025-06-11 11:05:54,976 - auth - INFO - 用户登录成功: admin
+2025-06-11 11:05:54,976 - auth - ERROR - 用户登录过程中发生错误: 'User' object is not subscriptable
+2025-06-11 11:06:05,533 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 11:06:05,732 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 11:06:05,732 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 11:06:05,733 - main - INFO - 应用启动...
+2025-06-11 11:06:05,733 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 11:06:05,733 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 11:06:05,734 - main - INFO - 应用启动完成
+2025-06-11 11:06:07,536 - auth - INFO - 用户尝试登录: admin
+2025-06-11 11:06:07,815 - auth - INFO - 用户登录成功: admin
+2025-06-11 11:06:07,817 - main - ERROR - 全局异常: 'User' object is not subscriptable
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 79, in __call__
+    raise exc
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 66, in app
+    response = await func(request)
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 237, in app
+    raw_response = await run_endpoint_function(
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 163, in run_endpoint_function
+    return await dependant.call(**values)
+  File "E:\projects\d08\extensions_web\new_app\api\v1\endpoints\auth.py", line 112, in login_for_token
+    "username": user["username"],
+TypeError: 'User' object is not subscriptable
+2025-06-11 11:08:24,269 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 11:08:24,479 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 11:08:24,479 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 11:08:24,480 - main - INFO - 应用启动...
+2025-06-11 11:08:24,480 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 11:08:24,480 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 11:08:24,481 - main - INFO - 应用启动完成
+2025-06-11 11:08:26,337 - auth - INFO - 用户尝试登录: admin
+2025-06-11 11:08:26,614 - auth - INFO - 用户登录成功: admin
+2025-06-11 11:08:26,615 - main - ERROR - 全局异常: 'User' object has no attribute 'role'
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 79, in __call__
+    raise exc
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 66, in app
+    response = await func(request)
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 237, in app
+    raw_response = await run_endpoint_function(
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 163, in run_endpoint_function
+    return await dependant.call(**values)
+  File "E:\projects\d08\extensions_web\new_app\api\v1\endpoints\auth.py", line 113, in login_for_token
+    "role": user.role,
+AttributeError: 'User' object has no attribute 'role'
+2025-06-11 11:08:50,311 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 11:08:50,514 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 11:08:50,515 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 11:08:50,516 - main - INFO - 应用启动...
+2025-06-11 11:08:50,516 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 11:08:50,516 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 11:08:50,516 - main - INFO - 应用启动完成
+2025-06-11 11:08:51,847 - auth - INFO - 用户尝试登录: admin
+2025-06-11 11:08:52,121 - auth - INFO - 用户登录成功: admin
+2025-06-11 11:08:52,123 - main - ERROR - 全局异常: 'User' object is not subscriptable
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 79, in __call__
+    raise exc
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 66, in app
+    response = await func(request)
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 237, in app
+    raw_response = await run_endpoint_function(
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 163, in run_endpoint_function
+    return await dependant.call(**values)
+  File "E:\projects\d08\extensions_web\new_app\api\v1\endpoints\auth.py", line 113, in login_for_token
+    "role": user['role'],
+TypeError: 'User' object is not subscriptable
+2025-06-11 11:13:49,053 - main - INFO - 应用关闭...
+2025-06-11 11:13:50,442 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 11:13:50,640 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 11:13:50,641 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 11:13:50,642 - main - INFO - 应用启动...
+2025-06-11 11:13:50,642 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 11:13:50,642 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 11:13:50,642 - main - INFO - 应用启动完成
+2025-06-11 11:31:51,933 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 11:31:52,136 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 11:31:52,137 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 11:31:52,138 - main - INFO - 应用启动...
+2025-06-11 11:31:52,138 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 11:31:52,138 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 11:31:52,138 - main - INFO - 应用启动完成
+2025-06-11 11:33:02,494 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 11:33:04,906 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 11:33:04,907 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 11:33:04,908 - main - INFO - 应用启动...
+2025-06-11 11:33:04,908 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 11:33:04,908 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 11:33:04,908 - main - INFO - 应用启动完成
+2025-06-11 11:40:25,541 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 11:40:26,737 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 11:40:26,737 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 11:40:26,738 - main - INFO - 应用启动...
+2025-06-11 11:40:26,738 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 11:40:26,738 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 11:40:26,738 - main - INFO - 应用启动完成
+2025-06-11 11:42:22,656 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 11:42:22,862 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 11:42:22,863 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 11:42:22,864 - main - INFO - 应用启动...
+2025-06-11 11:42:22,864 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 11:42:22,864 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 11:42:22,864 - main - INFO - 应用启动完成
+2025-06-11 11:42:57,835 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 12:27:35,582 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 12:27:35,926 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 12:27:35,927 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 12:27:35,930 - main - INFO - 应用启动...
+2025-06-11 12:27:35,930 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 12:27:35,930 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 12:27:35,930 - main - INFO - 应用启动完成
+2025-06-11 12:27:59,545 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 12:28:02,435 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 12:28:02,436 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 12:28:02,437 - main - INFO - 应用启动...
+2025-06-11 12:28:02,437 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 12:28:02,437 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 12:28:02,437 - main - INFO - 应用启动完成
+2025-06-11 12:32:58,148 - main - INFO - 应用关闭...
+2025-06-11 13:36:56,772 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 13:36:57,068 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 13:36:57,069 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 13:36:57,146 - main - INFO - 应用启动...
+2025-06-11 13:36:57,146 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 13:36:57,146 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 13:36:57,146 - main - INFO - 应用启动完成
+2025-06-11 13:37:27,068 - main - INFO - 应用关闭...
+2025-06-11 13:37:28,508 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 13:37:28,707 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 13:37:28,707 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 13:37:28,708 - main - INFO - 应用启动...
+2025-06-11 13:37:31,593 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 13:37:31,593 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 13:37:31,594 - main - INFO - 应用启动完成
+2025-06-11 13:37:38,163 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 13:37:38,363 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 13:37:38,364 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 13:37:38,364 - main - INFO - 应用启动...
+2025-06-11 13:37:38,375 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 13:37:38,375 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 13:37:38,375 - main - INFO - 应用启动完成
+2025-06-11 13:55:12,456 - main - ERROR - 全局异常: (sqlite3.OperationalError) no such column: users.is_superuser
+[SQL: SELECT users.id, users.username, users.email, users.hashed_password, users.is_active, users.is_superuser, users.created_at, users.updated_at 
+FROM users 
+WHERE users.username = ?]
+[parameters: ('admin',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\engine\default.py", line 747, in do_execute
+    cursor.execute(statement, parameters)
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\dialects\sqlite\aiosqlite.py", line 113, in execute
+    self._adapt_connection._handle_exception(error)
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\dialects\sqlite\aiosqlite.py", line 254, in _handle_exception
+    raise error
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\dialects\sqlite\aiosqlite.py", line 95, in execute
+    self.await_(_cursor.execute(operation, parameters))
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 102, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 160, in greenlet_spawn
+    value = await result
+  File "D:\develop\Python38\lib\site-packages\aiosqlite\cursor.py", line 48, in execute
+    await self._execute(self._cursor.execute, sql, parameters)
+  File "D:\develop\Python38\lib\site-packages\aiosqlite\cursor.py", line 40, in _execute
+    return await self._conn._execute(fn, *args, **kwargs)
+  File "D:\develop\Python38\lib\site-packages\aiosqlite\core.py", line 132, in _execute
+    return await future
+  File "D:\develop\Python38\lib\site-packages\aiosqlite\core.py", line 115, in run
+    result = function()
+sqlite3.OperationalError: no such column: users.is_superuser
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 79, in __call__
+    raise exc
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 66, in app
+    response = await func(request)
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 237, in app
+    raw_response = await run_endpoint_function(
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 163, in run_endpoint_function
+    return await dependant.call(**values)
+  File "E:\projects\d08\extensions_web\new_app\api\v1\endpoints\auth.py", line 27, in login
+    user = await auth.authenticate(
+  File "E:\projects\d08\extensions_web\new_app\core\auth.py", line 196, in authenticate
+    user = await db.execute(select(User).where(User.username == username))
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 313, in execute
+    result = await greenlet_spawn(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 165, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\session.py", line 2229, in execute
+    return self._execute_internal(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\session.py", line 2124, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\context.py", line 252, in orm_execute_statement
+    result = conn.execute(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\engine\base.py", line 1414, in execute
+    return meth(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\sql\elements.py", line 485, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\engine\base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\engine\base.py", line 1842, in _execute_context
+    return self._exec_single_context(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\engine\base.py", line 1983, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\engine\base.py", line 2325, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\engine\default.py", line 747, in do_execute
+    cursor.execute(statement, parameters)
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\dialects\sqlite\aiosqlite.py", line 113, in execute
+    self._adapt_connection._handle_exception(error)
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\dialects\sqlite\aiosqlite.py", line 254, in _handle_exception
+    raise error
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\dialects\sqlite\aiosqlite.py", line 95, in execute
+    self.await_(_cursor.execute(operation, parameters))
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 102, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 160, in greenlet_spawn
+    value = await result
+  File "D:\develop\Python38\lib\site-packages\aiosqlite\cursor.py", line 48, in execute
+    await self._execute(self._cursor.execute, sql, parameters)
+  File "D:\develop\Python38\lib\site-packages\aiosqlite\cursor.py", line 40, in _execute
+    return await self._conn._execute(fn, *args, **kwargs)
+  File "D:\develop\Python38\lib\site-packages\aiosqlite\core.py", line 132, in _execute
+    return await future
+  File "D:\develop\Python38\lib\site-packages\aiosqlite\core.py", line 115, in run
+    result = function()
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: users.is_superuser
+[SQL: SELECT users.id, users.username, users.email, users.hashed_password, users.is_active, users.is_superuser, users.created_at, users.updated_at 
+FROM users 
+WHERE users.username = ?]
+[parameters: ('admin',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-06-11 14:48:07,268 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 14:48:07,476 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 14:48:07,477 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 14:48:07,478 - main - INFO - 应用启动...
+2025-06-11 14:48:07,489 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 14:48:07,489 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 14:48:07,489 - main - INFO - 应用启动完成
+2025-06-11 15:08:09,920 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 15:08:10,244 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 15:08:10,244 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 15:08:10,245 - main - INFO - 应用启动...
+2025-06-11 15:13:27,597 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 15:13:27,797 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 15:13:27,798 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 15:13:27,799 - main - INFO - 应用启动...
+2025-06-11 15:13:27,810 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 15:13:27,811 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 15:13:27,811 - main - INFO - 应用启动完成
+2025-06-11 15:13:40,563 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 15:13:40,761 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 15:13:40,762 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 15:13:40,762 - main - INFO - 应用启动...
+2025-06-11 15:15:31,122 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 15:15:31,326 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 15:15:31,327 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 15:15:31,327 - main - INFO - 应用启动...
+2025-06-11 15:17:15,561 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 15:17:15,763 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 15:17:15,763 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 15:17:15,764 - main - INFO - 应用启动...
+2025-06-11 15:17:35,780 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 15:17:35,983 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 15:17:35,983 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 15:17:35,984 - main - INFO - 应用启动...
+2025-06-11 15:17:38,400 - main - INFO - 权限初始化完成
+2025-06-11 15:17:38,416 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 15:17:38,416 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 15:17:38,416 - main - INFO - 应用启动完成
+2025-06-11 15:28:10,312 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 15:28:10,513 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 15:28:10,513 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 15:28:10,514 - main - INFO - 应用启动...
+2025-06-11 15:28:10,549 - main - INFO - 权限初始化完成
+2025-06-11 15:28:10,550 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 15:28:10,550 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 15:28:10,550 - main - INFO - 应用启动完成
+2025-06-11 15:28:40,116 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 15:28:40,318 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 15:28:40,319 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 15:28:40,320 - main - INFO - 应用启动...
+2025-06-11 15:29:02,982 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 15:29:03,185 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 15:29:03,185 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 15:29:03,186 - main - INFO - 应用启动...
+2025-06-11 15:29:06,012 - main - INFO - 权限初始化完成
+2025-06-11 15:29:06,013 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 15:29:06,013 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 15:29:06,013 - main - INFO - 应用启动完成
+2025-06-11 15:30:29,612 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 15:30:29,818 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 15:30:29,818 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 15:30:29,819 - main - INFO - 应用启动...
+2025-06-11 15:30:29,864 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 15:30:29,865 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 15:30:29,865 - main - INFO - 应用启动完成
+2025-06-11 15:32:30,419 - auth - INFO - 用户尝试登录: zxc
+2025-06-11 15:32:30,663 - main - ERROR - 全局异常: 'str' object has no attribute 'username'
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 79, in __call__
+    raise exc
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 66, in app
+    response = await func(request)
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 237, in app
+    raw_response = await run_endpoint_function(
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 163, in run_endpoint_function
+    return await dependant.call(**values)
+  File "E:\projects\d08\extensions_web\new_app\api\v1\endpoints\auth.py", line 97, in login_for_token
+    data={"sub": user.username},
+AttributeError: 'str' object has no attribute 'username'
+2025-06-11 15:36:49,129 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 15:36:49,331 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 15:36:49,332 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 15:36:49,333 - main - INFO - 应用启动...
+2025-06-11 15:36:49,370 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 15:36:49,370 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 15:36:49,370 - main - INFO - 应用启动完成
+2025-06-11 15:36:56,453 - auth - INFO - 用户尝试登录: zxc
+2025-06-11 15:36:56,716 - auth - INFO - 用户登录成功: zxc
+2025-06-11 15:36:56,717 - main - ERROR - 全局异常: 'User' object is not subscriptable
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 79, in __call__
+    raise exc
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 66, in app
+    response = await func(request)
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 237, in app
+    raw_response = await run_endpoint_function(
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 163, in run_endpoint_function
+    return await dependant.call(**values)
+  File "E:\projects\d08\extensions_web\new_app\api\v1\endpoints\auth.py", line 115, in login_for_token
+    "role": user['role'],
+TypeError: 'User' object is not subscriptable
+2025-06-11 15:37:35,773 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 15:37:35,975 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 15:37:35,975 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 15:37:35,976 - main - INFO - 应用启动...
+2025-06-11 15:37:36,014 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 15:37:36,014 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 15:37:36,014 - main - INFO - 应用启动完成
+2025-06-11 15:37:39,369 - auth - INFO - 用户尝试登录: zxc
+2025-06-11 15:37:39,633 - auth - INFO - 用户登录成功: zxc
+2025-06-11 15:37:39,634 - main - ERROR - 全局异常: 'User' object is not subscriptable
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 79, in __call__
+    raise exc
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 66, in app
+    response = await func(request)
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 237, in app
+    raw_response = await run_endpoint_function(
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 163, in run_endpoint_function
+    return await dependant.call(**values)
+  File "E:\projects\d08\extensions_web\new_app\api\v1\endpoints\auth.py", line 115, in login_for_token
+    "role": user['role'],
+TypeError: 'User' object is not subscriptable
+2025-06-11 15:37:48,340 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 15:37:48,541 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 15:37:48,542 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 15:37:48,543 - main - INFO - 应用启动...
+2025-06-11 15:37:48,578 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 15:37:48,578 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 15:37:48,579 - main - INFO - 应用启动完成
+2025-06-11 15:37:53,857 - auth - INFO - 用户尝试登录: zxc
+2025-06-11 15:37:54,121 - auth - INFO - 用户登录成功: zxc
+2025-06-11 15:37:54,122 - main - ERROR - 全局异常: 'User' object is not subscriptable
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 79, in __call__
+    raise exc
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 66, in app
+    response = await func(request)
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 237, in app
+    raw_response = await run_endpoint_function(
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 163, in run_endpoint_function
+    return await dependant.call(**values)
+  File "E:\projects\d08\extensions_web\new_app\api\v1\endpoints\auth.py", line 115, in login_for_token
+    "role": user['role'],
+TypeError: 'User' object is not subscriptable
+2025-06-11 15:38:28,019 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 15:38:28,222 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 15:38:28,223 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 15:38:28,224 - main - INFO - 应用启动...
+2025-06-11 15:38:28,260 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 15:38:28,260 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 15:38:28,260 - main - INFO - 应用启动完成
+2025-06-11 15:38:30,405 - auth - INFO - 用户尝试登录: zxc
+2025-06-11 15:38:30,670 - auth - INFO - 用户登录成功: zxc
+2025-06-11 15:43:26,486 - main - INFO - 应用关闭...
+2025-06-11 15:43:47,665 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 15:43:47,960 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 15:43:47,960 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 15:43:47,961 - main - INFO - 应用启动...
+2025-06-11 15:43:48,080 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 15:43:48,080 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 15:43:48,081 - main - INFO - 应用启动完成
+2025-06-11 15:44:42,608 - auth - INFO - 用户尝试登录: tyy
+2025-06-11 15:44:42,612 - auth - WARNING - 用户登录失败: tyy - 无效凭证
+2025-06-11 15:44:47,628 - auth - INFO - 用户尝试登录: zxc
+2025-06-11 15:44:47,908 - auth - INFO - 用户登录成功: zxc
+2025-06-11 15:44:47,910 - auth - ERROR - 用户登录过程中发生错误: greenlet_spawn has not been called; can't call await_only() here. Was IO attempted in an unexpected place? (Background on this error at: https://sqlalche.me/e/20/xd2s)
+2025-06-11 15:45:50,998 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 15:45:51,215 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 15:45:51,215 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 15:45:51,216 - main - INFO - 应用启动...
+2025-06-11 15:45:51,268 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 15:45:51,268 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 15:45:51,268 - main - INFO - 应用启动完成
+2025-06-11 15:45:55,814 - auth - INFO - 用户尝试登录: zxc
+2025-06-11 15:45:56,076 - auth - INFO - 用户登录成功: zxc
+2025-06-11 15:45:56,080 - main - ERROR - 全局异常: greenlet_spawn has not been called; can't call await_only() here. Was IO attempted in an unexpected place? (Background on this error at: https://sqlalche.me/e/20/xd2s)
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 79, in __call__
+    raise exc
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 66, in app
+    response = await func(request)
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 237, in app
+    raw_response = await run_endpoint_function(
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 163, in run_endpoint_function
+    return await dependant.call(**values)
+  File "E:\projects\d08\extensions_web\new_app\api\v1\endpoints\auth.py", line 116, in login_for_token
+    "role": user.roles,
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\attributes.py", line 557, in __get__
+    return self.impl.get(state, dict_)  # type: ignore[no-any-return]
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\attributes.py", line 1070, in get
+    value = self._fire_loader_callables(state, key, passive)
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\attributes.py", line 1105, in _fire_loader_callables
+    return self.callable_(state, passive)
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\strategies.py", line 948, in _load_for_state
+    return self._emit_lazyload(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\strategies.py", line 1111, in _emit_lazyload
+    result = session.execute(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\session.py", line 2229, in execute
+    return self._execute_internal(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\session.py", line 2124, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\orm\context.py", line 252, in orm_execute_statement
+    result = conn.execute(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\engine\base.py", line 1414, in execute
+    return meth(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\sql\elements.py", line 485, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\engine\base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\engine\base.py", line 1842, in _execute_context
+    return self._exec_single_context(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\engine\base.py", line 1983, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\engine\base.py", line 2328, in _handle_dbapi_exception
+    raise exc_info[1].with_traceback(exc_info[2])
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\engine\default.py", line 747, in do_execute
+    cursor.execute(statement, parameters)
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\dialects\sqlite\aiosqlite.py", line 113, in execute
+    self._adapt_connection._handle_exception(error)
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\dialects\sqlite\aiosqlite.py", line 254, in _handle_exception
+    raise error
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\dialects\sqlite\aiosqlite.py", line 90, in execute
+    _cursor = self.await_(self._connection.cursor())
+  File "D:\develop\Python38\lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 93, in await_only
+    raise exc.MissingGreenlet(
+sqlalchemy.exc.MissingGreenlet: greenlet_spawn has not been called; can't call await_only() here. Was IO attempted in an unexpected place? (Background on this error at: https://sqlalche.me/e/20/xd2s)
+2025-06-11 15:49:03,870 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 15:49:04,073 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 15:49:04,074 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 15:49:04,075 - main - INFO - 应用启动...
+2025-06-11 15:49:04,114 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 15:49:04,114 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 15:49:04,114 - main - INFO - 应用启动完成
+2025-06-11 15:49:15,134 - auth - INFO - 用户尝试登录: zxc
+2025-06-11 15:49:15,395 - main - ERROR - 全局异常: 'User' object has no attribute 'scalar_one_or_none'
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 79, in __call__
+    raise exc
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 66, in app
+    response = await func(request)
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 237, in app
+    raw_response = await run_endpoint_function(
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 163, in run_endpoint_function
+    return await dependant.call(**values)
+  File "E:\projects\d08\extensions_web\new_app\api\v1\endpoints\auth.py", line 86, in login_for_token
+    user = user.scalar_one_or_none()
+AttributeError: 'User' object has no attribute 'scalar_one_or_none'
+2025-06-11 15:50:17,850 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 15:50:18,067 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 15:50:18,067 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 15:50:18,069 - main - INFO - 应用启动...
+2025-06-11 15:50:18,105 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 15:50:18,106 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 15:50:18,106 - main - INFO - 应用启动完成
+2025-06-11 15:50:24,805 - auth - INFO - 用户尝试登录: zxc
+2025-06-11 15:50:25,063 - auth - INFO - 用户登录成功: zxc
+2025-06-11 15:59:28,371 - auth - INFO - 用户尝试登录: zxc
+2025-06-11 15:59:28,612 - auth - INFO - 用户登录成功: zxc
+2025-06-11 16:02:06,189 - auth - INFO - 用户尝试登录: zxc
+2025-06-11 16:02:06,431 - auth - INFO - 用户登录成功: zxc
+2025-06-11 16:02:06,533 - main - INFO - 应用关闭...
+2025-06-11 16:02:08,251 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 16:02:08,459 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 16:02:08,460 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 16:02:08,461 - main - INFO - 应用启动...
+2025-06-11 16:02:08,497 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 16:02:08,498 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 16:02:08,498 - main - INFO - 应用启动完成
+2025-06-11 16:02:22,547 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 16:02:22,751 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 16:02:22,752 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 16:02:22,753 - main - INFO - 应用启动...
+2025-06-11 16:02:22,790 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 16:02:22,790 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 16:02:22,790 - main - INFO - 应用启动完成
+2025-06-11 16:02:26,366 - auth - INFO - 用户尝试登录: zxc
+2025-06-11 16:02:26,630 - auth - INFO - 用户登录成功: zxc
+2025-06-11 16:02:49,022 - auth - INFO - 用户尝试登录: tyy
+2025-06-11 16:02:49,025 - auth - WARNING - 用户登录失败: tyy - 无效凭证
+2025-06-11 16:13:23,621 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 16:13:23,846 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 16:13:23,846 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 16:13:23,847 - main - INFO - 应用启动...
+2025-06-11 16:13:23,884 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 16:13:23,884 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 16:13:23,884 - main - INFO - 应用启动完成
+2025-06-11 16:13:35,379 - main - ERROR - 全局异常: 2 validation errors for LoginResponse
+response -> username
+  field required (type=value_error.missing)
+response -> nickname
+  field required (type=value_error.missing)
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 79, in __call__
+    raise exc
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 66, in app
+    response = await func(request)
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 255, in app
+    content = await serialize_response(
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 141, in serialize_response
+    raise ValidationError(errors, field.type_)
+pydantic.error_wrappers.ValidationError: 2 validation errors for LoginResponse
+response -> username
+  field required (type=value_error.missing)
+response -> nickname
+  field required (type=value_error.missing)
+2025-06-11 16:14:52,677 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 16:14:52,890 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 16:14:52,890 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 16:14:52,891 - main - INFO - 应用启动...
+2025-06-11 16:14:52,929 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 16:14:52,929 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 16:14:52,929 - main - INFO - 应用启动完成
+2025-06-11 16:15:33,190 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 16:15:33,411 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 16:15:33,411 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 16:15:33,412 - main - INFO - 应用启动...
+2025-06-11 16:15:33,449 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 16:15:33,450 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 16:15:33,450 - main - INFO - 应用启动完成
+2025-06-11 16:16:47,319 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 16:16:47,540 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 16:16:47,540 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 16:16:47,541 - main - INFO - 应用启动...
+2025-06-11 16:16:47,578 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 16:16:47,578 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 16:16:47,578 - main - INFO - 应用启动完成
+2025-06-11 16:16:54,223 - main - ERROR - 全局异常: 2 validation errors for LoginResponse
+response -> username
+  field required (type=value_error.missing)
+response -> nickname
+  field required (type=value_error.missing)
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 79, in __call__
+    raise exc
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 66, in app
+    response = await func(request)
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 255, in app
+    content = await serialize_response(
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 141, in serialize_response
+    raise ValidationError(errors, field.type_)
+pydantic.error_wrappers.ValidationError: 2 validation errors for LoginResponse
+response -> username
+  field required (type=value_error.missing)
+response -> nickname
+  field required (type=value_error.missing)
+2025-06-11 16:17:57,762 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 16:17:57,978 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 16:17:57,978 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 16:17:57,979 - main - INFO - 应用启动...
+2025-06-11 16:17:58,017 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 16:17:58,017 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 16:17:58,017 - main - INFO - 应用启动完成
+2025-06-11 16:18:01,407 - main - ERROR - 全局异常: 1 validation error for LoginResponse
+response -> user
+  field required (type=value_error.missing)
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 79, in __call__
+    raise exc
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 66, in app
+    response = await func(request)
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 255, in app
+    content = await serialize_response(
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 141, in serialize_response
+    raise ValidationError(errors, field.type_)
+pydantic.error_wrappers.ValidationError: 1 validation error for LoginResponse
+response -> user
+  field required (type=value_error.missing)
+2025-06-11 16:18:15,991 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 16:18:16,216 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 16:18:16,217 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 16:18:16,218 - main - INFO - 应用启动...
+2025-06-11 16:18:16,257 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 16:18:16,257 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 16:18:16,257 - main - INFO - 应用启动完成
+2025-06-11 16:18:18,095 - main - ERROR - 全局异常: 1 validation error for LoginResponse
+response -> user
+  value is not a valid dict (type=type_error.dict)
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 79, in __call__
+    raise exc
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 66, in app
+    response = await func(request)
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 255, in app
+    content = await serialize_response(
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 141, in serialize_response
+    raise ValidationError(errors, field.type_)
+pydantic.error_wrappers.ValidationError: 1 validation error for LoginResponse
+response -> user
+  value is not a valid dict (type=type_error.dict)
+2025-06-11 16:18:46,674 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 16:18:46,896 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 16:18:46,896 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 16:18:46,897 - main - INFO - 应用启动...
+2025-06-11 16:18:46,934 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 16:18:46,934 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 16:18:46,934 - main - INFO - 应用启动完成
+2025-06-11 16:18:55,003 - main - ERROR - 全局异常: 1 validation error for LoginResponse
+response -> user
+  value is not a valid dict (type=type_error.dict)
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 79, in __call__
+    raise exc
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 66, in app
+    response = await func(request)
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 255, in app
+    content = await serialize_response(
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 141, in serialize_response
+    raise ValidationError(errors, field.type_)
+pydantic.error_wrappers.ValidationError: 1 validation error for LoginResponse
+response -> user
+  value is not a valid dict (type=type_error.dict)
+2025-06-11 16:19:28,455 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 16:19:28,674 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 16:19:28,674 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 16:19:28,675 - main - INFO - 应用启动...
+2025-06-11 16:19:28,711 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 16:19:28,712 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 16:19:28,712 - main - INFO - 应用启动完成
+2025-06-11 16:19:34,998 - main - ERROR - 全局异常: 1 validation error for LoginResponse
+response -> user
+  value is not a valid dict (type=type_error.dict)
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 79, in __call__
+    raise exc
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 66, in app
+    response = await func(request)
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 255, in app
+    content = await serialize_response(
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 141, in serialize_response
+    raise ValidationError(errors, field.type_)
+pydantic.error_wrappers.ValidationError: 1 validation error for LoginResponse
+response -> user
+  value is not a valid dict (type=type_error.dict)
+2025-06-11 16:20:32,334 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 16:20:32,567 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 16:20:32,568 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 16:20:32,569 - main - INFO - 应用启动...
+2025-06-11 16:20:32,606 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 16:20:32,607 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 16:20:32,607 - main - INFO - 应用启动完成
+2025-06-11 16:20:35,510 - main - ERROR - 全局异常: 1 validation error for LoginResponse
+response -> user -> nickname
+  field required (type=value_error.missing)
+Traceback (most recent call last):
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 79, in __call__
+    raise exc
+  File "D:\develop\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "D:\develop\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\develop\Python38\lib\site-packages\starlette\routing.py", line 66, in app
+    response = await func(request)
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 255, in app
+    content = await serialize_response(
+  File "D:\develop\Python38\lib\site-packages\fastapi\routing.py", line 141, in serialize_response
+    raise ValidationError(errors, field.type_)
+pydantic.error_wrappers.ValidationError: 1 validation error for LoginResponse
+response -> user -> nickname
+  field required (type=value_error.missing)
+2025-06-11 16:21:03,383 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 16:21:03,611 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 16:21:03,611 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 16:21:03,612 - main - INFO - 应用启动...
+2025-06-11 16:21:03,649 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 16:21:03,649 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 16:21:03,649 - main - INFO - 应用启动完成
+2025-06-11 16:39:01,052 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 16:39:01,323 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 16:39:01,324 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 16:39:01,325 - main - INFO - 应用启动...
+2025-06-11 16:39:01,390 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 16:39:01,390 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 16:39:01,390 - main - INFO - 应用启动完成
+2025-06-11 16:39:31,279 - main - INFO - 应用关闭...
+2025-06-11 16:39:32,893 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 16:39:33,119 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 16:39:33,119 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 16:39:33,120 - main - INFO - 应用启动...
+2025-06-11 16:39:33,159 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 16:39:33,159 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 16:39:33,159 - main - INFO - 应用启动完成
+2025-06-11 16:40:51,411 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 16:40:51,631 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 16:40:51,632 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 16:40:51,633 - main - INFO - 应用启动...
+2025-06-11 16:40:51,683 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 16:40:51,683 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 16:40:51,683 - main - INFO - 应用启动完成
+2025-06-11 16:41:13,697 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 16:41:13,916 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 16:41:13,917 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 16:41:13,917 - main - INFO - 应用启动...
+2025-06-11 16:41:13,956 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 16:41:13,956 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 16:41:13,956 - main - INFO - 应用启动完成
+2025-06-11 16:41:56,161 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 16:41:56,384 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 16:41:56,384 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 16:41:56,385 - main - INFO - 应用启动...
+2025-06-11 16:41:56,423 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 16:41:56,423 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 16:41:56,423 - main - INFO - 应用启动完成
+2025-06-11 16:47:22,134 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 16:47:22,353 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 16:47:22,354 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 16:47:22,354 - main - INFO - 应用启动...
+2025-06-11 16:47:22,392 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 16:47:22,392 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 16:47:22,392 - main - INFO - 应用启动完成
+2025-06-11 16:47:58,157 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 16:47:58,489 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 16:47:58,489 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 16:47:58,490 - main - INFO - 应用启动...
+2025-06-11 16:47:58,528 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 16:47:58,528 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 16:47:58,529 - main - INFO - 应用启动完成
+2025-06-11 16:55:11,460 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 16:55:11,674 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 16:55:11,675 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 16:55:11,676 - main - INFO - 应用启动...
+2025-06-11 16:55:11,712 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 16:55:11,712 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 16:55:11,713 - main - INFO - 应用启动完成
+2025-06-11 16:59:07,603 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 16:59:07,834 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 16:59:07,835 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 16:59:07,836 - main - INFO - 应用启动...
+2025-06-11 16:59:07,873 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 16:59:07,873 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 16:59:07,873 - main - INFO - 应用启动完成
+2025-06-11 17:00:42,955 - auth - INFO - 用户尝试登录: zxc
+2025-06-11 17:00:43,218 - auth - INFO - 用户登录成功: zxc
+2025-06-11 17:02:16,521 - websocket_manager - INFO - 用户 1 建立WebSocket连接
+2025-06-11 17:04:06,152 - websocket_manager - INFO - 用户 1 断开WebSocket连接
+2025-06-11 17:04:06,239 - main - INFO - 应用关闭...
+2025-06-11 17:04:22,140 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 17:04:22,472 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 17:04:22,473 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 17:04:22,474 - main - INFO - 应用启动...
+2025-06-11 17:04:22,510 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 17:04:22,511 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 17:04:22,511 - main - INFO - 应用启动完成
+2025-06-11 17:04:22,516 - websocket_manager - INFO - 用户 1 建立WebSocket连接
+2025-06-11 17:18:41,017 - websocket_manager - INFO - 用户 1 断开WebSocket连接
+2025-06-11 17:18:45,156 - websocket_manager - INFO - 用户 1 建立WebSocket连接
+2025-06-11 17:18:45,245 - websocket_manager - INFO - 用户 1 断开WebSocket连接
+2025-06-11 17:18:45,347 - main - INFO - 应用关闭...
+2025-06-11 17:25:03,857 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 17:25:04,239 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 17:25:04,239 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 17:25:04,240 - main - INFO - 应用启动...
+2025-06-11 17:27:47,470 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 17:27:47,723 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 17:27:47,724 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 17:27:47,725 - main - INFO - 应用启动...
+2025-06-11 17:30:10,769 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 17:30:11,035 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 17:30:11,036 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 17:30:11,037 - main - INFO - 应用启动...
+2025-06-11 17:31:22,308 - db_manager - INFO - 数据库管理器初始化完成，数据库路径：new_app/data/app.db，数据库类型：sqlite
+2025-06-11 17:31:22,560 - extension_file_manager - INFO - 扩展程序文件管理器初始化完成，基础目录：extensions\files
+2025-06-11 17:31:22,561 - extension_manager - INFO - 扩展管理器初始化完成。扩展目录: extensions
+2025-06-11 17:31:22,562 - main - INFO - 应用启动...
+2025-06-11 17:31:22,861 - auth - INFO - 用户初始化完成
+2025-06-11 17:31:22,996 - auth - INFO - 权限初始化完成
+2025-06-11 17:31:23,094 - extension_manager - INFO - 开始加载所有扩展
+2025-06-11 17:31:23,094 - extension_manager - INFO - 完成加载所有扩展，共 0 个
+2025-06-11 17:31:23,094 - main - INFO - 应用启动完成
+2025-06-11 17:31:26,690 - websocket_manager - INFO - 用户 1 建立WebSocket连接

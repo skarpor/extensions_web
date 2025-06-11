@@ -2,10 +2,11 @@
 
 from typing import List, Optional
 from datetime import datetime
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 
+from new_app.models.chat import ChatRoomMember, ChatRoom
 from new_app.schemas.chat import Chat, Message
 from new_app.db.session import get_db
 
@@ -74,5 +75,41 @@ class ChatManager:
             await self.db.commit()
 
 
+# ===== 辅助函数 =====
 
+async def get_room_or_404(session: AsyncSession, room_id: int) -> ChatRoom:
+    """获取聊天室或返回404错误"""
+    query = select(ChatRoom).where(ChatRoom.id == room_id)
+    result = await session.execute(query)
+    room = result.scalar_one_or_none()
+
+    if not room:
+        raise HTTPException(status_code=404, detail="聊天室不存在")
+
+    return room
+
+
+async def is_room_member(session: AsyncSession, room_id: int, user_id: int) -> bool:
+    """检查用户是否为聊天室成员"""
+    query = select(ChatRoomMember).where(
+        and_(
+            ChatRoomMember.room_id == room_id,
+            ChatRoomMember.user_id == user_id
+        )
+    )
+    result = await session.execute(query)
+    return result.scalar_one_or_none() is not None
+
+
+async def is_room_admin(session: AsyncSession, room_id: int, user_id: int) -> bool:
+    """检查用户是否为聊天室管理员"""
+    query = select(ChatRoomMember).where(
+        and_(
+            ChatRoomMember.room_id == room_id,
+            ChatRoomMember.user_id == user_id,
+            ChatRoomMember.is_admin == True
+        )
+    )
+    result = await session.execute(query)
+    return result.scalar_one_or_none() is not None
 chat_manager = ChatManager()

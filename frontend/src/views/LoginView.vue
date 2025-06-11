@@ -45,7 +45,9 @@
 //引入全局的axios
 import axios from '@/utils/axios'
 import showToast from '@/utils/toast'
-  export default {
+import {useUserStore} from '@/stores/user'
+const auth = useUserStore()
+export default {
     name: 'LoginView',
     data() {
       return {
@@ -68,10 +70,14 @@ import showToast from '@/utils/toast'
           const formdata = new FormData()
           formdata.append('username', this.form.username)
           formdata.append('password', this.form.password)
-          const response = await axios.post('/api/auth/token', formdata)
-          if (response.data && response.data.access_token) {
+          //const response = await axios.post('/api/auth/token', formdata)
+          const response = await auth.login(formdata)
+          console.log(response);
+          console.log(response.token);
+
+          if (response.token) {
             // 存储token
-            localStorage.setItem('token', response.data.access_token)
+            localStorage.setItem('token', response.token)
             
             // 获取重定向URL或默认到首页
             const redirectUrl = this.$route.query.redirect || '/'

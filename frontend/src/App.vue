@@ -1,12 +1,11 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import { ref, onMounted } from 'vue'
+    import { ref, onMounted } from 'vue'
 import axios from '@/utils/axios'
-import { useUserStore } from '@/store/user'
+import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
 const currentUser = ref(null)
-const isLoggedIn = ref(false)
+const isLoggedIn = userStore.isLoggedIn
 
 onMounted(async () => {
   try {
