@@ -71,8 +71,8 @@
   </template>
   
   <script>
-  import axios from '@/utils/axios'
-  
+  import { registerApi } from '@/api/auth'
+  import Toast from '@/utils/toast'
   export default {
     name: 'RegisterView',
     data() {
@@ -82,7 +82,8 @@
           nickname: '',
           email: '',
           password: '',
-          confirmPassword: ''
+          confirmPassword: '',
+          toast:Toast
         },
         loading: false,
         error: null
@@ -96,26 +97,26 @@
           return
         }
         
-        if (this.form.username.length < 3) {
-          this.error = '用户名长度至少3个字符'
-          return
-        }
+        // if (this.form.username.length < 3) {
+        //   this.error = '用户名长度至少3个字符'
+        //   return
+        // }
         
-        if (!/^[a-zA-Z0-9]+$/.test(this.form.username)) {
-          this.error = '用户名只能包含字母和数字'
-          return
-        }
+        // if (!/^[a-zA-Z0-9]+$/.test(this.form.username)) {
+        //   this.error = '用户名只能包含字母和数字'
+        //   return
+        // }
         
-        if (this.form.password.length < 6) {
-          this.error = '密码长度至少6个字符'
-          return
-        }
+        // if (this.form.password.length < 6) {
+        //   this.error = '密码长度至少6个字符'
+        //   return
+        // }
         
         this.loading = true
         this.error = null
         
         try {
-          const response = await axios.post('/api/auth/register', {
+          const response = await registerApi({
             username: this.form.username,
             nickname: this.form.nickname || this.form.username,
             email: this.form.email || undefined,
@@ -145,6 +146,7 @@
   <style scoped>
   .register-container {
     display: flex;
+    width: 100%;
     justify-content: center;
     align-items: center;
     min-height: 80vh;

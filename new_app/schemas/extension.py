@@ -46,3 +46,8 @@ class Extension(ExtensionInDBBase):
 class ExtensionInDB(ExtensionInDBBase):
     """数据库中的扩展模型"""
     pass 
+class UpdateExtension(BaseModel):
+    """更新扩展模型"""
+    name: Optional[str] = None
+    description: Optional[str] = None
+    enabled: Optional[bool] = None

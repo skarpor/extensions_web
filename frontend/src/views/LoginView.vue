@@ -13,6 +13,7 @@
               class="form-control" 
               required 
               placeholder="请输入用户名"
+              autocomplete="username"
             />
           </div>
           <div class="form-group">
@@ -24,6 +25,7 @@
               class="form-control" 
               required 
               placeholder="请输入密码"
+              autocomplete="current-password"
             />
           </div>
           <div class="form-group form-check">
@@ -43,7 +45,6 @@
   
   <script>
 //引入全局的axios
-import axios from '@/utils/axios'
 import showToast from '@/utils/toast'
 import {useUserStore} from '@/stores/user'
 const auth = useUserStore()
@@ -70,28 +71,18 @@ export default {
           const formdata = new FormData()
           formdata.append('username', this.form.username)
           formdata.append('password', this.form.password)
-          //const response = await axios.post('/api/auth/token', formdata)
           const response = await auth.login(formdata)
-          console.log(response);
-          console.log(response.token);
-
-          if (response.token) {
+          if (response.access_token) {
             // 存储token
-            localStorage.setItem('token', response.token)
-            
+            localStorage.setItem('token', response.access_token)
             // 获取重定向URL或默认到首页
             const redirectUrl = this.$route.query.redirect || '/'
-            showToast('跳转中...', redirectUrl, true)
+            showToast('跳转中...')
             this.$router.push(redirectUrl)
-            showToast('登录成功', '登录成功', true)
-          } else {
-            this.error = '登录失败，请检查用户名和密码'
-            showToast('登录失败', '登录失败', false)
+            showToast('登录成功')
           }
-        } catch (error) {
-          console.error('登录错误', error)
-          this.error = error.response?.data?.detail || '登录失败，请稍后再试'
-          showToast('登录失败', error.response?.data?.detail || '登录失败，请稍后再试', false)
+        } catch (error) { //后端不返回错误，只返回正常信息
+          showToast(`登录失败, ${error}`  || '登录失败，请稍后再试')
         } finally {
           this.loading = false
         }
@@ -103,6 +94,7 @@ export default {
   <style scoped>
   .login-container {
     display: flex;
+    width: 100%;
     justify-content: center;
     align-items: center;
     min-height: 80vh;

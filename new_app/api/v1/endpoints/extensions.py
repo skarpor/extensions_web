@@ -12,8 +12,22 @@ from new_app.db.session import get_db
 from new_app.schemas.extension import Extension as ExtensionSchema
 from new_app.schemas.extension import ExtensionCreate, ExtensionUpdate
 from new_app.models.user import User as UserModel
+from new_app.core.logger import get_logger
 
+logger = get_logger("extension")
 router = APIRouter()
+extension_manager: ExtensionManager = None
+
+def init_manager(manager: ExtensionManager):
+    """
+    初始化路由器
+    
+    Args:
+        manager: 扩展管理器实例
+    """
+    global extension_manager
+    extension_manager = manager
+    logger.info("扩展路由初始化完成")
 
 @router.get("", response_model=List[ExtensionSchema])
 async def read_extensions(
@@ -25,11 +39,10 @@ async def read_extensions(
     """
     获取扩展列表
     """
-    extension_manager = ExtensionManager(db)
     return await extension_manager.get_extensions(skip=skip, limit=limit)
 
 @router.post("", response_model=ExtensionSchema)
-async def create_extension(
+async def upload_extension(
     *,
     db: AsyncSession = Depends(get_db),
     extension_in: ExtensionCreate,

@@ -16,9 +16,13 @@ export default defineConfig({
     },
   },
   server: {
+    //让所有人都能访问 0.0.0.0
+    open: true,
+    host: '0.0.0.0',
+    port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000', // 后端地址
+        target: 'http://192.168.200.159:8000', // 后端地址
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '') // 可选：去掉 /api 前缀
       }

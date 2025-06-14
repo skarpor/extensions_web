@@ -174,6 +174,52 @@
         </div>
       </div>
       
+      <!-- 编辑聊天室模态框 -->
+      <div class="modal" v-if="showEditRoomModal">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">编辑聊天室</h5>
+              <button type="button" class="btn-close" @click="showEditRoomModal = false"></button>
+            </div>
+            <div class="modal-body">
+              <form @submit.prevent="editRoom">
+                <div class="form-group">
+                  <label for="roomName">聊天室名称</label>
+                  <input 
+                    type="text" 
+                    id="roomName" 
+                    v-model="newRoom.name" 
+                    class="form-control" 
+                    required
+                  >
+                </div>
+                <div class="form-group">
+                  <label for="roomDesc">描述</label>
+                  <textarea 
+                    id="roomDesc" 
+                    v-model="newRoom.description" 
+                    class="form-control"
+                  ></textarea>
+                </div>
+                <div class="form-check">
+                  <input 
+                    type="checkbox" 
+                    id="isPrivate" 
+                    v-model="newRoom.is_private" 
+                    class="form-check-input"
+                  >
+                  <label for="isPrivate" class="form-check-label">私有聊天室</label>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" @click="showEditRoomModal = false">取消</button>
+                  <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
       <!-- 查看图片模态框 -->
       <div class="modal" v-if="imagePreview">
         <div class="modal-dialog modal-lg">
@@ -194,6 +240,19 @@
   //import { ref } from 'vue'
   import axios from '@/utils/axios'
   import ContextMenu from './ContextMenu.vue'
+  import { useUserStore } from '@/stores/user'
+  import Toast from '@/utils/toast'
+  import { getChatRooms, 
+    getChatRoomMembers, 
+    getChatRoomMessages, 
+    sendMessage, 
+    createChatRoom, 
+    deleteChatRoom, 
+    addChatRoomMember, 
+    removeChatRoomMember, 
+    editChatRoom,
+    getPrivateMessages,
+    uploadImage } from '@/api/ws_chat'
   //const contextMenu = ref(null)
   export default {
     name: 'ChatView',
@@ -214,6 +273,7 @@
         typingTimeout: null,
         lastTypingTime: 0,
         showCreateRoomModal: false,
+        showEditRoomModal: false,
         showEmojiPicker: false,
         imagePreview: null,
         newRoom: {
@@ -251,6 +311,7 @@
         this.connectWebSocket()
       } catch (error) {
         console.error('初始化聊天失败', error)
+        Toast.error('初始化聊天失败')
       }
     },
     beforeUnmount() {
@@ -282,15 +343,15 @@
       },
       getRoomMenuItems(roomType) {
         const baseItems = [
-          { label: '编辑房间', action: 'edit' },          
-          { label: '删除房间', action: 'delete' }
+          { label: '编辑', action: 'edit' },          
+          { label: '删除', action: 'delete' }
         ];
         
         if (roomType) {
           return [
             ...baseItems, 
-            { label: '邀请成员', action: 'invite' },          
-            { label: '删除成员', action: 'remove' },
+            { label: '邀请', action: 'invite' },          
+            { label: '删除', action: 'remove' },
           ];
         }
         return baseItems;
@@ -301,20 +362,53 @@
         
         console.log(`在房间 ${this.currentRoomContext.id} 执行:`, item.action);
         switch(item.action) {
-          case 'enter':
-            this.enterRoom(this.currentRoomContext);
+          case 'delete':
+            this.deleteRoom(this.currentRoomContext);
             break;
-          case 'info':
-            this.showRoomInfo(this.currentRoomContext);
+          case 'edit':
+            // 编辑逻辑，弹出模态框
+            this.newRoom = this.currentRoomContext
+            this.showEditRoomModal = true
+            break;
+          case 'invite':
+            this.inviteMembers(this.currentRoomContext);
+            break;
+          case 'remove':
+            this.removeMembers(this.currentRoomContext);
             break;
           // 其他操作...
         }
       },
-      copyContent() {
-        // 复制逻辑
+      async deleteRoom(room) {
+        // 删除逻辑
+        // 二次确认
+        if (confirm(`确定要删除这个聊天室吗？${room.name}`)) {
+          // 删除逻辑
+          try {
+            await deleteChatRoom(room.id)
+            Toast.success(`删除聊天室成功`)
+            // 刷新聊天室列表
+            await this.fetchRooms()
+          } catch (error) {
+            Toast.error(`删除聊天室失败`)
+          }
+        }
       },
-      pasteContent() {
-        // 粘贴逻辑
+      async editRoom(room) {
+        // 发送编辑请求
+        try {
+          console.log('编辑聊天室', room.id, this.newRoom)
+          await editChatRoom(this.newRoom.id, this.newRoom)
+          Toast.success(`编辑聊天室成功`)
+        } catch (error) {
+          Toast.error(`编辑聊天室失败`)
+        }
+      },
+      inviteMembers(room) {
+        // 邀请成员逻辑
+      },
+      removeMembers(room) {
+        // 删除成员逻辑
       },
 
       connectWebSocket() {
@@ -332,7 +426,7 @@
       },
       
       handleSocketOpen() {
-        console.log('WebSocket连接已建立')
+        Toast.success('WebSocket连接已建立')
         this.isConnected = true
         
         // 发送用户信息
@@ -345,7 +439,7 @@
       handleSocketMessage(event) {
         try {
           const data = JSON.parse(event.data)
-          console.log('收到消息', data)
+          
           
           switch (data.type) {
             case 'chat':
@@ -367,7 +461,7 @@
               this.handleMembersList(data)
               break
             case 'system':
-              console.log('系统消息', data.message)
+              Toast.success(`系统消息, ${data.message}`)
               break
           }
         } catch (error) {
@@ -396,6 +490,7 @@
           console.log("发送消息：",JSON.stringify(data));
         
           this.ws.send(JSON.stringify(data))
+          
         } else {
           console.error('WebSocket未连接')
         }
@@ -403,9 +498,11 @@
       
       async fetchRooms() {
         try {
-          const response = await axios.get('/api/chat/rooms')
-          this.rooms = response.data.rooms
+          const data = await getChatRooms()
+          Toast.success(`获取聊天室成功`)
+          this.rooms = data.rooms
         } catch (error) {
+          
           console.error('获取聊天室失败', error)
         }
       },
@@ -428,8 +525,8 @@
         
         // 获取历史消息
         try {
-          const response = await axios.get(`/api/chat/rooms/${room.id}/messages`)
-          this.messages = response.data.messages
+          const response = await getChatRoomMessages(room.id)
+          this.messages = response.messages
           this.scrollToBottom()
         } catch (error) {
           console.error('获取历史消息失败', error)
@@ -450,8 +547,8 @@
       
       async fetchPrivateMessages(userId) {
         try {
-          const response = await axios.get(`/api/chat/messages?with_user_id=${userId}`)
-          this.messages = response.data.messages
+          const response = await getPrivateMessages(userId)
+          this.messages = response.messages
           this.scrollToBottom()
         } catch (error) {
           console.error('获取私聊消息失败', error)
@@ -550,6 +647,7 @@
       },
       
       handleUserJoin(data) {
+        console.log('用户加入', data.nickname, data.username,this.currentRoom.id)
         if (this.currentRoom && data.room_id === this.currentRoom.id) {
           // 添加系统消息
           this.messages.push({
@@ -560,10 +658,13 @@
           })
           
           this.scrollToBottom()
+        }else{
+          console.log('用户加入11', data.nickname, data.username,this.currentRoom.id)
         }
       },
       
       handleUserLeave(data) {
+        console.log('用户离开', data.nickname, data.username,this.currentRoom.id)
         if (this.currentRoom && data.room_id === this.currentRoom.id) {
           // 添加系统消息
           this.messages.push({
@@ -585,7 +686,7 @@
       
       async createRoom() {
         try {
-          const response = await axios.post('/api/chat/rooms', this.newRoom)
+          const data = await createChatRoom(this.newRoom)
           this.showCreateRoomModal = false
           this.newRoom = { name: '', description: '', is_private: false }
           
@@ -593,7 +694,7 @@
           await this.fetchRooms()
           
           // 选择新创建的聊天室
-          const newRoomId = response.data.room.id
+          const newRoomId = data.room.id
           const newRoom = this.rooms.find(r => r.id === newRoomId)
           if (newRoom) {
             this.selectRoom(newRoom)
@@ -618,13 +719,13 @@
         
         // 检查文件类型
         if (!file.type.startsWith('image/')) {
-          alert('只能上传图片文件')
+          Toast.error('只能上传图片文件')
           return
         }
         
         // 检查文件大小（最大5MB）
         if (file.size > 5 * 1024 * 1024) {
-          alert('图片大小不能超过5MB')
+          Toast.error('图片大小不能超过5MB')
           return
         }
         
@@ -632,8 +733,8 @@
           const formData = new FormData()
           formData.append('image', file)
           
-          const response = await axios.post('/api/chat/upload_image', formData)
-          const imageUrl = response.data.image_url
+          const data = await uploadImage(formData)
+          const imageUrl = data.image_url
           
           // 发送图片消息
           const messageData = {
@@ -653,7 +754,7 @@
           this.sendToSocket(messageData)
         } catch (error) {
           console.error('上传图片失败', error)
-          alert('上传图片失败')
+          Toast.error('上传图片失败')
         }
       },
       

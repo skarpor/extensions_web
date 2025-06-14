@@ -14,7 +14,9 @@ class FileBase(BaseModel):
     filetype: Optional[str] = None
     filesize: int
     hash: Optional[str] = None
-    metadata: Optional[str] = None
+    # metadata: Optional[str] = None
+    path: str
+
 
 class FileCreate(FileBase):
     """文件创建模型"""

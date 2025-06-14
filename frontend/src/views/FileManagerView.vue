@@ -24,11 +24,11 @@
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb">
             <li class="breadcrumb-item">
-              <a href="#" @click.prevent="navigateTo('')">根目录</a>
+              <a href="#" @click.prevent="navigateTo('/')">Home</a>
             </li>
             <template v-for="(part, index) in currentPath.split('/').filter(Boolean)" :key="index">
               <li class="breadcrumb-item">
-                <a href="#" @click.prevent="navigateTo(currentPath.split('/').slice(0, index + 1).join('/'))">
+                <a href="#" @click.prevent="navigateTo(currentPath.split('/').slice(0, index + 2).join('/'))">
                   {{ part }}
                 </a>
               </li>
@@ -42,6 +42,8 @@
           <thead>
             <tr>
               <th>名称</th>
+              <th>类型</th>
+              <th>上传者</th>
               <th>大小</th>
               <th>修改日期</th>
               <th>操作</th>
@@ -50,7 +52,7 @@
           <tbody>
             <tr v-if="currentPath" class="file-item">
               <td>
-                <a href="#" @click.prevent="navigateUp">
+                <a href="#" @click.prevent="navigateUp" v-if="currentPath !== '/'">
                   <i class="bi bi-arrow-up-circle"></i> 上一级
                 </a>
               </td>
@@ -58,14 +60,22 @@
               <td></td>
               <td></td>
             </tr>
+            <!-- 文件列表,没有就显示文件夹为空，显示一个好看的图片 -->
+            <tr v-if="filteredItems.length === 0" class="file-item">
+              <td colspan="4" class="text-center">
+                <img src="/static/img/default-avatar.png" alt="文件夹为空" class="img-fluid">
+              </td>
+            </tr>
             <tr v-for="item in filteredItems" :key="item.path" class="file-item">
-              <td>
+              <td class="text-truncate" style="max-width: 300px" :title="item.filename"> <!-- 文件名，最长显示10个字符，超过的显示省略号 -->
                 <a href="#" @click.prevent="handleItemClick(item)">
-                  <i :class="getIconClass(item)"></i> {{ item.name }}
+                  <i :class="getIconClass(item)"></i> {{ item.filename }}
                 </a>
               </td>
-              <td>{{ formatSize(item.size) }}</td>
-              <td>{{ formatDate(item.modified) }}</td>
+              <td>{{ item.filetype }}</td>
+              <td>{{ item.owner.username }}</td>
+              <td>{{ formatSize(item.filesize) }}</td>
+              <td>{{ formatDate(item.updated_at) }}</td>
               <td>
                 <div class="btn-group">
                   <button class="btn btn-sm btn-outline-secondary" @click="downloadItem(item)" v-if="!item.is_dir">
@@ -128,13 +138,24 @@
   </template>
   
   <script>
-  import axios from '@/utils/axios'
-  
-  export default {
+  import { getFileList, uploadFile, createDir, deleteDir, deleteFile, downloadFile } from '@/api/files'
+  import Toast from '@/utils/toast'
+//使用setup
+import { ref } from 'vue'
+export default {
     name: 'FileManagerView',
+    setup() {
+        const toast = Toast
+        const currentPath = ref('/')
+        return {
+            toast,
+            currentPath
+        }
+    },
     data() {
       return {
-        currentPath: '',
+        loading: false,
+        // currentPath: '/',
         items: [],
         searchQuery: '',
         filteredItems: [],
@@ -148,49 +169,86 @@
     },
     methods: {
       async fetchFiles() {
-        try {
-          const response = await axios.get(`/api/files/?path=${encodeURIComponent(this.currentPath)}`)
-          this.items = response.data.items
-          this.filteredItems = [...this.items]
-        } catch (error) {
-          console.error('获取文件列表失败', error)
+  try {
+    this.loading = true;
+    this.toast.info(`获取(${this.currentPath})文件列表中...`);
+    const response = await getFileList(this.currentPath);
+    console.log('API响应:', response); // 调试用
+    
+    // 确保response.data存在且是数组
+    if (response && response.data) {
+      // 检查返回的数据结构
+      if (Array.isArray(response.data)) {
+        // 如果直接返回数组
+        this.items = response.data;
+      } else if (response.data.items && Array.isArray(response.data.items)) {
+        // 如果返回的是包含items属性的对象
+        this.items = response.data.items;
+      } else {
+        // 其他数据结构情况
+        console.warn('意外的数据结构:', response.data);
+        this.items = [];
+      }
+      //对数据进行排序，文件夹在前面，文件在后面
+      this.items.sort((a, b) => {
+        if (a.filetype === 'directory' && b.filetype !== 'directory') {
+          return -1;
+        } else if (a.filetype !== 'directory' && b.filetype === 'directory') {
+          return 1;
         }
-      },
+        return 0;
+      });
+      this.filteredItems = [...this.items];
+    } else {
+      this.items = [];
+      this.filteredItems = [];
+    }
+  } catch (error) {
+    console.error('获取文件列表失败', error);
+    this.items = [];
+    this.filteredItems = [];
+    // 可以添加用户通知
+    this.toast?.error('获取文件列表失败，请稍后重试');
+  } finally {
+    this.loading = false;
+  }
+},
       
       navigateTo(path) {
         this.currentPath = path
-        this.fetchFiles()
-      },
-      
-      navigateUp() {
-        const parts = this.currentPath.split('/').filter(Boolean)
-        parts.pop()
-        this.currentPath = parts.join('/')
-        this.fetchFiles()
-      },
+  this.fetchFiles()
+},
+
+navigateUp() {
+  const parts = this.currentPath.split('/').filter(Boolean)
+  if (parts.length > 0) {
+    parts.pop()
+    this.currentPath = parts.length ? `/${parts.join('/')}` : '/'
+    this.fetchFiles()
+  }
+},
+
       
       handleItemClick(item) {
-        if (item.is_dir) {
+        if (item.filetype == 'directory') {
           this.navigateTo(item.path)
         } else {
-          this.previewFile(item)
+          this.downloadItem(item)
         }
       },
       
-      previewFile(item) {
-        window.open(`/api/files/download?path=${encodeURIComponent(item.path)}`, '_blank')
-      },
+      
       
       async downloadItem(item) {
         try {
-          const response = await axios.get(`/api/files/download?path=${encodeURIComponent(item.path)}`, {
-            responseType: 'blob'
-          })
+          console.log(item,'item')
+          const response = await downloadFile(item.id,item.filepath)
           
           const url = window.URL.createObjectURL(new Blob([response.data]))
           const link = document.createElement('a')
           link.href = url
-          link.setAttribute('download', item.name)
+          
+          link.setAttribute('download', item.filename)
           document.body.appendChild(link)
           link.click()
           document.body.removeChild(link)
@@ -199,65 +257,95 @@
         }
       },
       
-      async deleteItem(item) {
-        if (!confirm(`确定要删除 ${item.name} 吗？`)) {
-          return
-        }
-        
-        try {
-          await axios.delete(`/api/files/delete?path=${encodeURIComponent(item.path)}`)
-          this.fetchFiles()
-        } catch (error) {
-          console.error('删除文件失败', error)
-        }
-      },
+      // 修改 deleteItem 方法
+async deleteItem(item) {
+  if (!confirm(`确定要删除 ${item.filename} 吗？`)) {
+    return
+  }
+  
+  try {
+    if (item.filetype == 'directory') {
+      await deleteDir(item.path)
+    } else {
+      await deleteFile(item.id,item.filepath)
+    }
+    this.toast.success('删除成功')
+    this.fetchFiles()
+  } catch (error) {
+    console.error('删除失败', error)
+    this.toast?.error(`删除失败: ${error.response?.data?.detail || error.message}`)
+  }
+},
       
-      async createFolder() {
-        const folderName = prompt('请输入文件夹名称:')
-        if (!folderName) return
-        
-        try {
-          await axios.post('/api/files/create_folder', {
-            path: this.currentPath,
-            name: folderName
-          })
-          this.fetchFiles()
-        } catch (error) {
-          console.error('创建文件夹失败', error)
-        }
-      },
+      // 修改 createFolder 方法
+async createFolder() {
+  const folderName = prompt('请输入文件夹名称:')
+  if (!folderName) return
+  // 如果文件夹名称包含/，则提示错误 空格
+  if (folderName.includes('\\') || folderName.includes(':') || folderName.includes('*') || folderName.includes('?') || folderName.includes('"') || folderName.includes('<') || folderName.includes('>') || folderName.includes('|') || folderName.includes(' ')) {
+    this.toast?.error('文件夹名称不能包含\\:*?"<>|空格')
+    return
+  }
+  try {
+    
+    
+
+    await createDir(this.currentPath,folderName)
+    
+    this.toast.success('文件夹创建成功')
+    this.fetchFiles()
+  } catch (error) {
+    console.error('创建文件夹失败', error)
+    this.toast?.error(`创建失败: ${error.response?.data?.detail || error.message}`)
+  }
+},
+
       
       handleFileSelect(event) {
         this.selectedFiles = Array.from(event.target.files)
       },
       
-      async uploadFiles() {
-        if (!this.selectedFiles.length) return
-        
-        const formData = new FormData()
-        this.selectedFiles.forEach(file => {
-          formData.append('files', file)
-        })
-        formData.append('path', this.currentPath)
-        
-        try {
-          await axios.post('/api/files/upload', formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            },
-            onUploadProgress: (progressEvent) => {
-              this.uploadProgress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
-            }
-          })
-          
-          this.showUploadModal = false
-          this.selectedFiles = []
-          this.uploadProgress = 0
-          this.fetchFiles()
-        } catch (error) {
-          console.error('上传文件失败', error)
-        }
-      },
+      // 在 methods 中添加路径处理方法
+
+// 修改 uploadFiles 方法
+async uploadFiles() {
+  if (!this.selectedFiles.length) return
+  
+  try {
+    this.uploadProgress = 10 // 开始上传
+    
+    const formData = new FormData()
+    this.selectedFiles.forEach(file => {
+      formData.append('files', file)
+    })
+    
+    // 规范化当前路径
+    const normalizedPath = this.currentPath
+    
+    // 显示上传进度
+    const config = {
+      onUploadProgress: progressEvent => {
+        this.uploadProgress = Math.round(
+          (progressEvent.loaded * 90) / progressEvent.total
+        )
+      }
+    }
+    
+    await uploadFile(formData, normalizedPath, config)
+    this.uploadProgress = 100
+    
+    this.toast.success('文件上传成功')
+    this.showUploadModal = false
+    this.selectedFiles = []
+    this.uploadProgress = 0
+    this.fetchFiles()
+  } catch (error) {
+    console.error('上传文件失败', error)
+    this.toast?.error(`上传失败: ${error.response?.data?.detail || error.message}`)
+    this.uploadProgress = 0
+  }
+},
+
       
       searchFiles() {
         if (!this.searchQuery) {
@@ -267,16 +355,15 @@
         
         const query = this.searchQuery.toLowerCase()
         this.filteredItems = this.items.filter(item => 
-          item.name.toLowerCase().includes(query)
+          item.filename.toLowerCase().includes(query)
         )
       },
       
       getIconClass(item) {
-        if (item.is_dir) {
+        if (item.filetype == 'directory') {
           return 'bi bi-folder'
         }
-        
-        const extension = item.name.split('.').pop().toLowerCase()
+        const extension = item.filename.split('.').pop().toLowerCase()
         
         switch (extension) {
           case 'pdf':
@@ -457,4 +544,7 @@
     border-radius: 5px;
     overflow: hidden;
   }
+  .progress-bar {
+  transition: width 0.3s ease;
+}
   </style>

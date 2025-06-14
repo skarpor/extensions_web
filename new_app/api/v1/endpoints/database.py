@@ -7,7 +7,7 @@
 
 import json
 from typing import Any, Dict, List, Optional, Union
-from fastapi import APIRouter, Depends, HTTPException, Query, Path, Body, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Query, Path, Body, UploadFile, File, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -36,9 +36,35 @@ view_database = PermissionChecker(["view_database"])
 # 表管理API
 # --------------
 
+@router.post("/initialize")
+async def initialize_database(
+    request: Request,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    初始化数据库连接
+    
+    参数:
+        db_type: 数据库类型 (sqlite, postgres, mysql)
+        db_path: 数据库路径 (对于sqlite是文件路径，对于其他数据库可选)
+    
+    返回:
+        初始化状态消息
+    """
+    try:
+        global db_manager
+        # db_type和db_path从params中获取
+        db_type = request.query_params.get("db_type")
+        db_path = request.query_params.get("db_path")
+        db_manager = DBManager(db_type=db_type, db_path=db_path)
+        result = await db_manager.initialize()
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"数据库初始化失败: {str(e)}")
+
 @router.get("/tables", response_model=List[TableInfo])
 async def list_tables(
-    current_user: User = Depends(view_database)
+    current_user: User = Depends(get_current_active_user)
 ):
     """
     获取所有表的列表
@@ -73,7 +99,7 @@ async def create_table(
 @router.get("/tables/{table_name}/schema", response_model=Dict[str, Any])
 async def get_table_schema(
     table_name: str = Path(..., description="表名"),
-    current_user: User = Depends(view_database)
+    current_user: User = Depends(get_current_active_user)
 ):
     """
     获取指定表的结构定义
@@ -140,7 +166,7 @@ async def get_table_data(
     search: Optional[str] = Query(None, description="搜索关键词"),
     sort_by: Optional[str] = Query(None, description="排序字段"),
     sort_desc: bool = Query(False, description="是否降序排序"),
-    current_user: User = Depends(view_database)
+    current_user: User = Depends(get_current_active_user)
 ):
     """
     获取表数据，支持分页、搜索和排序

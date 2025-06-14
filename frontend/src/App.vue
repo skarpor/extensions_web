@@ -1,68 +1,24 @@
 <script setup>
     import { ref, onMounted } from 'vue'
-import axios from '@/utils/axios'
 import { useUserStore } from '@/stores/user'
+import { storeToRefs } from 'pinia'
+import Toast from '@/utils/toast'
+import 'vue-toastification/dist/index.css'
 
+// 直接从 store 获取响应式状态
 const userStore = useUserStore()
-const currentUser = ref(null)
-const isLoggedIn = userStore.isLoggedIn
+const { user, isLoggedIn } = storeToRefs(userStore)
+const { logout, init } = userStore
 
 onMounted(async () => {
   try {
-    showToast('欢迎访问！', 'success')
+    Toast.info('欢迎访问！')
+    // 初始化用户状态
+    await init()
   } catch (error) {
-    
+    console.error('获取当前用户失败', error)
   }
 })
-
-const logout = async () => {
-  try {
-    await axios.post('/api/auth/logout')
-    localStorage.removeItem('token')
-    localStorage.removeItem('username')
-    localStorage.removeItem('role')
-    currentUser.value = null
-    isLoggedIn.value = false
-  } catch (error) {
-    console.error('退出登录失败', error)
-  }
-}
-
-// 显示提示信息
-const showToast = (message, type = 'success') => {
-  const toast = document.createElement('div')
-  toast.className = `toast align-items-center text-white bg-${type} border-0`
-  toast.setAttribute('role', 'alert')
-  toast.setAttribute('aria-live', 'assertive')
-  toast.setAttribute('aria-atomic', 'true')
-  toast.style.minWidth = '250px'
-  
-  const toastBody = document.createElement('div')
-  toastBody.className = 'd-flex'
-  
-  const messageDiv = document.createElement('div')
-  messageDiv.className = 'toast-body'
-  messageDiv.textContent = message
-  
-  const closeButton = document.createElement('button')
-  closeButton.className = 'btn-close btn-close-white me-2 m-auto'
-  closeButton.setAttribute('data-bs-dismiss', 'toast')
-  closeButton.setAttribute('aria-label', 'Close')
-  
-  toastBody.appendChild(messageDiv)
-  toastBody.appendChild(closeButton)
-  toast.appendChild(toastBody)
-  
-  const toastContainer = document.getElementById('toast-container')
-  toastContainer.appendChild(toast)
-  
-  const bsToast = new bootstrap.Toast(toast)
-  bsToast.show()
-  
-  toast.addEventListener('hidden.bs.toast', () => {
-    toast.remove()
-  })
-}
 </script>
 
 <template>
@@ -78,11 +34,11 @@ const showToast = (message, type = 'success') => {
           </RouterLink>
         </li>
         <li class="nav-item">
-          <RouterLink class="nav-link" to="/file-manager" :class="{ 'active': $route.path === '/file-manager' }">
+          <RouterLink class="nav-link" to="/files" :class="{ 'active': $route.path === '/files' }">
             <i class="fas fa-file-alt"></i> 文件管理
           </RouterLink>
         </li>
-        <li class="nav-item" v-if="isLoggedIn && currentUser?.role === 'admin'">
+        <li class="nav-item" v-if="isLoggedIn">
           <RouterLink class="nav-link" to="/extensions" :class="{ 'active': $route.path === '/extensions' }">
             <i class="fas fa-cog"></i> 扩展配置
           </RouterLink>
@@ -126,24 +82,9 @@ const showToast = (message, type = 'success') => {
     </div>
 
   
-    <!-- Toast容器 -->
-    <div id="toast-container" class="position-fixed top-0 end-0 p-3">
-    </div>
+    
   </div>
-<!-- 操作反馈Toast -->
-<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-    <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header">
-            <i class="fas fa-info-circle me-2"></i>
-            <strong class="me-auto" id="toastTitle">操作结果</strong>
-            <small>刚刚</small>
-            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-        <div class="toast-body" id="toastMessage">
-            操作已完成。
-        </div>
-    </div>
-</div>
+
 </template>
 
 <style>
@@ -179,16 +120,22 @@ body {
 }
 
 .top-navbar {
+  /* 固定在顶部 */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  /* 四边圆角，圆角大小为10px，高度为50px */
+  border-radius: 10px;
+  height: 50px;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--primary-color);
+  background-color: white; 
   padding: 10px 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  position:fixed;
-  top: 0;
-  z-index: 100;
+  box-shadow: 0 2px 4px rgba(135, 154, 14, 0.1);
   width: 100%;
   box-sizing: border-box;
 }
@@ -298,7 +245,7 @@ body {
 }
 
 .action-btn:hover {
-  background-color: var(--accent-color);
+  background-color: red;
   transform: translateY(-1px);
 }
 
@@ -308,13 +255,13 @@ body {
 
 
 .nav-link:hover {
-  color: white;
-  background-color: rgba(255, 255, 255, 0.1);
+  color: red;
+  background-color: rgba(0, 131, 44, 0.1);
 }
 
 .nav-link.active {
-  color: white;
-  background-color: rgba(255, 255, 255, 0.2);
+  color: red;
+  background-color: rgba(201, 207, 4, 0.2);
 }
 
 .partial-content {

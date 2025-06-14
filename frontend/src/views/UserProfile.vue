@@ -7,6 +7,43 @@
       <v-card-text>
         <v-form ref="form" v-model="valid" lazy-validation>
           <v-row>
+            <!-- 头像，使用图片上传 -->
+            <v-col cols="12" md="6">
+  <div class="avatar-upload-container">
+    <!-- 头像预览 -->
+    <v-img
+      v-if="userForm.avatar"
+      :src="userForm.avatar"
+      alt="用户头像"
+      max-width="120"
+      max-height="120"
+      class="avatar-preview"
+      cover
+    ></v-img>
+    
+    <!-- 默认头像（当avatar为空时） -->
+    <div v-else class="default-avatar">
+      <v-icon size="64" color="grey lighten-1">mdi-account-circle</v-icon>
+    </div>
+    
+    <!-- 上传按钮 -->
+    <v-btn
+      small
+      color="primary"
+      class="mt-2"
+      @click="$refs.avatarInput.click()"
+    >
+      更换头像
+    </v-btn>
+    <input
+      ref="avatarInput"
+      type="file"
+      accept="image/*"
+      style="display: none"
+      @change="handleAvatarUpload"
+    >
+  </div>
+</v-col>
             <v-col cols="12" md="6">
               <v-text-field
                 v-model="userForm.username"
@@ -25,11 +62,12 @@
             </v-col>
             <v-col cols="12" md="6">
               <v-text-field
-                v-model="userForm.full_name"
-                label="姓名"
+                v-model="userForm.nickname"
+                label="昵称"
                 outlined
               ></v-text-field>
             </v-col>
+            
             <v-col cols="12">
               <v-btn
                 color="primary"
@@ -138,8 +176,8 @@
           </v-col>
           <v-col cols="12">
             <div class="info-item">
-              <div class="label">最后更新:</div>
-              <div class="value">{{ formatDate(userInfo.updated_at) }}</div>
+              <div class="label">最后登录:</div>
+              <div class="value">{{ formatDate(userInfo.last_login) }}</div>
             </div>
           </v-col>
         </v-row>
@@ -167,8 +205,8 @@
 </template>
 
 <script>
-import axios from '@/utils/axios'
-
+import { fetchUserInfo, updateUserInfo, updatePassword } from '@/api/auth'
+import Toast from '@/utils/toast'
 export default {
   name: 'UserProfile',
   data() {
@@ -177,7 +215,7 @@ export default {
       userForm: {
         username: '',
         email: '',
-        full_name: ''
+        nickname: ''
       },
       originalUserForm: {},
       loading: false,
@@ -207,18 +245,37 @@ export default {
   async created() {
     await this.fetchUserProfile()
   },
+  beforeUnmount() {
+    if (this.userForm.avatar.startsWith('blob:')) {
+      URL.revokeObjectURL(this.userForm.avatar);
+    }
+  },
   methods: {
+
+    handleAvatarUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // 预览图片（临时URL）
+    this.userForm.avatar = URL.createObjectURL(file);
+    //设置预览图片大小，width:100px,height:100px
+    
+
+      // 实际处理上传逻辑
+      // this.uploadAvatar(file);
+    },
+
     async fetchUserProfile() {
       try {
         this.loading = true
-        const response = await axios.get('/api/v1/users/me')
-        this.userInfo = response.data
+        const response = await fetchUserInfo()
+        this.userInfo = response
         
         // 设置表单数据
         this.userForm = {
           username: this.userInfo.username,
           email: this.userInfo.email,
-          full_name: this.userInfo.full_name || ''
+          nickname: this.userInfo.nickname || ''
         }
         
         // 保存原始表单数据用于比较
@@ -227,7 +284,7 @@ export default {
         this.loading = false
       } catch (error) {
         console.error('获取用户资料失败', error)
-        this.$toast.error('获取用户资料失败')
+        Toast.error('获取用户资料失败')
         this.loading = false
       }
     },
@@ -236,8 +293,8 @@ export default {
       
       try {
         this.loading = true
-        await axios.put('/api/v1/users/me', this.userForm)
-        this.$toast.success('个人资料更新成功')
+        await updateUserInfo(this.userForm)
+        Toast.success('个人资料更新成功')
         
         // 更新原始表单数据
         this.originalUserForm = { ...this.userForm }
@@ -246,7 +303,7 @@ export default {
         await this.fetchUserProfile()
       } catch (error) {
         console.error('更新个人资料失败', error)
-        this.$toast.error('更新个人资料失败')
+        Toast.error('更新个人资料失败')
       } finally {
         this.loading = false
       }
@@ -256,12 +313,9 @@ export default {
       
       try {
         this.passwordLoading = true
-        await axios.put('/api/v1/users/me/password', {
-          current_password: this.passwordForm.current_password,
-          new_password: this.passwordForm.new_password
-        })
+        await updatePassword(this.passwordForm)
         
-        this.$toast.success('密码更新成功')
+        Toast.success('密码更新成功')
         
         // 清空密码表单
         this.passwordForm = {
@@ -274,7 +328,7 @@ export default {
         this.$refs.passwordForm.resetValidation()
       } catch (error) {
         console.error('更新密码失败', error)
-        this.$toast.error(error.response?.data?.detail || '更新密码失败')
+        Toast.error(error.response?.data?.detail || '更新密码失败')
       } finally {
         this.passwordLoading = false
       }
@@ -320,4 +374,35 @@ export default {
   display: flex;
   flex-wrap: wrap;
 }
+
+.avatar-upload-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar-preview {
+  border-radius: 50%;
+  border: 3px solid #eee;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+.avatar-preview:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.default-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #ddd;
+}
+
 </style> 

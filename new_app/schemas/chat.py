@@ -88,7 +88,7 @@ class ChatRoom(ChatRoomBase):
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 # class ChatRoomResponse(BaseModel):
@@ -111,7 +111,7 @@ class ChatRoomMember(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class ChatRoomMemberInfo(BaseModel):
@@ -152,8 +152,7 @@ class ChatMessage(ChatMessageBase):
     nickname: Optional[str]
 
     class Config:
-        orm_mode = True
-
+        from_attributes = True
 
 # class ChatMessageResponse(BaseModel):
 #     """聊天消息操作响应"""

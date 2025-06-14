@@ -169,7 +169,11 @@ def has_permission(user: User, permission: str) -> bool:
     """检查用户是否具有指定权限"""
     if user.is_superuser:
         return True
-    return permission in user.permissions
+    # 检查用户是否具有指定权限,权限在角色中
+    for role in user.roles:
+        if permission in role.permissions:
+            return True
+    return False
 
 def has_role(user: User, role: str) -> bool:
     """检查用户是否具有指定角色"""
@@ -215,23 +219,43 @@ async def get_user_by_id(db: AsyncSession, id: int) -> Optional[User]:
     user = await db.execute(select(User).where(User.id == id))
     return user.scalars().one_or_none()
 
-async def create_user(db: AsyncSession, user_in: UserCreate) -> User:
+async def create_user(db: AsyncSession, user_in: Dict[str, Any]) -> User:
     """创建用户"""
-    user = User(**user_in.model_dump())
+    if isinstance(user_in, dict):
+        # 如果是字典，直接使用
+        user_data = user_in
+    else:
+        # 如果是 UserCreate 对象，转换为字典
+        user_data = user_in.model_dump()
+    
+    # 确保密码字段被正确处理
+    if "password" in user_data:
+        hashed_password = get_password_hash(user_data.pop("password"))
+        user_data["hashed_password"] = hashed_password
+    
+    user = User(**user_data)
     db.add(user)
     await db.commit()
+    await db.refresh(user)
     return user
 
 async def update_user(db: AsyncSession, db_obj: User, obj_in: UserCreate) -> User:
     """更新用户"""
     user = db_obj
     user.username = obj_in.username
+    user.nickname = obj_in.nickname
     user.email = obj_in.email
+    # user.password = get_password_hash(obj_in.password)
+    db.add(user)
+    await db.commit()
+    return user
+async def update_password(db: AsyncSession, db_obj: User, obj_in: UserCreate) -> User:
+    """更新用户密码"""
+    user = db_obj
     user.password = get_password_hash(obj_in.password)
     db.add(user)
     await db.commit()
     return user
-
 async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[User]:
     """获取用户列表"""
     users = await db.execute(select(User).offset(skip).limit(limit))
@@ -251,13 +275,42 @@ async def init_permissions(db: AsyncSession):
     if result.scalars().first() is not None:
         return
 
-    # 系统预定义权限
+    # 系统预定义权限,并非全部会用到
     permissions = [
-        Permission(code="user:create", name="创建用户", description="可以创建新用户"),
-        Permission(code="user:read", name="查看用户", description="可以查看用户信息"),
-        Permission(code="user:update", name="更新用户", description="可以更新用户信息"),
-        Permission(code="user:delete", name="删除用户", description="可以删除用户"),
-        Permission(code="role:manage", name="角色管理", description="可以管理角色和权限分配"),
+        Permission(code="system:manage", name="系统管理",url="/api/v1/system/manage", description="可以管理系统配置"),
+        Permission(code="extension:manage", name="扩展管理",url="/api/v1/extension/manage", description="可以管理扩展"),
+        Permission(code="extension:upload", name="上传扩展",url="/api/v1/extension/upload", description="可以上传扩展"),
+        Permission(code="extension:delete", name="删除扩展",url="/api/v1/extension/delete", description="可以删除扩展"),
+        Permission(code="extension:update", name="更新扩展",url="/api/v1/extension/update", description="可以更新扩展"),
+        Permission(code="extension:view", name="查看扩展",url="/api/v1/extension/view", description="可以查看扩展"),
+# 文件管理
+        Permission(code="file:manage", name="文件管理",url="/api/v1/file/manage", description="可以管理文件"),
+        Permission(code="file:upload", name="上传文件",url="/api/v1/file/upload", description="可以上传文件"),
+        Permission(code="file:delete", name="删除文件",url="/api/v1/file/delete", description="可以删除文件"),
+        Permission(code="file:view", name="查看文件",url="/api/v1/file/view", description="可以查看文件"),
+        Permission(code="file:download", name="下载文件",url="/api/v1/file/download", description="可以下载文件"),
+        
+        # 用户管理
+        Permission(code="user:create", name="创建用户",url="/api/v1/user/create", description="可以创建新用户"),
+        Permission(code="user:read", name="查看用户",url="/api/v1/user/read", description="可以查看用户信息"),
+        Permission(code="user:update", name="更新用户",url="/api/v1/user/update", description="可以更新用户信息"),
+        Permission(code="user:delete", name="删除用户",url="/api/v1/user/delete", description="可以删除用户"),
+        Permission(code="role:manage", name="角色管理",url="/api/v1/role/manage", description="可以管理角色和权限分配"),
+    # 角色管理
+        Permission(code="role:create", name="创建角色",url="/api/v1/role/create", description="可以创建新角色"),
+        Permission(code="role:read", name="查看角色",url="/api/v1/role/read", description="可以查看角色信息"),
+        Permission(code="role:update", name="更新角色",url="/api/v1/role/update", description="可以更新角色信息"),
+        Permission(code="role:delete", name="删除角色",url="/api/v1/role/delete", description="可以删除角色"),
+    # 聊天 
+        Permission(code="chat:create", name="创建聊天",url="/api/v1/chat/create", description="可以创建新聊天"),
+        Permission(code="chat:read", name="查看聊天",url="/api/v1/chat/read", description="可以查看聊天信息"),
+        Permission(code="chat:update", name="更新聊天",url="/api/v1/chat/update", description="可以更新聊天信息"),
+        Permission(code="chat:delete", name="删除聊天",url="/api/v1/chat/delete", description="可以删除聊天"),
+    # 消息
+        Permission(code="message:create", name="创建消息",url="/api/v1/message/create", description="可以创建新消息"),
+        Permission(code="message:read", name="查看消息",url="/api/v1/message/read", description="可以查看消息信息"),
+        Permission(code="message:update", name="更新消息",url="/api/v1/message/update", description="可以更新消息信息"),
+        Permission(code="message:delete", name="删除消息",url="/api/v1/message/delete", description="可以删除消息"),
     ]
 
     db.add_all(permissions)
@@ -276,6 +329,22 @@ async def init_users(db: AsyncSession):
             username="zxc",
             nickname="张新宇",
             email="123@666.com",
+            hashed_password=get_password_hash("123"),
+            is_active=True,
+            is_superuser=True,
+        ),
+        User(
+            username="tyy",
+            nickname="唐洋洋",
+            email="tyy@666.com",
+            hashed_password=get_password_hash("123"),
+            is_active=True,
+            is_superuser=True,
+        ),
+        User(
+            username="admin",
+            nickname="管理员",
+            email="admin@666.com",
             hashed_password=get_password_hash("123"),
             is_active=True,
             is_superuser=True,

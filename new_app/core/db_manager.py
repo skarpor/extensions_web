@@ -15,6 +15,7 @@ from sqlalchemy.schema import CreateTable, DropTable
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
 from sqlalchemy.sql import text
 
+from new_app.core.config import settings
 from new_app.core.logger import get_logger
 
 logger = get_logger("db_manager")
@@ -33,6 +34,15 @@ DB_TYPES = {
         "sync_url": "mysql+pymysql://{user}:{password}@{host}:{port}/{database}",
         "async_url": "mysql+aiomysql://{user}:{password}@{host}:{port}/{database}",
     }
+}
+
+# 默认数据库配置
+DEFAULT_DB_CONFIG = {
+    "user": "postgres",
+    "password": "postgres",
+    "host": "localhost",
+    "port": 5432,
+    "database": "postgres"
 }
 
 # 支持的列类型映射
@@ -64,7 +74,6 @@ class DBManager:
         # 确保目录存在
         if db_type == "sqlite":
             os.makedirs(os.path.dirname(db_path), exist_ok=True)
-        
         logger.info(f"数据库管理器初始化完成，数据库路径：{db_path}，数据库类型：{db_type}")
     
     def _get_connection_url(self, async_mode: bool = True) -> str:
@@ -80,15 +89,21 @@ class DBManager:
             url_template = DB_TYPES[self.db_type]["async_url"] if async_mode else DB_TYPES[self.db_type]["sync_url"]
             return url_template.format(path=self.db_path)
         else:
-            # 对于其他数据库类型，需要从配置文件或环境变量中获取连接信息
-            # 这里简化处理，实际应用中可能需要更复杂的配置管理
-            config = {
-                "user": "db_user",
-                "password": "db_pass",
-                "host": "localhost",
-                "port": "5432" if self.db_type == "postgres" else "3306",
-                "database": self.db_path
-            }
+            # 对于其他数据库类型，尝试从 settings 获取配置
+            config = DEFAULT_DB_CONFIG
+            
+            # 尝试从 settings 获取配置
+            if hasattr(settings, "DB_USER"):
+                config["user"] = settings.DB_USER
+            if hasattr(settings, "DB_PASSWORD"):
+                config["password"] = settings.DB_PASSWORD
+            if hasattr(settings, "DB_HOST"):
+                config["host"] = settings.DB_HOST
+            if hasattr(settings, "DB_PORT"):
+                config["port"] = settings.DB_PORT
+            if hasattr(settings, "DB_NAME"):
+                config["database"] = settings.DB_NAME
+                
             url_template = DB_TYPES[self.db_type]["async_url"] if async_mode else DB_TYPES[self.db_type]["sync_url"]
             return url_template.format(**config)
     
@@ -100,13 +115,16 @@ class DBManager:
             
             # 加载现有表信息
             async with self.engine.begin() as conn:
-                await self.metadata.reflect(bind=conn)
-                
+                # await self.metadata.reflect(bind=conn)
+                # 使用run_sync执行同步反射
+                await conn.run_sync(self.metadata.reflect)
+
             # 缓存表对象
             for table_name, table in self.metadata.tables.items():
                 self.tables[table_name] = table
                 
             logger.info(f"数据库初始化完成，加载了 {len(self.tables)} 个表")
+        return {"status": "success", "message": f"数据库初始化成功，类型：{self.db_type}，路径：{self.db_path}"}
     
     def _get_column_type(self, column_def: Dict) -> Any:
         """根据列定义获取列类型

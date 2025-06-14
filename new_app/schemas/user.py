@@ -12,6 +12,7 @@ class UserBase(BaseModel):
     nickname:str
     email: Optional[EmailStr] = None
     is_active: Optional[bool] = True
+    avatar: Optional[str] = None
     # is_superuser: bool = False
     # full_name: Optional[str] = None
 
@@ -28,7 +29,7 @@ class UserUpdate(UserBase):
 class UserInDBBase(UserBase, BaseSchema):
     """数据库中的用户模型"""
     id: Optional[int] = None
-
+    is_superuser: bool = False
     class Config:
         from_attributes = True
 

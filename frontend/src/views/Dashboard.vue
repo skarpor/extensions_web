@@ -180,8 +180,8 @@
 </template>
 
 <script>
-import axios from '@/utils/axios'
-
+import { getDashboardData, getSystemInfo, getRecentActivity } from '@/api/dashboard'
+import Toast from '@/utils/toast'
 export default {
   name: 'Dashboard',
   data() {
@@ -223,31 +223,32 @@ export default {
         ])
       } catch (error) {
         console.error('获取控制面板数据失败', error)
-        this.$toast.error('获取控制面板数据失败')
+        Toast.error('获取控制面板数据失败')
       } finally {
         this.loading = false
       }
     },
     async fetchStats() {
       try {
-        const response = await axios.get('/api/v1/dashboard/stats')
-        this.stats = response.data
+        const response = await getDashboardData()
+        console.log(response)
+        this.stats = response
       } catch (error) {
         console.error('获取统计数据失败', error)
       }
     },
     async fetchSystemInfo() {
       try {
-        const response = await axios.get('/api/v1/dashboard/system')
-        this.systemInfo = response.data
+        const response = await getSystemInfo()
+        this.systemInfo = response
       } catch (error) {
         console.error('获取系统信息失败', error)
       }
     },
     async fetchRecentActivity() {
       try {
-        const response = await axios.get('/api/v1/dashboard/activity')
-        this.recentActivity = response.data
+        const response = await getRecentActivity()
+        this.recentActivity = response
       } catch (error) {
         console.error('获取最近活动失败', error)
       }
@@ -255,10 +256,10 @@ export default {
     async refreshActivity() {
       try {
         await this.fetchRecentActivity()
-        this.$toast.success('活动列表已刷新')
+        Toast.success('活动列表已刷新')
       } catch (error) {
         console.error('刷新活动列表失败', error)
-        this.$toast.error('刷新活动列表失败')
+        Toast.error('刷新活动列表失败')
       }
     },
     formatDate(dateString) {

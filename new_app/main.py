@@ -74,9 +74,8 @@ def create_app() -> FastAPI:
 
     # 初始化扩展管理器
     extension_manager = ExtensionManager(
+        app=app,
         extensions_dir=settings.EXTENSIONS_DIR,
-        config_dir=settings.CONFIG_DIR,
-        file_manager=file_manager
     )
 
     @app.on_event("startup")

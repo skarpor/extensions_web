@@ -1,6 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-
+// 从stores中获取用户信息
+import { useUserStore } from '@/stores/user'
+import { storeToRefs } from 'pinia'
+import axios from 'axios'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -102,15 +105,23 @@ const router = createRouter({
   ]
 })
 
-import axios from '@/utils/axios'
 // 导航守卫
 router.beforeEach(async (to, from, next) => {
+  // 直接从 store 获取响应式状态
+const userStore = useUserStore()
+const { user, isLoggedIn } = storeToRefs(userStore)
+const { logout, init } = userStore
+
   // 设置页面标题
   document.title = to.meta.title ? `${to.meta.title} - 智能助手系统` : '智能助手系统'
     
   // 检查路由是否需要认证
   if (to.matched.some(record => record.meta.requiresAuth)) {
     try {
+      //如果是登录状态，则直接通过
+      if (isLoggedIn.value) {
+        return next()
+      }
       // 先尝试使用localStorage中的token
       const token = localStorage.getItem('token')
       if (!token) {
@@ -120,8 +131,8 @@ router.beforeEach(async (to, from, next) => {
       
       // 检查是否需要特定权限
       if (to.meta.permissions) {
-        const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
-        const userPermissions = userInfo.permissions || []
+        const userInfo = userStore?.user
+        const userPermissions = userInfo?.permissions || []
         
         const hasPermission = to.meta.permissions.some(permission => 
           userPermissions.includes(permission)
@@ -134,7 +145,6 @@ router.beforeEach(async (to, from, next) => {
       
       // 检查是否需要特定权限
       if (to.meta.requiresPermission) {
-        const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
         const userPermissions = userInfo.permissions || []
         
         if (!userPermissions.includes(to.meta.requiresPermission)) {
@@ -145,8 +155,8 @@ router.beforeEach(async (to, from, next) => {
       // 检查是否需要管理员权限
       if (to.matched.some(record => record.meta.requiresAdmin)) {
         // 尝试从本地存储获取用户信息
-        const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
-        if (userInfo.role && userInfo.role.toLowerCase() !== 'admin') {
+        
+        if (!user.is_superuser) {
           // 不是管理员，重定向到首页
           return next({ name: 'home' })
         }
@@ -155,7 +165,7 @@ router.beforeEach(async (to, from, next) => {
         try {
           const response = await axios.get('/api/auth/me')
           const data = response.data
-          if (!data || !data.id || data.role.toLowerCase() !== 'admin') {
+          if (!data || !data.id || !data.is_superuser) {
             // 不是管理员，重定向到首页
             return next({ name: 'home' })
           }

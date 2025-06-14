@@ -1,6 +1,7 @@
 """
 WebSocket相关的API端点
 """
+import json
 import os
 import uuid
 from datetime import datetime
@@ -16,15 +17,17 @@ from new_app.core import auth
 from new_app.core.auth import get_current_user
 from new_app.core.chat import is_room_member, get_room_or_404, is_room_admin
 from new_app.core.config import settings
+from new_app.core.logger import get_logger
 from new_app.core.websocket_manager import manager
 from new_app.db.session import get_db
 from new_app.models.chat import ChatMessage, ChatRoom, ChatRoomMember
-from new_app.models.user import User as UserModel, User
+from new_app.models.user import User
 from new_app.schemas.chat import ImageUploadResponse, ChatRoomList, ChatRoomCreate, ChatRoomResponse
-
+from new_app.core.websocket_manager import handle_chat_message, handle_join_room, handle_typing_status, handle_get_members
 router = APIRouter()
 
-@router.websocket("/chat/{username}")
+logger = get_logger("ws_chat")
+@router.websocket("/xxxx/chat/{username}")
 async def chat_websocket_endpoint(
     websocket: WebSocket,
     username: str,
@@ -284,9 +287,130 @@ async def chat_websocket_endpoint(
         except:
             pass
 
+
+
+@router.websocket("/chat/{username}")
+async def websocket_endpoint(
+    websocket: WebSocket, 
+    username: str,
+    session: AsyncSession = Depends(get_db)
+):
+    """WebSocket端点"""
+    # 连接WebSocket
+    await manager.connect(websocket, username)
+    
+    try:
+        # 查询用户信息
+        from sqlalchemy import select
+        query = select(User).where(User.username == username)
+        result = await session.execute(query)
+        user = result.scalar_one_or_none()
+        
+        if not user:
+            # 用户不存在，关闭连接
+            await websocket.close(code=1008, reason="用户不存在")
+            return
+        
+        # 设置用户信息
+        manager.set_user_info(username, user.id, user.nickname)
+        
+        # 发送在线用户列表
+        await manager.send_personal_message({
+            "type": "users_list",
+            "users": manager.get_online_users()
+        }, username)
+        
+        # 广播用户上线通知
+        await manager.broadcast({
+            "type": "users_list",
+            "users": manager.get_online_users()
+        })
+        
+        # 处理消息
+        while True:
+            # 接收消息
+            data = await websocket.receive_text()
+            
+            try:
+                # 解析消息
+                message_data = json.loads(data)
+                message_type = message_data.get("type")
+                
+                if message_type == "chat":
+                    # 处理聊天消息
+                    await handle_chat_message(session, username, user.id, message_data)
+                
+                elif message_type == "join_room":
+                    # 加入聊天室
+                    room_id = message_data.get("room_id")
+                    if room_id:
+                        await handle_join_room(session, username, user.id, room_id)
+                
+                elif message_type == "leave_room":
+                    # 离开聊天室
+                    room_id = message_data.get("room_id")
+                    if room_id:
+                        await manager.leave_room(username, room_id)
+                
+                elif message_type == "typing":
+                    # 处理正在输入状态
+                    await handle_typing_status(username, user.id, message_data)
+                
+                elif message_type == "get_members":
+                    # 获取聊天室成员
+                    room_id = message_data.get("room_id")
+                    if room_id:
+                        await handle_get_members(session, username, room_id)
+                
+                elif message_type == "user_info":
+                    # 更新用户信息
+                    nickname = message_data.get("nickname")
+                    if nickname:
+                        manager.set_user_info(username, user.id, nickname)
+                        
+                        # 更新在线用户列表
+                        await manager.broadcast({
+                            "type": "users_list",
+                            "users": manager.get_online_users()
+                        })
+                
+                elif message_type == "nickname":
+                    # 更新昵称
+                    nickname = message_data.get("nickname")
+                    if nickname:
+                        manager.set_user_info(username, user.id, nickname)
+                        
+                        # 更新在线用户列表
+                        await manager.broadcast({
+                            "type": "users_list",
+                            "users": manager.get_online_users()
+                        })
+                
+                else:
+                    logger.warning(f"未知消息类型: {message_type}")
+            
+            except json.JSONDecodeError:
+                logger.error(f"无效的JSON消息: {data}")
+            except Exception as e:
+                logger.error(f"处理消息时出错: {str(e)}")
+    
+    except WebSocketDisconnect:
+        # 连接断开时清理资源
+        await manager.disconnect(username)
+        
+        # 广播用户下线通知
+        await manager.broadcast({
+            "type": "users_list",
+            "users": manager.get_online_users()
+        })
+    
+    except Exception as e:
+        logger.error(f"WebSocket连接出错: {str(e)}")
+        await manager.disconnect(username)
+
 @router.get("/active-users")
 async def get_active_users(
-    current_user: UserModel = Depends(auth.get_current_superuser),
+    current_user: User = Depends(auth.get_current_superuser),
 ) -> Any:
     """
     获取当前活跃用户列表（仅超级管理员）
@@ -315,13 +439,12 @@ async def get_chat_rooms(
     for room in rooms:
         # 如果是公共聊天室，或者用户是聊天室成员，或者用户是管理员
         if not room.is_private or await is_room_member(session, room.id,
-                                                       current_user.id) or current_user.role == "ADMIN":
+                                                       current_user.id) or current_user.is_superuser:
             filtered_rooms.append(room)
-
     return {"rooms": filtered_rooms}
 
 
-@router.post("/rooms", )  # response_model=ChatRoomResponse
+@router.post("/rooms")  # response_model=ChatRoomResponse
 async def create_chat_room(
         room_data: ChatRoomCreate,
         session: AsyncSession = Depends(get_db),
@@ -347,8 +470,8 @@ async def create_chat_room(
         room_id=room.id,
         user_id=current_user.id,
         is_admin=True,
-        # created_at=datetime.now(),
-        # updated_at=datetime.now()
+        created_at=datetime.now(),
+        updated_at=datetime.now()
     )
     session.add(member)
     await session.commit()
@@ -364,9 +487,8 @@ async def get_chat_room(
 ):
     """获取聊天室详情"""
     room = await get_room_or_404(session, room_id)
-    print(123123)
     # 检查是否有权限访问该聊天室
-    if room.is_private and not await is_room_member(session, room_id, current_user.id) and current_user.role != "ADMIN":
+    if room.is_private and not await is_room_member(session, room_id, current_user.id) and not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="没有权限访问该聊天室")
 
     return {"message": "获取聊天室成功", "room": room}
@@ -382,7 +504,7 @@ async def delete_chat_room(
     room = await get_room_or_404(session, room_id)
 
     # 检查是否为创建者或管理员
-    if room.created_by != current_user.id and current_user.role != "ADMIN":
+    if room.created_by != current_user.id and not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="只有聊天室创建者或系统管理员可以删除聊天室")
 
     # 删除聊天室
@@ -390,6 +512,30 @@ async def delete_chat_room(
     await session.commit()
 
     return {"message": "聊天室删除成功"}
+
+@router.put("/rooms/{room_id}", response_model=ChatRoomResponse)
+async def update_chat_room(
+        room_id: int,
+        room_data: ChatRoomCreate,
+        session: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    """更新聊天室"""
+    room = await get_room_or_404(session, room_id)
+
+    # 检查是否有权限更新该聊天室
+    if room.created_by != current_user.id and not current_user.is_superuser:
+        raise HTTPException(status_code=403, detail="只有聊天室创建者或系统管理员可以更新聊天室")
+    
+    # 更新聊天室
+    room.name = room_data.name
+    room.description = room_data.description
+    room.is_private = room_data.is_private
+    room.updated_at = datetime.now()
+    await session.commit()
+
+    return {"message": "聊天室更新成功", "room": room}
+
 
 
 @router.post("/rooms/{room_id}/members")
@@ -404,11 +550,11 @@ async def add_room_member(
     room = await get_room_or_404(session, room_id)
 
     # 检查操作者是否为聊天室管理员或系统管理员
-    if not await is_room_admin(session, room_id, current_user.id) and current_user.role != "ADMIN":
+    if not await is_room_admin(session, room_id, current_user.id) and not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="只有聊天室管理员或系统管理员可以添加成员")
 
     # 检查用户是否存在
-    user_query = select(User_DB).where(User_DB.id == user_id)
+    user_query = select(User).where(User.id == user_id)
     user_result = await session.execute(user_query)
     user = user_result.scalar_one_or_none()
     if not user:
@@ -442,7 +588,7 @@ async def remove_room_member(
 
     # 检查操作者是否为聊天室管理员或系统管理员，或者是自己
     if not await is_room_admin(session, room_id,
-                               current_user.id) and current_user.role != "ADMIN" and current_user.id != user_id:
+                               current_user.id) and not current_user.is_superuser and current_user.id != user_id:
         raise HTTPException(status_code=403, detail="只有聊天室管理员、系统管理员或用户自己可以移除成员")
 
     # 如果是创建者，不能移除
@@ -479,12 +625,12 @@ async def get_room_members(
     room = await get_room_or_404(session, room_id)
 
     # 检查是否有权限访问该聊天室
-    if room.is_private and not await is_room_member(session, room_id, current_user.id) and current_user.role != "ADMIN":
+    if room.is_private and not await is_room_member(session, room_id, current_user.id) and not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="没有权限访问该聊天室")
 
     # 查询成员
-    query = select(User_DB, ChatRoomMember) \
-        .join(ChatRoomMember, User_DB.id == ChatRoomMember.user_id) \
+    query = select(User, ChatRoomMember) \
+        .join(ChatRoomMember, User.id == ChatRoomMember.user_id) \
         .where(ChatRoomMember.room_id == room_id) \
         .order_by(ChatRoomMember.is_admin.desc(), User.nickname)
 
@@ -504,8 +650,6 @@ async def get_room_members(
     return {"members": members}
 
 
-from app.db.models import User as User_DB
-
 
 @router.get("/rooms/{room_id}/messages")
 async def get_room_messages(
@@ -519,7 +663,7 @@ async def get_room_messages(
     room = await get_room_or_404(session, room_id)
 
     # 检查是否有权限访问该聊天室
-    if room.is_private and not await is_room_member(session, room_id, current_user.id) and current_user.role != "ADMIN":
+    if room.is_private and not await is_room_member(session, room_id, current_user.id) and not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="没有权限访问该聊天室")
 
     # 构建查询
@@ -541,7 +685,7 @@ async def get_room_messages(
 
     # 获取用户信息
     user_ids = set(msg.sender_id for msg in messages)
-    users_query = select(User_DB).where(User_DB.id.in_(user_ids))
+    users_query = select(User).where(User.id.in_(user_ids))
     users_result = await session.execute(users_query)
     users = {user.id: user for user in users_result.scalars().all()}
 
@@ -576,7 +720,7 @@ async def get_private_messages(
 ):
     """获取私聊消息历史"""
     # 检查用户是否存在
-    user_query = select(User_DB).where(User_DB.id == with_user_id)
+    user_query = select(User).where(User.id == with_user_id)
     user_result = await session.execute(user_query)
     user = user_result.scalar_one_or_none()
     if not user:
@@ -615,7 +759,7 @@ async def get_private_messages(
 
     # 获取用户信息
     user_ids = set(msg.sender_id for msg in messages) | {with_user_id}
-    users_query = select(User_DB).where(User_DB.id.in_(user_ids))
+    users_query = select(User).where(User.id.in_(user_ids))
     users_result = await session.execute(users_query)
     users = {user.id: user for user in users_result.scalars().all()}
 

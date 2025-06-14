@@ -4,9 +4,10 @@
 
 import os
 import secrets
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Union
 from pydantic import validator
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 from pydantic.networks import AnyHttpUrl
 
 class Settings(BaseSettings):
@@ -19,7 +20,7 @@ class Settings(BaseSettings):
     PORT: int = 8000
     
     # BACKEND_CORS_ORIGINS is a comma-separated list of origins
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = ["http://localhost:5173"]
+    # BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = ["http://localhost:5173"]
 
     # @validator("BACKEND_CORS_ORIGINS", pre=True)
     # def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
@@ -33,19 +34,20 @@ class Settings(BaseSettings):
     SQLALCHEMY_DATABASE_URI: Optional[str] = os.getenv(
         "DATABASE_URL", "sqlite+aiosqlite:///./database.sqlite"
     )
-
+    
+    
     # JWT configuration
     SECRET_KEY: str = secrets.token_urlsafe(32)
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
     # 允许的图片类型
-    ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+    ALLOWED_IMAGE_TYPES:List[str] = ["image/jpeg", "image/png", "image/gif", "image/webp"]
 
     # 创建上传目录
-    CHAT_UPLOAD_DIR = os.path.join("static", "uploads", "chat")
+    CHAT_UPLOAD_DIR:str = os.path.join("static", "uploads", "chat")
 
     # File storage
-    UPLOAD_DIR: str = "uploads"
+    FILE_UPLOAD_DIR: str = "file_uploads"
     MAX_UPLOAD_SIZE: int = 1024 * 1024 * 50  # 50MB
 
     # Templates
@@ -57,31 +59,44 @@ class Settings(BaseSettings):
 
     # Extension settings
     EXTENSIONS_DIR: str = "extensions"
+    
+    # Config directory
     CONFIG_DIR: str = os.path.join(os.path.expanduser("~"), ".config", "data_query_system")
 
-    # Application expiry
-    EXPIRE_TIME: Optional[str] = None
+    # Token name for cookies
+    TOKEN_NAME: str = "access_token"
 
-    # New fields from the code block
-    DATABASE_URL: str = "sqlite+aiosqlite:///./data/app.db"
-    DATA_DIR: str = "./data"
-    EXTENSION_DB_TYPE: str = "sqlite"  # 可选: sqlite, postgres, mysql
-    
-    # 统一数据库配置
-    DB_TYPE: str = "sqlite"  # 数据库类型: sqlite, postgres, mysql
-    DB_PATH: str = "./data/extension_db.db"  # 统一扩展数据库路径
-    # TABLE_PREFIX: str = "ext_"  # 表名前缀，用于区分不同扩展的表
+    # Application expiry time
+    EXPIRE_TIME: Optional[str] = (datetime.now() + timedelta(days=90)).strftime("%Y-%m-%d %H:%M:%S")
 
+    # external DB configuration,异步数据库配置
+    EXT_DB_TYPE: str = "sqlite"
+    EXT_DB_CONFIG: Dict[str, Dict[str, str]] = {
+        "sqlite": {
+            "db_url": "sqlite+aiosqlite:///./database.sqlite"
+        },
+        "postgresql": {
+            "db_url": "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres"
+        },
+        "mysql": {
+            "db_url": "mysql+aiomysql://root:root@localhost:3306/mysql"
+        },
+        "mssql": {
+            "db_url": "mssql+pyodbc://sa:123456@localhost:1433/test?driver=ODBC+Driver+17+for+SQL+Server"
+        }
+    }
+    # 是否允许注册
+    ALLOW_REGISTER: bool = True
     class Config:
         case_sensitive = True
         env_file = ".env"
 
-settings = Settings() 
 
-# Ensure necessary directories exist
-os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+# 创建设置实例
+settings = Settings()
+
+# 确保必要的目录存在
+os.makedirs(settings.FILE_UPLOAD_DIR, exist_ok=True)
 os.makedirs(settings.EXTENSIONS_DIR, exist_ok=True)
 os.makedirs(settings.CONFIG_DIR, exist_ok=True)
-os.makedirs(settings.DATA_DIR, exist_ok=True)
-os.makedirs(os.path.dirname(settings.DB_PATH), exist_ok=True)
-# os.makedirs(os.path.join(settings.DATA_DIR, "extension_dbs"), exist_ok=True)
+os.makedirs(os.path.dirname(settings.LOG_FILE), exist_ok=True)

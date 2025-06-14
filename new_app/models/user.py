@@ -33,10 +33,11 @@ class User(BaseModel):
     nickname = Column(String(50), unique=False)  # 允许测试时为空
     email = Column(String(100), unique=True, index=True)  # 允许测试时为空
     hashed_password = Column(String(100))  # 允许测试时为空
-    # full_name = Column(String(100))  # 添加全名字段，方便测试
+    avatar = Column(String(255), nullable=True)  # 头像
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
-    
+    last_login = Column(DateTime, default=datetime.now,nullable=True)
+
     # 角色和权限
     # roles = Column(JSON, default=list)  # 用户角色列表
     # permissions = Column(JSON, default=list)  # 用户权限列表
@@ -54,6 +55,7 @@ class User(BaseModel):
     
     # 关联关系
     files = relationship("File", back_populates="owner", cascade="all, delete-orphan")
+    files2 = relationship("File2", back_populates="owner", cascade="all, delete-orphan")
     chats = relationship("Chat", back_populates="user", cascade="all, delete-orphan")
     extensions = relationship("Extension", back_populates="creator", cascade="all, delete-orphan")
     activities = relationship("ActivityLog", back_populates="user", cascade="all, delete-orphan")
@@ -174,6 +176,7 @@ class Permission(BaseModel):
     id = Column(Integer, primary_key=True, index=True)
     code = Column(String(50), unique=True, nullable=False)  # 权限代码，如"user:create"
     name = Column(String(100), nullable=False)  # 权限名称，如"创建用户"
+    url = Column(String(255),nullable=True)  # 权限URL，如"/user/create"
     description = Column(String(255))
 
     # 与角色的多对多关系

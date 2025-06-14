@@ -1,115 +1,89 @@
-"""
-日志管理器
-提供统一的日志记录功能
-"""
-import os
 import logging
-import traceback
+import os
 from datetime import datetime
-from pathlib import Path
-from typing import Optional
+from logging.handlers import TimedRotatingFileHandler  # 关键修改点
 
-from sqlalchemy.ext.asyncio import AsyncSession
-from new_app.models import Log
-from new_app.core.config import settings
+from config import LOG_DIR
 
-# 创建日志目录
-log_dir = Path("logs")
-log_dir.mkdir(exist_ok=True)
+# 确保日志目录存在
+os.makedirs(LOG_DIR, exist_ok=True)
 
-# 配置文件日志
-file_handler = logging.FileHandler(settings.LOG_FILE)
-file_handler.setFormatter(
-    logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-)
-
-# 配置控制台日志
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(
-    logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-)
-
-def get_logger(name: str) -> logging.Logger:
-    """获取日志记录器"""
+def setup_logger(name, level=logging.INFO):
+    """
+    创建并配置一个日志记录器（支持按天轮转日志文件）
+    
+    Args:
+        name: 日志记录器名称
+        level: 日志级别，默认为INFO
+        
+    Returns:
+        配置好的日志记录器
+    """
     logger = logging.getLogger(name)
-    logger.setLevel(getattr(logging, settings.LOG_LEVEL))
-    
+    logger.setLevel(level)
+
     # 避免重复添加处理器
-    if not logger.handlers:
-        logger.addHandler(file_handler)
-        logger.addHandler(console_handler)
-    
+    if logger.handlers:
+        return logger
+
+    # 日志文件名格式（不带日期，由TimedRotatingFileHandler自动处理）
+    log_file = os.path.join(LOG_DIR, f"app.log")  # 基础文件名
+
+    # 控制台处理器
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(level)
+
+    # 文件处理器（按天轮转，午夜切换，保留7天日志）
+    file_handler = TimedRotatingFileHandler(
+        log_file,
+        when="midnight",  # 每天午夜轮转
+        interval=1,       # 每天一个文件
+        backupCount=30,    # 保留30天日志
+        encoding="gbk"    # 编码
+    )
+    file_handler.setLevel(level)
+
+    # 统一格式化器
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    console_handler.setFormatter(formatter)
+    file_handler.setFormatter(formatter)
+
+    # 添加处理器
+    logger.addHandler(console_handler)
+    logger.addHandler(file_handler)
+
     return logger
 
-class DatabaseLogger:
-    """数据库日志记录器"""
-    def __init__(self, db: AsyncSession):
-        self.db = db
-        self.logger = get_logger(__name__)
+# 预配置日志记录器
+app_logger = setup_logger("app")
+# extension_logger = setup_logger("extension")
+auth_logger = setup_logger("auth")
 
-    async def log(
-        self,
-        level: str,
-        message: str,
-        module: Optional[str] = None,
-        function: Optional[str] = None,
-        line: Optional[int] = None,
-        user_id: Optional[int] = None
-    ) -> Optional[Log]:
-        """记录日志到数据库"""
-        try:
-            # 获取调用栈信息
-            if not module or not function or not line:
-                stack = traceback.extract_stack()
-                caller = stack[-2]  # -1 是当前函数，-2 是调用者
-                module = module or caller.filename
-                function = function or caller.name
-                line = line or caller.lineno
+# file_logger = setup_logger("file")
+# db_logger = setup_logger("db")
 
-            # 创建日志记录
-            log = Log(
-                level=level,
-                message=message,
-                module=module,
-                function=function,
-                line=line,
-                user_id=user_id,
-                created_at=datetime.utcnow()
-            )
+def get_logger(name,level=logging.INFO):
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(level)
 
-            self.db.add(log)
-            await self.db.commit()
-            await self.db.refresh(log)
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+    log_file = os.path.join(LOG_DIR, f"{name}.log")  # 基础文件名
+    file_handler = TimedRotatingFileHandler(
+        log_file, when="midnight", interval=1, backupCount=30, encoding="gbk"
+    )
+    file_handler.setLevel(level)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
 
-            # 同时记录到文件
-            self.logger.log(
-                getattr(logging, level),
-                f"[{module}:{function}:{line}] {message}"
-            )
+    file_handler.encoding = 'gbk'
 
-            return log
+    return logger
 
-        except Exception as e:
-            self.logger.error(f"记录数据库日志失败: {str(e)}")
-            await self.db.rollback()
-            return None
-
-    async def info(self, message: str, **kwargs):
-        """记录INFO级别日志"""
-        return await self.log("INFO", message, **kwargs)
-
-    async def warning(self, message: str, **kwargs):
-        """记录WARNING级别日志"""
-        return await self.log("WARNING", message, **kwargs)
-
-    async def error(self, message: str, **kwargs):
-        """记录ERROR级别日志"""
-        return await self.log("ERROR", message, **kwargs)
-
-    async def debug(self, message: str, **kwargs):
-        """记录DEBUG级别日志"""
-        return await self.log("DEBUG", message, **kwargs)
-
-    async def critical(self, message: str, **kwargs):
-        """记录CRITICAL级别日志"""
-        return await self.log("CRITICAL", message, **kwargs) 

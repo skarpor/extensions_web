@@ -18,6 +18,22 @@
           <h2>系统设置</h2>
           <p>配置系统参数和用户权限</p>
         </div>
+        <!--dashboard-->
+        <div class="card" @click="navigateTo('/dashboard')">
+          <h2>控制面板</h2>
+          <p>管理系统控制面板</p>
+        </div>
+        <!-- profile-->
+        <div class="card" @click="navigateTo('/profile')">
+          <h2>用户信息</h2>
+          <p>查看和管理用户信息</p>
+        </div>
+        <!--DB -->
+        <div class="card" @click="navigateTo('/database')">
+          <h2>数据库管理</h2>
+          <p>管理系统数据库</p>
+        </div>
+        <!---->
       </div>
     </div>
   </template>
