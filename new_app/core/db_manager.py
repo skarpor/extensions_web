@@ -330,7 +330,7 @@ class DBManager:
         logger.info(f"删除表 {table_name} 成功")
         return True
     
-    async def alter_table(self, table_name: str, columns: List[Dict], description: Optional[str] = None) -> bool:
+    async def alter_table1(self, table_name: str, columns: List[Dict], description: Optional[str] = None) -> bool:
         """修改表结构
         
         由于SQLAlchemy核心不直接支持ALTER TABLE，我们通过重新创建表来实现
@@ -395,7 +395,7 @@ class DBManager:
                 await conn.execute(CreateTable(temp_table))
                 
                 # 复制数据到临时表
-                column_names = [dict(col)["name"] for col in columns]
+                column_names = [col["name"] for col in columns]
                 existing_column_names = set([c.name for c in self.tables[table_name].columns])
 
                 # 插入符合新表结构的数据
@@ -444,6 +444,7 @@ class DBManager:
         
         except Exception as e:
             logger.error(f"修改表 {table_name} 结构失败: {str(e)}")
+            raise
             # 尝试清理临时表
             try:
                 async with self.engine.begin() as conn:
@@ -454,7 +455,131 @@ class DBManager:
         
         logger.info(f"修改表 {table_name} 结构成功")
         return True
-    
+
+    async def alter_table(self, table_name: str, columns: List[Dict], description: Optional[str] = None) -> bool:
+        """修改表结构"""
+        if not self.engine:
+            await self.initialize()
+
+        if table_name not in self.tables:
+            logger.warning(f"表 {table_name} 不存在，无法修改")
+            return False
+
+        # 获取表的所有数据
+        data = await self.execute_query(
+            operation="select",
+            table_name=table_name
+        )
+
+        # 创建临时表名
+        temp_table_name = f"{table_name}_temp_{int(datetime.now().timestamp())}"
+
+        try:
+            # 创建列对象的函数
+            def create_columns(col_definitions):
+                new_columns = []
+                for col in col_definitions:
+                    col = dict(col)
+                    column_type = self._get_column_type(col)
+                    column_args = {
+                        "primary_key": col.get("primary_key", False),
+                        "nullable": col.get("nullable", True)
+                    }
+
+                    if col.get("unique", False):
+                        column_args["unique"] = True
+
+                    if "default" in col:
+                        column_args["default"] = col["default"]
+
+                    if "comment" in col:
+                        column_args["comment"] = col["comment"]
+
+                    new_columns.append(Column(col["name"], column_type, **column_args))
+                return new_columns
+
+            async with self.engine.begin() as conn:
+                # 创建临时表的列
+                temp_table_columns = create_columns(columns)
+
+                # 创建临时表对象
+                table_args = {}
+                if description:
+                    table_args["comment"] = description
+
+                temp_table = Table(temp_table_name, MetaData(), *temp_table_columns, **table_args)
+
+                # 创建临时表
+                await conn.execute(CreateTable(temp_table))
+
+                # 复制数据到临时表
+                column_names = [dict(col)["name"] for col in columns]
+                existing_column_names = set([c.name for c in self.tables[table_name].columns])
+
+                for row in data:
+                    filtered_row = {k: v for k, v in row.items() if k in column_names}
+                    if filtered_row:
+                        insert_stmt = insert(temp_table).values(**filtered_row)
+                        await conn.execute(insert_stmt)
+
+                # 删除原表
+                await conn.execute(DropTable(self.tables[table_name]))
+
+                if self.db_type == "sqlite":
+                    # 为最终表创建全新的列对象
+                    final_table_columns = create_columns(columns)
+                    final_table = Table(table_name, MetaData(), *final_table_columns, **table_args)
+                    await conn.execute(CreateTable(final_table))
+
+                    # 查询临时表数据
+                    select_stmt = select(temp_table)
+                    result = await conn.execute(select_stmt)
+                    temp_data = [dict(row) for row in result.fetchall()]
+
+                    # 复制到最终表
+                    for row in temp_data:
+                        insert_stmt = insert(final_table).values(**row)
+                        await conn.execute(insert_stmt)
+
+                    # 删除临时表
+                    await conn.execute(DropTable(temp_table))
+
+                    # 更新缓存
+                    # self.tables[table_name] = final_table
+                    # self.metadata.remove(self.tables[table_name])
+                    # self.metadata.add(final_table)
+                    # 更新缓存 - 修正后的方式
+                    self.tables[table_name] = final_table
+                    # 移除旧的表引用（如果存在）
+                    if table_name in self.metadata.tables:
+                        self.metadata.remove(self.metadata.tables[table_name])
+                    # 添加新表到元数据
+                    final_table.metadata = self.metadata
+
+                else:
+                    # 其他数据库可以直接重命名
+                    rename_sql = f"ALTER TABLE {temp_table_name} RENAME TO {table_name}"
+                    await conn.execute(text(rename_sql))
+
+                    # 更新缓存
+                    self.tables[table_name] = temp_table
+                    temp_table.name = table_name
+                    if table_name in self.metadata.tables:
+                        self.metadata.remove(self.metadata.tables[table_name])
+                    temp_table.metadata = self.metadata
+
+        except Exception as e:
+            logger.error(f"修改表 {table_name} 结构失败: {str(e)}")
+            # 尝试清理临时表
+            try:
+                async with self.engine.begin() as conn:
+                    await conn.execute(text(f"DROP TABLE IF EXISTS {temp_table_name}"))
+            except:
+                pass
+            raise
+
+        logger.info(f"修改表 {table_name} 结构成功")
+        return True
     async def execute_query(self, operation: str, table_name: Optional[str] = None, 
                            data: Optional[Dict] = None, condition: Optional[Dict] = None,
                            sql: Optional[str] = None, params: Optional[Dict] = None,
@@ -512,7 +637,7 @@ class DBManager:
                     # 执行查询
                     async with self.engine.connect() as conn:
                         result = await conn.execute(query)
-                        return [dict(row) for row in result]
+                        return [row for row in result]
                 
                 elif operation == "insert" and data:
                     # 执行插入

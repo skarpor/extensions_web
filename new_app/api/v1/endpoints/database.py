@@ -131,8 +131,10 @@ async def update_table(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except SQLAlchemyError as e:
+        raise
         raise HTTPException(status_code=500, detail=f"数据库错误: {str(e)}")
     except Exception as e:
+        raise
         raise HTTPException(status_code=500, detail=f"更新表失败: {str(e)}")
 
 
@@ -238,8 +240,10 @@ async def create_table_record(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except SQLAlchemyError as e:
+        raise
         raise HTTPException(status_code=500, detail=f"数据库错误: {str(e)}")
     except Exception as e:
+        raise
         raise HTTPException(status_code=500, detail=f"创建记录失败: {str(e)}")
 
 
