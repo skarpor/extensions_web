@@ -1,3 +1,22 @@
+# 环境
+
+> python3.9+,vue3
+
+```powershell
+# 安装依赖
+pip install -r requirements.txt
+
+# 启动后端
+python main.py
+
+# 启动前端
+cd frontend;npm i;npm run dev
+```
+
+
+
+
+
 # Data Query System 2.0
 
 这是一个基于FastAPI的数据查询系统，支持文件管理、用户管理、扩展管理等功能。

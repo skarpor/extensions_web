@@ -93,6 +93,7 @@ async def create_table(
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail=f"数据库错误: {str(e)}")
     except Exception as e:
+        raise
         raise HTTPException(status_code=500, detail=f"创建表失败: {str(e)}")
 
 

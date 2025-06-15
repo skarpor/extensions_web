@@ -2,6 +2,7 @@
 文件管理器
 负责文件的上传、下载和管理
 """
+from __future__ import annotations
 import os
 import shutil
 import hashlib
@@ -206,7 +207,7 @@ class FileManager:
             logger.error(f"获取用户文件列表失败: {str(e)}")
             return []
     # 获取目录下所有文件
-    async def get_dir_files(self,  path: str) -> Union[list[Any], Sequence[File]]:
+    async def get_dir_files(self,  path: str) -> Union[list[Any], Sequence[File]]: # -> Union[list[Any], Sequence[File]]
         """获取目录下所有文件"""
         try:
             # 如果没有/结尾，则添加/

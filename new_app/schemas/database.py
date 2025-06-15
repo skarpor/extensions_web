@@ -34,7 +34,7 @@ class TableInfo(BaseModel):
     """表信息模型"""
     name: str = Field(..., description="表名")
     display_name: str = Field(..., description="显示名称（不包含前缀）")
-    original_name: str = Field(..., description="原始名称（不包含扩展前缀）")
+    # original_name: str = Field(..., description="原始名称（不包含扩展前缀）")
     description: Optional[str] = Field(None, description="表描述")
     extension_id: Optional[str] = Field(None, description="所属扩展ID")
     extension_name: Optional[str] = Field(None, description="所属扩展名称")

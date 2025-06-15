@@ -3,6 +3,7 @@
 
 提供动态管理数据库表的功能，允许创建、修改、删除表和数据。
 """
+import json
 import os
 import asyncio
 from typing import Dict, List, Any, Optional, Union
@@ -264,6 +265,7 @@ class DBManager:
         # 构建列对象
         table_columns = []
         for col in columns:
+            col = dict(col)
             column_type = self._get_column_type(col)
             column_args = {
                 "primary_key": col.get("primary_key", False),
@@ -363,6 +365,7 @@ class DBManager:
                 # 构建列对象
                 table_columns = []
                 for col in columns:
+                    col = dict(col)
                     column_type = self._get_column_type(col)
                     column_args = {
                         "primary_key": col.get("primary_key", False),
@@ -392,9 +395,9 @@ class DBManager:
                 await conn.execute(CreateTable(temp_table))
                 
                 # 复制数据到临时表
-                column_names = [col["name"] for col in columns]
+                column_names = [dict(col)["name"] for col in columns]
                 existing_column_names = set([c.name for c in self.tables[table_name].columns])
-                
+
                 # 插入符合新表结构的数据
                 for row in data:
                     filtered_row = {k: v for k, v in row.items() if k in column_names}

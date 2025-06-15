@@ -27,7 +27,7 @@ export const getTableSchema = async (tableName) => {
 export const createTable = async (tableName, tableSchema) => {
     try {
         const response = await axios.post('/api/db/tables', {
-            name: tableName,
+            table_name: tableName,
             schema: tableSchema
         })
         return response
@@ -40,9 +40,10 @@ export const createTable = async (tableName, tableSchema) => {
 //更新表
 export const updateTable = async (tableName, tableSchema) => {
     try {
-        const response = await axios.put(`/api/db/tables/${tableName}`, {
-            schema: tableSchema
-        })
+        const response = await axios.put(`/api/db/tables/${tableName}`,
+            // {schema: tableSchema}
+            tableSchema
+            )
         return response
     } catch (error) {
         console.error('更新表失败:', error)
