@@ -10,6 +10,6 @@ if __name__ == "__main__":
         "new_app.main:app",
         host=settings.HOST,
         port=settings.PORT,
-        reload=True,
+        reload=False,
         workers=1
     )

@@ -72,7 +72,7 @@
                   <i :class="getIconClass(item)"></i> {{ item.filename }}
                 </a>
               </td>
-              <td>{{ item.filetype }}</td>
+              <td class="text-truncate" style="max-width: 100px" :title="item.filetype">{{ item.filetype }}</td>
               <td>{{ item.owner.username }}</td>
               <td>{{ formatSize(item.filesize) }}</td>
               <td>{{ formatDate(item.updated_at) }}</td>

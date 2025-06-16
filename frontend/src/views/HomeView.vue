@@ -2,6 +2,10 @@
     <div class="home">
       <h1>数据查询系统</h1>
       <div class="card-container">
+        <div class="card" @click="navigateTo('/extension-query')">
+          <h2>扩展查询</h2>
+          <p>查询扩展信息</p>
+        </div>
         <div class="card" @click="navigateTo('/chat')">
           <h2>聊天</h2>
           <p>实时聊天功能，支持群聊和私聊</p>

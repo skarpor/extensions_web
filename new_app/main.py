@@ -27,7 +27,7 @@ from new_app.core.logger import get_logger
 from new_app.core.extension_manager import ExtensionManager
 from new_app.core.file_manager import FileManager
 from new_app.db.session import init_models, get_db, AsyncSessionLocal
-
+from new_app.api.v1.endpoints.extensions import init_manager
 logger = get_logger("main")
 
 def create_app() -> FastAPI:
@@ -70,13 +70,14 @@ def create_app() -> FastAPI:
     # app.include_router(database.router, prefix=settings.API_V1_STR + "/db")
     app.include_router(api_router,prefix="/api")
     # 初始化文件管理器
-    file_manager = FileManager()
+    # file_manager = FileManager()
 
     # 初始化扩展管理器
     extension_manager = ExtensionManager(
         app=app,
-        extensions_dir=settings.EXTENSIONS_DIR,
     )
+    #
+    init_manager(extension_manager)
 
     @app.on_event("startup")
     async def startup_event():

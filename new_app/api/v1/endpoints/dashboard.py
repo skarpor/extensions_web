@@ -35,8 +35,8 @@ async def get_stats(
     # 获取扩展总数
     extensions_count = await db.scalar(select(func.count()).select_from(Extension))
     
-    # 获取文件总数
-    files_count = await db.scalar(select(func.count()).select_from(File))
+    # 获取文件总数，过滤文件夹
+    files_count = await db.scalar(select(func.count()).select_from(File).where(File.filetype != "directory"))
     
     # 获取消息总数
     messages_count = await db.scalar(select(func.count()).select_from(Message))

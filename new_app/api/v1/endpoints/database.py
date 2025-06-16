@@ -39,7 +39,7 @@ view_database = PermissionChecker(["view_database"])
 @router.post("/initialize")
 async def initialize_database(
     request: Request,
-    current_user: User = Depends(get_current_active_user)
+    # current_user: User = Depends(get_current_active_user)
 ):
     """
     初始化数据库连接
@@ -80,7 +80,7 @@ async def list_tables(
 async def create_table(
     table_name: str = Body(..., description="表名"),
     schema: TableSchema = Body(..., description="表结构定义"),
-    current_user: User = Depends(manage_database)
+    # current_user: User = Depends(manage_database)
 ):
     """
     创建新表
@@ -93,14 +93,13 @@ async def create_table(
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail=f"数据库错误: {str(e)}")
     except Exception as e:
-        raise
         raise HTTPException(status_code=500, detail=f"创建表失败: {str(e)}")
 
 
 @router.get("/tables/{table_name}/schema", response_model=Dict[str, Any])
 async def get_table_schema(
     table_name: str = Path(..., description="表名"),
-    current_user: User = Depends(get_current_active_user)
+    # current_user: User = Depends(get_current_active_user)
 ):
     """
     获取指定表的结构定义
@@ -120,7 +119,7 @@ async def get_table_schema(
 async def update_table(
     table_name: str = Path(..., description="表名"),
     schema: TableSchema = Body(..., description="表结构定义"),
-    current_user: User = Depends(manage_database)
+    # current_user: User = Depends(manage_database)
 ):
     """
     更新表结构
@@ -131,17 +130,15 @@ async def update_table(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except SQLAlchemyError as e:
-        raise
         raise HTTPException(status_code=500, detail=f"数据库错误: {str(e)}")
     except Exception as e:
-        raise
         raise HTTPException(status_code=500, detail=f"更新表失败: {str(e)}")
 
 
 @router.delete("/tables/{table_name}", status_code=200)
 async def delete_table(
     table_name: str = Path(..., description="表名"),
-    current_user: User = Depends(manage_database)
+    # current_user: User = Depends(manage_database)
 ):
     """
     删除指定表
@@ -169,7 +166,7 @@ async def get_table_data(
     search: Optional[str] = Query(None, description="搜索关键词"),
     sort_by: Optional[str] = Query(None, description="排序字段"),
     sort_desc: bool = Query(False, description="是否降序排序"),
-    current_user: User = Depends(get_current_active_user)
+    # current_user: User = Depends(get_current_active_user)
 ):
     """
     获取表数据，支持分页、搜索和排序
@@ -191,16 +188,17 @@ async def get_table_data(
             table_name=table_name,
             condition=condition,
             limit=per_page,
-            offset=offset
+            offset=offset,
+            sort_by=sort_by,
+            sort_desc=sort_desc
         )
         
         # 获取总记录数
         count_query = await db_manager.execute_query(
-            operation="select",
-            table_name=table_name,
-            condition=condition,
-            sql="SELECT COUNT(*) as total FROM " + table_name
+            operation="raw",
+            sql=f"SELECT COUNT(*) as total FROM {table_name}"
         )
+        
         total = count_query[0]["total"] if count_query else 0
         
         # 构建响应
@@ -216,34 +214,58 @@ async def get_table_data(
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except SQLAlchemyError as e:
+        raise
         raise HTTPException(status_code=500, detail=f"数据库错误: {str(e)}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"获取表数据失败: {str(e)}")
+        raise #HTTPException(status_code=500, detail=f"获取表数据失败: {str(e)}")
 
 
 @router.post("/tables/{table_name}/data", status_code=201, response_model=Dict[str, Any])
 async def create_table_record(
     table_name: str = Path(..., description="表名"),
     data: Dict[str, Any] = Body(..., description="记录数据"),
-    current_user: User = Depends(manage_database)
+    # current_user: User = Depends(manage_database)
 ):
     """
-    在表中创建新记录
+    在表中创建新记录,如果主键存在，则更新，否则插入
     """
     try:
+        # 获取表结构，找出主键
+        schema = await db_manager.get_table_schema(table_name)
+        primary_key = next((col["name"] for col in schema["columns"] if col["primary_key"]), None)
+        
+        if not primary_key:
+            raise ValueError(f"表 {table_name} 没有主键，无法创建记录")
+        
+        # 构建条件
+        condition = {primary_key: data.get(primary_key)}
+        
+        # 执行查询
         result = await db_manager.execute_query(
-            operation="insert",
+            operation="select",
             table_name=table_name,
-            data=data
+            condition=condition
         )
-        return result
+        if result:
+            # 更新
+            await db_manager.execute_query(
+                operation="update",
+                table_name=table_name,
+                data=data.get("data")
+            )
+        else:
+            # 插入
+            await db_manager.execute_query(
+                operation="insert",
+                table_name=table_name,
+                data=data.get("data")
+            )
+        return {"message": f"记录 {data.get(primary_key)} 创建成功"}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except SQLAlchemyError as e:
-        raise
         raise HTTPException(status_code=500, detail=f"数据库错误: {str(e)}")
     except Exception as e:
-        raise
         raise HTTPException(status_code=500, detail=f"创建记录失败: {str(e)}")
 
 
@@ -251,7 +273,7 @@ async def create_table_record(
 async def get_table_record(
     table_name: str = Path(..., description="表名"),
     record_id: Union[int, str] = Path(..., description="记录ID"),
-    current_user: User = Depends(view_database)
+    # current_user: User = Depends(view_database)
 ):
     """
     获取表中特定记录
@@ -291,7 +313,7 @@ async def update_table_record(
     table_name: str = Path(..., description="表名"),
     record_id: Union[int, str] = Path(..., description="记录ID"),
     data: Dict[str, Any] = Body(..., description="更新数据"),
-    current_user: User = Depends(manage_database)
+    # current_user: User = Depends(manage_database)
 ):
     """
     更新表中特定记录
@@ -338,7 +360,7 @@ async def update_table_record(
 async def delete_table_record(
     table_name: str = Path(..., description="表名"),
     record_id: Union[int, str] = Path(..., description="记录ID"),
-    current_user: User = Depends(manage_database)
+    # current_user: User = Depends(manage_database)
 ):
     """
     删除表中特定记录
@@ -381,7 +403,7 @@ async def delete_table_record(
 async def execute_custom_query(
     table_name: str = Path(..., description="表名"),
     query: Dict[str, Any] = Body(..., description="自定义查询条件"),
-    current_user: User = Depends(view_database)
+    # current_user: User = Depends(view_database)
 ):
     """
     执行自定义查询，支持复杂条件和聚合操作
@@ -406,19 +428,47 @@ async def execute_custom_query(
 async def bulk_insert_data(
     table_name: str = Path(..., description="表名"),
     data: List[Dict[str, Any]] = Body(..., description="批量插入的数据列表"),
-    current_user: User = Depends(manage_database)
+    # current_user: User = Depends(manage_database)
 ):
     """
     批量插入数据到指定表
+    查询主键，如果主键存在，则更新，否则插入
     """
     try:
+        # 获取表结构，找出主键
+        schema = await db_manager.get_table_schema(table_name)
+        primary_key = next((col["name"] for col in schema["columns"] if col["primary_key"]), None)
+        
+        if not primary_key:
+            raise ValueError(f"表 {table_name} 没有主键，无法批量插入")
+        
         inserted_count = 0
         for item in data:
-            await db_manager.execute_query(
-                operation="insert",
+            # 构建条件
+            condition = {primary_key: item[primary_key]}
+            
+            # 执行查询
+            result = await db_manager.execute_query(
+                operation="select",
                 table_name=table_name,
-                data=item
+                condition=condition
             )
+            
+            if result:
+                # 更新
+                await db_manager.execute_query(
+                    operation="update",
+                    table_name=table_name,
+                    data=item,
+                    condition=condition
+                )
+            else:
+                # 插入
+                await db_manager.execute_query(
+                    operation="insert",
+                    table_name=table_name,
+                    data=item
+                )
             inserted_count += 1
             
         return {"message": f"成功插入 {inserted_count} 条记录"}
@@ -434,7 +484,7 @@ async def bulk_insert_data(
 async def import_table_data(
     table_name: str = Path(..., description="表名"),
     file: UploadFile = File(..., description="要导入的CSV或JSON文件"),
-    current_user: User = Depends(manage_database)
+    # current_user: User = Depends(manage_database)
 ):
     """
     从CSV或JSON文件导入数据到表
@@ -461,14 +511,41 @@ async def import_table_data(
         if not data:
             raise HTTPException(status_code=400, detail="文件不包含有效数据")
         
-        # 批量插入数据
+        # 批量插入数据，查询主键，如果主键存在，则更新，否则插入
         inserted_count = 0
         for item in data:
-            await db_manager.execute_query(
-                operation="insert",
+            # 获取表结构，找出主键
+            schema = await db_manager.get_table_schema(table_name)
+            primary_key = next((col["name"] for col in schema["columns"] if col["primary_key"]), None)
+            
+            if not primary_key:
+                raise ValueError(f"表 {table_name} 没有主键，无法批量插入")
+            
+            # 构建条件
+            condition = {primary_key: item[primary_key]}
+            
+            # 执行查询
+            result = await db_manager.execute_query(
+                operation="select",
                 table_name=table_name,
-                data=item
+                condition=condition
             )
+            
+            if result:
+                # 更新
+                await db_manager.execute_query(
+                    operation="update",
+                    table_name=table_name,
+                    data=item,
+                    condition=condition
+                )
+            else:
+                # 插入
+                await db_manager.execute_query(
+                    operation="insert",
+                    table_name=table_name,
+                    data=item
+                )
             inserted_count += 1
             
         return {"message": f"成功导入 {inserted_count} 条记录"}
@@ -488,7 +565,7 @@ async def import_table_data(
 async def export_table_data(
     table_name: str = Path(..., description="表名"),
     format: str = Query("json", description="导出格式，支持json或csv"),
-    current_user: User = Depends(view_database)
+    # current_user: User = Depends(view_database)
 ):
     """
     导出表数据为JSON或CSV格式

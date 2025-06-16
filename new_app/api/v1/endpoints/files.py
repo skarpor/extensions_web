@@ -15,6 +15,9 @@ from new_app.core.file_manager import FileManager
 from new_app.db.session import get_db
 from new_app.schemas.file import File as FileSchema
 from new_app.models.user import User as UserModel
+from new_app.core.logger import get_logger
+
+logger = get_logger(__name__)
 
 router = APIRouter()
 
@@ -48,6 +51,7 @@ async def upload_file(
             )
         db_file.owner = current_user
         db_files.append(db_file)
+    logger.info(f"{current_user.username}, 上传文件成功: {db_files}")
     return db_files
 # @router.get("/my-files", response_model=List[FileSchema])
 # async def read_user_files(
@@ -83,7 +87,7 @@ async def download_file(
 
     file_path = file.filepath+'/'+file.filename
     file_path = file_manager.get_file_path(file_path,request.query_params.get("path"))
-
+    logger.info(f"{current_user.username}, 下载文件: {file_path}")
     # 生成文件流
     def file_stream():
         with open(file_path, "rb") as f:
@@ -114,13 +118,13 @@ async def delete_file(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="权限不足"
         )
-    print(file.filepath,request.query_params.get("path"))
     success = await file_manager.delete_file(file_id,request.query_params.get("path"))
     if not success:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="文件删除失败"
         )
+    logger.info(f"{current_user.username}, 删除文件: {file_id}成功")
     return {"message": "文件已删除"} 
 @router.get("/",response_model=List[FileSchema])
 async def get_files(
@@ -133,6 +137,7 @@ async def get_files(
     """
     获取当前用户的文件列表
     """
+    logger.info(f"{current_user.username}, 获取文件列表")
     # 获取请求参数path
     path = request.query_params.get("path") or "/"
     file_manager = FileManager(db)
@@ -140,9 +145,6 @@ async def get_files(
     for file in files:
         user = await auth.get_user_by_id(db,file.owner_id)
         file.owner = user
-        print(file.owner)
-        print(file.owner_id)
-    # print(files)
     return files
 
 # 获取文件列表
@@ -153,7 +155,9 @@ async def get_files(
     db: AsyncSession = Depends(get_db)
 ):
     file_manager = FileManager(db)
-    return await file_manager.get_dir_files(path)
+    files = await file_manager.get_dir_files(path)
+    logger.info(f"{current_user.username}, 获取文件列表: {files}")
+    return files
 
 # 创建目录
 @router.post("/mkdir/{name:path}")
@@ -172,7 +176,7 @@ async def create_directory(
     file_manager = FileManager(db)
     success = await file_manager.create_dir(request.query_params.get("path"),current_user.id,name)
     # 保存到数据库中
-
+    logger.info(f"{current_user.username}, 创建目录: {name}成功")
     if not success:
         raise HTTPException(status_code=400, detail="目录创建失败")
     return {"message": "目录创建成功"}
@@ -189,6 +193,7 @@ async def delete_dir(
     """
     删除目录
     """
+    logger.info(f"{current_user.username}, 删除目录")
     # 如果不是超级管理员，不可删除
     if not current_user.is_superuser:
         raise HTTPException(
@@ -209,4 +214,5 @@ async def delete_dir(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="目录删除失败"
         )
+    logger.info(f"{current_user.username}, 删除目录: {path}成功")
     return {"message": "目录已删除"}

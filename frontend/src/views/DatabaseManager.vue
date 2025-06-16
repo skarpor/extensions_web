@@ -3,7 +3,7 @@
     <div class="cyber-header-main">
       <h1><i class="fas fa-database"></i> 数据库管理系统</h1>
       <div class="cyber-line-main"></div>
-    </div>
+            </div>
     
     <!-- 数据库初始化面板 -->
     <div class="db-init-panel" v-if="!isDbInitialized">
@@ -20,7 +20,7 @@
               <span class="terminal-dot yellow"></span>
               <span class="terminal-dot green"></span>
               <span class="terminal-title">数据库配置终端</span>
-            </div>
+    </div>
             <div class="terminal-content">
               <div class="terminal-line">
                 <span class="prompt">$</span> 
@@ -97,34 +97,34 @@
           <div class="cyber-search-content">
             <div class="cyber-search-input">
               <i class="fas fa-search"></i>
-              <input 
-                v-model="searchQuery" 
+          <input 
+            v-model="searchQuery" 
                 type="text" 
-                placeholder="搜索表..." 
+            placeholder="搜索表..." 
                 class="cyber-input" 
-                @input="filterTables"
-              />
-            </div>
-            
-            <button 
+            @input="filterTables"
+          />
+      </div>
+      
+        <button 
               class="cyber-button create" 
-              @click="showCreateTableModal"
-              v-if="userCan('manage_extension_db')"
-            >
+          @click="showCreateTableModal"
+          v-if="userCan('manage_extension_db')"
+        >
               <span class="button-content">
                 <i class="fas fa-plus"></i>
                 <span>创建新表</span>
               </span>
-            </button>
+        </button>
           </div>
-        </div>
       </div>
-      
+    </div>
+    
       <div v-if="loading" class="cyber-loading-container">
         <div class="cyber-spinner"></div>
         <div class="cyber-loading-text">正在加载数据库表...</div>
-      </div>
-      
+    </div>
+    
       <div v-else-if="tables.length === 0" class="cyber-empty-state">
         <i class="fas fa-database"></i>
         <p>暂无表，请创建新表</p>
@@ -138,65 +138,65 @@
             <span>创建新表</span>
           </span>
         </button>
-      </div>
-      
+    </div>
+    
       <div v-else class="cyber-table-container">
         <table class="cyber-table">
           <thead>
-            <tr>
-              <th>表名</th>
-              <th>描述</th>
-              <th>记录数</th>
-              <th>创建时间</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
+          <tr>
+            <th>表名</th>
+            <th>描述</th>
+            <th>记录数</th>
+            <th>创建时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
             <tr v-for="table in filteredTables" :key="table.name" class="cyber-table-row">
-              <td>{{ table.display_name }}</td>
-              <td>{{ table.description || '无描述' }}</td>
-              <td>{{ table.record_count || 0 }}</td>
-              <td>{{ formatDate(table.created_at) }}</td>
-              <td>
+            <td>{{ table.display_name }}</td>
+            <td>{{ table.description || '无描述' }}</td>
+            <td>{{ table.record_count || 0 }}</td>
+            <td>{{ formatDate(table.created_at) }}</td>
+            <td>
                 <div class="cyber-button-group">
-                  <button 
+                <button 
                     class="cyber-icon-button view" 
-                    @click="viewTableData(table)"
-                    title="查看数据"
-                  >
-                    <i class="fas fa-table"></i>
-                  </button>
-                  
-                  <button 
+                  @click="viewTableData(table)"
+                  title="查看数据"
+                >
+                  <i class="fas fa-table"></i>
+                </button>
+                
+                <button 
                     class="cyber-icon-button schema" 
-                    @click="viewTableSchema(table)"
-                    title="查看结构"
-                  >
-                    <i class="fas fa-code"></i>
-                  </button>
-                  
-                  <button 
-                    v-if="userCan('manage_extension_db')"
+                  @click="viewTableSchema(table)"
+                  title="查看结构"
+                >
+                  <i class="fas fa-code"></i>
+                </button>
+                
+                <button 
+                  v-if="userCan('manage_extension_db')"
                     class="cyber-icon-button edit" 
-                    @click="editTable(table)"
-                    title="编辑表"
-                  >
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  
-                  <button 
-                    v-if="userCan('manage_extension_db')"
+                  @click="editTable(table)"
+                  title="编辑表"
+                >
+                  <i class="fas fa-edit"></i>
+                </button>
+                
+                <button 
+                  v-if="userCan('manage_extension_db')"
                     class="cyber-icon-button delete" 
-                    @click="confirmDeleteTable(table)"
-                    title="删除表"
-                  >
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                  @click="confirmDeleteTable(table)"
+                  title="删除表"
+                >
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
       </div>
     </div>
     
@@ -209,8 +209,8 @@
           <button class="cyber-close-button" @click="closeTableEditor">
             <i class="fas fa-times"></i>
           </button>
-        </div>
-        
+          </div>
+          
         <div class="cyber-modal-body">
           <div class="cyber-form">
             <!-- 表基本信息 -->
@@ -233,7 +233,7 @@
                 class="cyber-input" 
                 placeholder="输入显示名称"
               />
-            </div>
+          </div>
             
             <div class="cyber-form-group">
               <label class="cyber-label">描述</label>
@@ -242,7 +242,7 @@
                 class="cyber-textarea" 
                 placeholder="输入表描述"
               ></textarea>
-            </div>
+        </div>
             
             <!-- 表字段 -->
             <div class="cyber-form-section">
@@ -282,7 +282,7 @@
                         <label class="cyber-label">类型</label>
                         <select v-model="column.type" class="cyber-select">
                           <option value="integer">整数 (Integer)</option>
-                          <option value="string">字符串 (String)</option>
+                          <option value="varchar">字符串 (Varchar)</option>
                           <option value="text">文本 (Text)</option>
                           <option value="float">浮点数 (Float)</option>
                           <option value="boolean">布尔值 (Boolean)</option>
@@ -292,7 +292,7 @@
                     </div>
                     
                     <div class="cyber-form-row">
-                      <div class="cyber-form-group" v-if="column.type === 'string'">
+                      <div class="cyber-form-group" v-if="column.type === 'varchar'">
                         <label class="cyber-label">长度</label>
                         <input 
                           v-model.number="column.length" 
@@ -393,78 +393,78 @@
           <button class="cyber-close-button" @click="closeTableData">
             <i class="fas fa-times"></i>
           </button>
-        </div>
-        
+          </div>
+          
         <div class="cyber-modal-body">
           <div class="cyber-search-panel small">
             <div class="cyber-search-input">
               <i class="fas fa-search"></i>
-              <input 
-                v-model="dataSearchQuery" 
+                <input 
+                  v-model="dataSearchQuery" 
                 type="text" 
-                placeholder="搜索数据..." 
+                  placeholder="搜索数据..." 
                 class="cyber-input" 
-                @keyup.enter="searchTableData"
-              />
+                  @keyup.enter="searchTableData"
+                />
               <button class="cyber-button small" @click="searchTableData">
-                <i class="fas fa-search"></i>
-              </button>
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
             </div>
-          </div>
-          
+            
           <div v-if="loadingTableData" class="cyber-loading-container">
             <div class="cyber-spinner"></div>
             <div class="cyber-loading-text">正在加载数据...</div>
-          </div>
-          
+            </div>
+            
           <div v-else-if="tableData.length === 0" class="cyber-empty-state">
             <i class="fas fa-table"></i>
             <p>表中没有数据</p>
-          </div>
-          
+            </div>
+            
           <div v-else class="cyber-table-container">
             <table class="cyber-table data-table">
               <thead>
-                <tr>
-                  <th v-for="column in tableColumns" :key="column.name">
-                    {{ column.name }}
-                  </th>
-                  <th v-if="userCan('manage_extension_db')">操作</th>
-                </tr>
-              </thead>
-              <tbody>
+                  <tr>
+                    <th v-for="column in tableColumns" :key="column.name">
+                      {{ column.name }}
+                    </th>
+                    <th v-if="userCan('manage_extension_db')">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
                 <tr v-for="(row, index) in tableData" :key="index" class="cyber-table-row">
-                  <td v-for="column in tableColumns" :key="column.name">
-                    {{ formatCellValue(row[column.name]) }}
-                  </td>
-                  <td v-if="userCan('manage_extension_db')">
+                    <td v-for="column in tableColumns" :key="column.name">
+                      {{ formatCellValue(row[column.name]) }}
+                    </td>
+                    <td v-if="userCan('manage_extension_db')">
                     <div class="cyber-button-group">
-                      <button 
+                        <button 
                         class="cyber-icon-button edit small" 
-                        @click="editRecord(row)"
-                        title="编辑"
-                      >
-                        <i class="fas fa-edit"></i>
-                      </button>
-                      <button 
+                          @click="editRecord(row)"
+                          title="编辑"
+                        >
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <button 
                         class="cyber-icon-button delete small" 
-                        @click="deleteRecord(row)"
-                        title="删除"
-                      >
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          
-          <!-- 分页控件 -->
+                          @click="deleteRecord(row)"
+                          title="删除"
+                        >
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- 分页控件 -->
           <div class="cyber-pagination">
             <div class="cyber-pagination-info">
-              显示 {{ tableData.length }} 条记录，共 {{ totalRecords }} 条
-            </div>
+                显示 {{ tableData.length }} 条记录，共 {{ totalRecords }} 条
+              </div>
             <div class="cyber-pagination-controls">
               <button 
                 class="cyber-pagination-button" 
@@ -483,10 +483,10 @@
               
               <div class="cyber-pagination-pages">
                 <button 
-                  v-for="page in pageRange" 
-                  :key="page"
+                    v-for="page in pageRange" 
+                    :key="page" 
                   class="cyber-pagination-button" 
-                  :class="{ active: currentPage === page }"
+                    :class="{ active: currentPage === page }"
                   @click="changePage(page)"
                 >
                   {{ page }}
@@ -508,20 +508,52 @@
                 <i class="fas fa-angle-double-right"></i>
               </button>
             </div>
+            </div>
           </div>
-        </div>
-        
+          
         <div class="cyber-modal-footer">
-          <button 
-            v-if="userCan('manage_extension_db')"
-            class="cyber-button success" 
-            @click="showAddRecordForm"
-          >
-            <span class="button-content">
-              <i class="fas fa-plus"></i>
-              <span>添加记录</span>
-            </span>
-          </button>
+          <div class="cyber-button-group">
+            <button 
+              v-if="userCan('manage_extension_db')"
+              class="cyber-button" 
+              @click="exportTableData('json')"
+            >
+              <span class="button-content">
+                <i class="fas fa-file-export"></i>
+                <span>导出JSON</span>
+              </span>
+            </button>
+            <button 
+              v-if="userCan('manage_extension_db')"
+              class="cyber-button" 
+              @click="exportTableData('csv')"
+            >
+              <span class="button-content">
+                <i class="fas fa-file-csv"></i>
+                <span>导出CSV</span>
+              </span>
+            </button>
+            <button 
+              v-if="userCan('manage_extension_db')"
+              class="cyber-button" 
+              @click="showImportModal"
+            >
+              <span class="button-content">
+                <i class="fas fa-file-import"></i>
+                <span>导入数据</span>
+              </span>
+            </button>
+            <button 
+              v-if="userCan('manage_extension_db')"
+              class="cyber-button success" 
+              @click="showAddRecordForm"
+            >
+              <span class="button-content">
+                <i class="fas fa-plus"></i>
+                <span>添加记录</span>
+              </span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -535,43 +567,43 @@
           <button class="cyber-close-button" @click="closeSchema">
             <i class="fas fa-times"></i>
           </button>
-        </div>
-        
+          </div>
+          
         <div class="cyber-modal-body">
           <div v-if="loadingSchema" class="cyber-loading-container">
             <div class="cyber-spinner"></div>
             <div class="cyber-loading-text">正在加载表结构...</div>
-          </div>
-          
-          <div v-else>
+            </div>
+            
+            <div v-else>
             <div class="cyber-table-container">
               <table class="cyber-table">
                 <thead>
-                  <tr>
-                    <th>字段名</th>
-                    <th>类型</th>
-                    <th>约束</th>
-                    <th>默认值</th>
-                    <th>说明</th>
-                  </tr>
-                </thead>
-                <tbody>
+                    <tr>
+                      <th>字段名</th>
+                      <th>类型</th>
+                      <th>约束</th>
+                      <th>默认值</th>
+                      <th>说明</th>
+                    </tr>
+                  </thead>
+                  <tbody>
                   <tr v-for="column in tableColumns" :key="column.name" class="cyber-table-row">
-                    <td>{{ column.name }}</td>
-                    <td>{{ formatColumnType(column) }}</td>
-                    <td>
+                      <td>{{ column.name }}</td>
+                      <td>{{ formatColumnType(column) }}</td>
+                      <td>
                       <span v-if="column.primary_key" class="cyber-badge primary">主键</span>
                       <span v-if="column.unique" class="cyber-badge info">唯一</span>
                       <span v-if="column.nullable" class="cyber-badge secondary">可空</span>
                       <span v-if="column.auto_increment" class="cyber-badge success">自增</span>
-                    </td>
-                    <td>{{ column.default || '-' }}</td>
-                    <td>{{ column.comment || '-' }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            
+                      </td>
+                      <td>{{ column.default || '-' }}</td>
+                      <td>{{ column.comment || '-' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              
             <div class="cyber-code-block">
               <div class="cyber-code-header">
                 <h4>SQL 创建语句</h4>
@@ -592,8 +624,8 @@
           <button class="cyber-close-button" @click="cancelDelete">
             <i class="fas fa-times"></i>
           </button>
-        </div>
-        
+          </div>
+          
         <div class="cyber-modal-body">
           <div class="cyber-confirm-message">
             <p>确定要删除表 <strong>{{ tableToDelete?.display_name }}</strong> 吗？</p>
@@ -601,9 +633,9 @@
               <i class="fas fa-exclamation-triangle"></i>
               <span>此操作将删除表及其所有数据，且不可恢复！</span>
             </div>
+            </div>
           </div>
-        </div>
-        
+          
         <div class="cyber-modal-footer">
           <button class="cyber-button secondary" @click="cancelDelete">
             <span class="button-content">取消</span>
@@ -614,9 +646,9 @@
               <span>确认删除</span>
             </span>
           </button>
+          </div>
         </div>
       </div>
-    </div>
     
     <!-- 记录编辑模态框 -->
     <div v-if="showRecordEditor" class="cyber-modal">
@@ -627,8 +659,8 @@
           <button class="cyber-close-button" @click="closeRecordEditor">
             <i class="fas fa-times"></i>
           </button>
-        </div>
-        
+    </div>
+    
         <div class="cyber-modal-body">
           <div class="cyber-form">
             <div 
@@ -691,6 +723,62 @@
             <span class="button-content">
               <i class="fas fa-save"></i>
               <span>保存</span>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 添加导入数据模态框 -->
+    <div v-if="showImportDataModal" class="cyber-modal">
+      <div class="cyber-modal-backdrop" @click="closeImportModal"></div>
+      <div class="cyber-modal-container small">
+        <div class="cyber-modal-header">
+          <h3>导入数据到 {{ currentTable?.display_name }}</h3>
+          <button class="cyber-close-button" @click="closeImportModal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="cyber-modal-body">
+          <div class="cyber-form">
+            <div class="cyber-form-group">
+              <label class="cyber-label">选择文件</label>
+              <input 
+                type="file" 
+                @change="handleFileChange" 
+                accept=".json,.csv"
+                class="cyber-input"
+              />
+            </div>
+            
+            <div class="cyber-form-group">
+              <div class="cyber-alert info">
+                <i class="fas fa-info-circle"></i>
+                <div>
+                  <p>支持的文件格式：</p>
+                  <ul>
+                    <li>JSON文件 (.json) - 包含对象数组</li>
+                    <li>CSV文件 (.csv) - 包含表头和数据</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="cyber-modal-footer">
+          <button class="cyber-button secondary" @click="closeImportModal">
+            <span class="button-content">取消</span>
+          </button>
+          <button 
+            class="cyber-button primary" 
+            @click="importData" 
+            :disabled="!selectedFile"
+          >
+            <span class="button-content">
+              <i class="fas fa-upload"></i>
+              <span>导入</span>
             </span>
           </button>
         </div>
@@ -900,7 +988,7 @@ export default {
     const addColumn = () => {
       tableForm.columns.push({
         name: '',
-        type: 'string',
+        type: 'varchar',
         primary_key: false,
         unique: false,
         nullable: true,
@@ -947,25 +1035,42 @@ export default {
         const schema = await databaseApi.getTableSchema(table.name);
         
         // 填充表单
-        Object.assign(tableForm, {
-          name: table.name,
-          display_name: table.display_name || table.name,
-          description: table.description || '',
-          columns: schema.data.columns.map(col => ({
+        const columns = schema.data.columns.map(col => {
+          // 处理数据类型，可能是形如"varchar(255)"的字符串
+          let type = col.type;
+          let length = null;
+          
+          // 提取类型和长度
+          if (typeof type === 'string' && type.includes('(')) {
+            const match = type.match(/(\w+)\((\d+)\)/);
+            if (match) {
+              type = match[1];    // 如 "varchar"
+              length = parseInt(match[2], 10);  // 如 255
+            }
+          }
+          
+          return {
             name: col.name,
-            type: col.type,
+            type: type,
             primary_key: col.primary_key,
             unique: col.unique,
             nullable: col.nullable,
             auto_increment: col.auto_increment,
             default: col.default,
             comment: col.comment,
-            length: col.type === 'string' ? (col.length || 255) : null
-          }))
+            length: length || (type === 'varchar' ? 255 : null)
+          };
         });
         
-        editingTable.value = table;
-        showTableEditor.value = true;
+        Object.assign(tableForm, {
+          name: table.name,
+          display_name: table.display_name || table.name,
+          description: table.description || '',
+          columns: columns
+        });
+        
+      editingTable.value = table;
+      showTableEditor.value = true;
       } catch (error) {
         console.error('加载表结构失败:', error);
         toast.error('加载表结构失败: ' + (error.response?.data?.detail || error.message));
@@ -1023,8 +1128,8 @@ export default {
         }
         
         // 关闭模态框并刷新表格
-        closeTableEditor();
-        loadTables();
+      closeTableEditor();
+      loadTables();
       } catch (error) {
         console.error('保存表失败:', error);
         toast.error('保存表失败: ' + (error.response?.data?.detail || error.message));
@@ -1058,9 +1163,18 @@ export default {
           databaseApi.getTableData(currentTable.value.name, params),
           databaseApi.getTableSchema(currentTable.value.name)
         ]);
-        
+        // 在这里，需要根据搜索条件过滤数据
+        if (!dataSearchQuery.value) {
         tableData.value = dataResponse.data.items;
         totalRecords.value = dataResponse.data.total;
+        } else {
+          tableData.value = dataResponse.data.items.filter(row => 
+            Object.values(row).some(value => 
+              String(value).toLowerCase().includes(dataSearchQuery.value.toLowerCase())
+            )
+          );
+          totalRecords.value = tableData.value.length;
+        }
         tableColumns.value = schemaResponse.data.columns;
       } catch (error) {
         console.error('加载表数据失败:', error);
@@ -1077,8 +1191,9 @@ export default {
     };
     
     // 搜索表数据
-    const searchTableData = () => {
-      loadTableData(1);
+    const searchTableData = async () => {
+      // 重新请求数据
+      await loadTableData(1);
     };
     
     // 关闭表数据模态框
@@ -1208,9 +1323,9 @@ export default {
         const id = record[primaryKey.name];
         
         if (confirm(`确定要删除这条记录吗？`)) {
-          await databaseApi.deleteRecord(currentTable.value.name, id);
-          toast.success('记录已删除');
-          loadTableData(currentPage.value);
+        await databaseApi.deleteRecord(currentTable.value.name, id);
+        toast.success('记录已删除');
+        loadTableData(currentPage.value);
         }
       } catch (error) {
         console.error('删除记录失败:', error);
@@ -1235,14 +1350,19 @@ export default {
     
     // 格式化列类型
     const formatColumnType = (column) => {
-      let type = column.type;
-      
-      if (column.type === 'string' && column.length) {
-        type += `(${column.length})`;
+      // 处理数据库返回的带长度的数据类型
+      if (typeof column.type === 'string' && column.type.includes('(')) {
+        // 直接返回数据库原始类型，如"varchar(255)"
+        return column.type;
       }
       
-      if (['integer', 'float'].includes(column.type) && column.precision) {
-        type += `(${column.precision})`;
+      let type = column.type;
+      
+      // 手动添加长度信息
+      if (type === 'varchar' && column.length) {
+        type = `varchar(${column.length})`;
+      } else if (['integer', 'float'].includes(type) && column.precision) {
+        type = `${type}(${column.precision})`;
       }
       
       return type;
@@ -1274,9 +1394,91 @@ export default {
     
     onMounted(() => {
       // 检查是否已经初始化
-      // checkDbInitialized();
+      checkDbInitialized();
     });
 
+    // 添加数据导入导出相关的状态
+    const showImportDataModal = ref(false);
+    const selectedFile = ref(null);
+
+    // 显示导入模态框
+    const showImportModal = () => {
+      showImportDataModal.value = true;
+      selectedFile.value = null;
+    };
+
+    // 关闭导入模态框
+    const closeImportModal = () => {
+      showImportDataModal.value = false;
+      selectedFile.value = null;
+    };
+
+    // 处理文件选择
+    const handleFileChange = (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        selectedFile.value = file;
+      }
+    };
+
+    // 导入数据
+    const importData = async () => {
+      if (!selectedFile.value) {
+        toast.error('请选择要导入的文件');
+        return;
+      }
+
+      try {
+        await databaseApi.importTableData(currentTable.value.name, selectedFile.value);
+        toast.success('数据导入成功');
+        closeImportModal();
+        
+        // 刷新表数据
+        loadTableData(1);
+      } catch (error) {
+        console.error('导入数据失败:', error);
+        toast.error('导入数据失败: ' + (error.response?.data?.detail || error.message));
+      }
+    };
+
+    // 导出数据
+    const exportTableData = async (format) => {
+      try {
+        const response = await databaseApi.exportTableData(currentTable.value.name, format);
+        
+        if (format === 'json') {
+          // 导出JSON文件
+          const jsonData = JSON.stringify(response.data, null, 2);
+          const blob = new Blob([jsonData], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `${currentTable.value.name}.json`;
+          link.click();
+          
+          URL.revokeObjectURL(url);
+        } else if (format === 'csv') {
+          // 导出CSV文件
+          const csvData = response.data.csv_data;
+          const blob = new Blob([csvData], { type: 'text/csv' });
+          const url = URL.createObjectURL(blob);
+          
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `${currentTable.value.name}.csv`;
+          link.click();
+          
+          URL.revokeObjectURL(url);
+        }
+        
+        toast.success(`数据已导出为${format.toUpperCase()}格式`);
+      } catch (error) {
+        console.error('导出数据失败:', error);
+        toast.error('导出数据失败: ' + (error.response?.data?.detail || error.message));
+      }
+    };
+    
     return {
       // 数据库初始化相关
       isDbInitialized,
@@ -1355,7 +1557,16 @@ export default {
       formatDate,
       formatCellValue,
       formatColumnType,
-      userCan
+      userCan,
+      
+      // 导入导出相关
+      showImportDataModal,
+      selectedFile,
+      showImportModal,
+      closeImportModal,
+      handleFileChange,
+      importData,
+      exportTableData,
     };
   }
 };
@@ -2490,4 +2701,4 @@ export default {
 .cyber-container {
   animation: neon-pulse 3s infinite;
 }
-</style>
+</style> 

@@ -8,9 +8,10 @@ import sys
 import importlib.util
 from typing import Any, Dict, Optional
 from io import BytesIO
+import inspect
 
+from new_app.core.db_manager import DBManager
 from new_app.core.file_manager import FileManager
-
 class SandboxException(Exception):
     """沙箱异常"""
     pass
@@ -72,8 +73,8 @@ def load_module_in_sandbox(filepath: str) -> Any:
         raise
     except Exception as e:
         raise SandboxException(f"加载模块失败: {str(e)}")
-
-async def execute_query_in_sandbox(module: Any, params: Dict, config: Dict, files: Optional[Dict] = None, file_manager: Optional[FileManager] = None) -> Any:
+from sqlalchemy.ext.asyncio import AsyncSession
+async def execute_query_in_sandbox(module: Any, params: Dict, config: Dict, files: Optional[Dict] = None, file_manager: Optional[FileManager] = None,db_manager:Optional[DBManager]=None) -> Any:
     """在沙箱环境中执行查询"""
     try:
         # 如果有文件管理器，创建API接口
@@ -81,9 +82,21 @@ async def execute_query_in_sandbox(module: Any, params: Dict, config: Dict, file
             file_api = FileManagerAPI(file_manager, module.__name__)
             params["files"] = files
             params["file_manager"] = file_api
-        
-        # 执行查询
-        result = await module.execute_query(params, config)
+        parameters=[]
+        # 执行查询,根据参数名称注入所需的参数
+        # 获取execute_query方法的参数
+        sig = inspect.signature(module.execute_query)
+        # 根据参数名称注入所需的参数
+        for param in sig.parameters.values():
+            if param.name == "params":
+                parameters.append(params)
+            elif param.name == "config":
+                parameters.append(config)
+            elif param.name == "db_manager":
+                parameters.append(db_manager)
+            else:
+                parameters.append(param.default)
+        result = await module.execute_query(*parameters)
         return result
         
     except Exception as e:

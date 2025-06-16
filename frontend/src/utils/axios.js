@@ -3,7 +3,7 @@ import axios from 'axios'
 import Toast from '@/utils/toast'
 
 // 配置axios
-axios.defaults.baseURL = 'http://192.168.2.75:8000'
+axios.defaults.baseURL = 'http://localhost:8000'
 axios.defaults.timeout = 5000
 
 // 添加请求拦截器，从localStorage中获取token
@@ -29,7 +29,7 @@ axios.interceptors.request.use(
 
 axios.interceptors.response.use(
   function (response) {
-    if (response.status === 200) {
+    if (response.status === 200 || response.status === 201) {
       return response
     } else {
       return Promise.reject(response.data)

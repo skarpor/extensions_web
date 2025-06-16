@@ -97,11 +97,23 @@ const router = createRouter({
       name: 'database',
       component: () => import('../views/DatabaseManager.vue'),
       meta: {
-        requiresAuth: true,
-        permissions: ['manage_extension_db', 'view_extension_db'],
+        //requiresAuth: true,
+        //permissions: ['manage_extension_db', 'view_extension_db'],
         title: '数据库管理'
       }
-    }
+    },
+    {
+      path: '/extension-query',
+      name: 'extension-query',
+      component: () => import('../views/ExtensionQueryView.vue'),
+      meta: { requiresAuth: true, title: '扩展查询' }
+    },
+    //{
+    //  path: '/extension-query/:id',
+    //  name: 'extension-query-detail',
+    //  component: () => import('../views/ExtensionQueryDetail.vue'),
+    //  meta: { requiresAuth: true, title: '扩展查询详情' }
+    //}
   ]
 })
 

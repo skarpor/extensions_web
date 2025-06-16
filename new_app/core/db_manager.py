@@ -50,6 +50,7 @@ DEFAULT_DB_CONFIG = {
 COLUMN_TYPES = {
     "integer": Integer,
     "string": String,
+    "varchar": String,
     "text": Text,
     "float": Float,
     "boolean": Boolean,
@@ -112,7 +113,7 @@ class DBManager:
         """初始化数据库连接并加载现有表信息"""
         if not self.engine:
             url = self._get_connection_url()
-            self.engine = create_async_engine(url, echo=False)
+            self.engine = create_async_engine(url, echo=True)
             
             # 加载现有表信息
             async with self.engine.begin() as conn:
@@ -136,15 +137,31 @@ class DBManager:
         Returns:
             SQLAlchemy列类型
         """
-        type_name = column_def.get("type", "string")
+        type_name = column_def.get("type", "varchar")
+        
+        # 处理带长度的类型字符串，如"varchar(255)"
+        length = None
+        if isinstance(type_name, str) and "(" in type_name:
+            import re
+            match = re.match(r"(\w+)\((\d+)\)", type_name)
+            if match:
+                type_name = match.group(1)
+                length = int(match.group(2))
+        
         if type_name not in COLUMN_TYPES:
             raise ValueError(f"不支持的列类型: {type_name}")
         
         column_type = COLUMN_TYPES[type_name]
         
         # 处理特殊类型参数
-        if type_name == "string" and "length" in column_def:
-            return column_type(column_def["length"])
+        if type_name == "varchar":
+            # 优先使用从类型字符串中提取的长度，其次使用单独提供的length属性
+            if length:
+                return column_type(length)
+            elif "length" in column_def:
+                return column_type(column_def["length"])
+            else:
+                return column_type(255)  # 默认长度
         
         return column_type()
     
@@ -203,11 +220,17 @@ class DBManager:
             column_type = str(column.type)
             type_name = column_type.lower()
             
-            # 推断数据类型
-            for known_type in COLUMN_TYPES.keys():
-                if known_type in type_name:
-                    type_name = known_type
-                    break
+            # 保留完整的类型信息（包括长度）
+            if "varchar" in type_name:
+                # 例如 "VARCHAR(255)" -> "varchar(255)"
+                match = column_type.lower().replace(" ", "")
+                type_name = match
+            else:
+                # 推断数据类型
+                for known_type in COLUMN_TYPES.keys():
+                    if known_type in type_name:
+                        type_name = known_type
+                        break
             
             # 获取额外属性
             columns.append({
@@ -417,7 +440,7 @@ class DBManager:
                     # 查询临时表数据
                     select_stmt = select(temp_table)
                     result = await conn.execute(select_stmt)
-                    temp_data = [dict(row) for row in result.fetchall()]
+                    temp_data = [dict(row._mapping) for row in result.fetchall()]
                     
                     # 复制到最终表
                     for row in temp_data:
@@ -534,7 +557,7 @@ class DBManager:
                     # 查询临时表数据
                     select_stmt = select(temp_table)
                     result = await conn.execute(select_stmt)
-                    temp_data = [dict(row) for row in result.fetchall()]
+                    temp_data = [dict(row._mapping) for row in result.fetchall()]
 
                     # 复制到最终表
                     for row in temp_data:
@@ -583,7 +606,8 @@ class DBManager:
     async def execute_query(self, operation: str, table_name: Optional[str] = None, 
                            data: Optional[Dict] = None, condition: Optional[Dict] = None,
                            sql: Optional[str] = None, params: Optional[Dict] = None,
-                           limit: Optional[int] = None, offset: Optional[int] = None) -> Any:
+                           limit: Optional[int] = None, offset: Optional[int] = None,
+                           sort_by: Optional[str] = None, sort_desc: bool = False) -> Any:
         """执行统一查询
         
         Args:
@@ -595,6 +619,8 @@ class DBManager:
             params: SQL参数
             limit: 限制返回的行数
             offset: 跳过的行数
+            sort_by: 排序字段
+            sort_desc: 是否降序排序
             
         Returns:
             查询结果或影响的行数
@@ -613,7 +639,7 @@ class DBManager:
                 async with self.engine.begin() as conn:
                     result = await conn.execute(text(sql), params)
                     if result.returns_rows:
-                        return [dict(row) for row in result]
+                        return [dict(row._mapping) for row in result]
                     return {"affected_rows": result.rowcount}
             
             elif table_name and table_name in self.tables:
@@ -628,20 +654,31 @@ class DBManager:
                         if hasattr(table.c, key):
                             query = query.where(getattr(table.c, key) == value)
                     
+                    # 添加排序
+                    if sort_by and hasattr(table.c, sort_by):
+                        if sort_desc:
+                            query = query.order_by(getattr(table.c, sort_by).desc())
+                        else:
+                            query = query.order_by(getattr(table.c, sort_by))
+                    
                     # 应用分页
                     if limit is not None:
                         query = query.limit(limit)
                     if offset is not None:
                         query = query.offset(offset)
                     
-                    # 执行查询
+                    # 执行查询,
                     async with self.engine.connect() as conn:
                         result = await conn.execute(query)
-                        return [row for row in result]
+                        print('result',result)
+                        print('query',query)
+                        return [dict(row._mapping) for row in result]
                 
                 elif operation == "insert" and data:
                     # 执行插入
                     async with self.engine.begin() as conn:
+                        print(data)
+                        # print(**data['data'])
                         result = await conn.execute(insert(table).values(**data))
                         return {"id": result.inserted_primary_key[0] if result.inserted_primary_key else None}
                 
