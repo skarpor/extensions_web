@@ -246,9 +246,9 @@ export default {
     await this.fetchUserProfile()
   },
   beforeUnmount() {
-    if (this.userForm.avatar.startsWith('blob:')) {
-      URL.revokeObjectURL(this.userForm.avatar);
-    }
+    //if (this.userForm.avatar.startsWith('blob:')) {
+    //  URL.revokeObjectURL(this.userForm.avatar);
+    //}
   },
   methods: {
 

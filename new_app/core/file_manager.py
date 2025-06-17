@@ -229,19 +229,18 @@ class FileManager:
         """创建目录"""
         try:
             target_dir = os.path.abspath(self.upload_dir + "/" + path + "/" + name)
-            print(target_dir,'target_dir')
             if not self.is_vaild_path(target_dir):
                 raise HTTPException(status_code=400, detail="非法路径")
             if not os.path.exists(target_dir):
                 os.makedirs(target_dir)
+            else:
+                raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED,detail="目录已存在")
             # 保存到数据库中,多级目录需要递归保存
             path_list = name.split("/")
-            print(path_list,'path_list')
             i_path = path
             for i in path_list:
                 if i == "":
                     continue
-                print(i,'i')
                 db_dir = File(
                     filename=i,
                     filepath=i_path,
@@ -256,6 +255,8 @@ class FileManager:
             await self.db.commit()
             await self.db.refresh(db_dir)
             return True
+        except HTTPException:
+            raise
         except Exception as e:
             logger.error(f"创建目录失败: {str(e)}", exc_info=True)
             await self.db.rollback()

@@ -4,11 +4,11 @@
 from datetime import datetime
 from typing import Any, List
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from new_app.api.v1.endpoints import settings
+from new_app.core.config import settings
 from new_app.core import auth
 from new_app.core.extension_manager import ExtensionManager
 from new_app.db.session import get_db
@@ -17,6 +17,7 @@ from new_app.schemas.extension import Extension as ExtensionSchema
 from new_app.schemas.extension import ExtensionCreate, ExtensionUpdate
 from new_app.models.user import User
 from new_app.core.logger import get_logger
+
 
 logger = get_logger("extension")
 router = APIRouter()
@@ -31,7 +32,7 @@ def init_manager(manager: ExtensionManager):
     """
     global extension_manager
     extension_manager = manager
-    logger.info("扩展路由初始化完成")
+    logger.info("扩展程序初始化完成")
 
 @router.get("", response_model=List[ExtensionSchema])
 async def read_extensions(
@@ -43,13 +44,18 @@ async def read_extensions(
     """
     获取扩展列表
     """
-    return await extension_manager.list_extensions(db=db)
+    return await extension_manager.list_extensions(db)
+
 
 @router.post("", response_model=ExtensionSchema)
 async def create_extension(
     *,
     db: AsyncSession = Depends(get_db),
-    extension_in: ExtensionCreate,
+    name: str = Form(...),
+    description: str = Form(...),
+    execution_mode: str = Form(...),
+    render_type: str = Form(...),
+    show_in_home: bool = Form(...),
     file: UploadFile = File(...),
     current_user: User = Depends(auth.get_current_active_user),
 ) -> Any:
@@ -64,32 +70,36 @@ async def create_extension(
     # 创建UUID
     extension_id = str(uuid.uuid4())
     # 直接写入到文件
-    with open(f"{settings.EXTENSION_DIR}/{extension_id}.py", "w") as f:
+    with open(f"{settings.EXTENSIONS_DIR}/{extension_id}.py", "wb") as f:
         f.write(file.file.read())
     # 先写入数据库
+    print(show_in_home)
     extension = Extension(
         id=extension_id,
-        name=extension_in.name,
-        description=extension_in.description,
+        name=name,
+        description=description,
         enabled=False,
-        execution_mode=extension_in.execution_mode,
-        show_in_home=extension_in.show_in_home,
-        render_type=extension_in.render_type,
+        execution_mode=execution_mode,
+        show_in_home=bool(show_in_home),
+        render_type=render_type,
         creator_id=current_user.id,
-        created_at=datetime.now()
+        created_at=datetime.now(),
+        entry_point=settings.EXTENSIONS_ENTRY_POINT_PREFIX+extension_id
     )
+    print(extension)
     db.add(extension)
     await db.commit()
+    await db.refresh(extension)
     # 加载
-    extension_ext = extension_manager.load_extension(extension_id)
-    # 二次保存
-    # module = extension_ext.module
-    extension.has_config_form = extension_ext.has_config_form
-    extension.has_query_form = extension_ext.has_query_form
-    # 更新数据库
-    await db.add(extension)
-    await db.commit()
-
+    extension_ext = await extension_manager.load_extension(extension_id,db)
+    # # 二次保存
+    # # module = extension_ext.module
+    # extension.has_config_form = extension_ext.get("has_config_form")
+    # extension.has_query_form = extension_ext.get("has_query_form")
+    # # 更新数据库
+    # await db.add(extension)
+    # await db.commit()
+    #
     if not extension_ext:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -101,7 +111,7 @@ async def create_extension(
 async def read_extension(
     *,
     db: AsyncSession = Depends(get_db),
-    extension_id: int,
+    extension_id: str,
     current_user: User = Depends(auth.get_current_active_user),
 ) -> Any:
     """
@@ -121,7 +131,7 @@ async def read_extension(
 async def update_extension(
     *,
     db: AsyncSession = Depends(get_db),
-    extension_id: int,
+    extension_id: str,
     extension_in: ExtensionUpdate,
     current_user: User = Depends(auth.get_current_active_user),
 ) -> Any:
@@ -143,7 +153,8 @@ async def update_extension(
     
     extension = await extension_manager.update_extension(
         extension_id=extension_id,
-        updateExtension=extension_in
+        updateExtension=extension_in,
+        db=db
     )
     return extension
 
@@ -151,7 +162,7 @@ async def update_extension(
 async def delete_extension(
     *,
     db: AsyncSession = Depends(get_db),
-    extension_id: int,
+    extension_id: str,
     current_user: User = Depends(auth.get_current_active_user),
 ) -> Any:
     """
@@ -170,7 +181,7 @@ async def delete_extension(
             detail="权限不足"
         )
     
-    success = await extension_manager.delete_extension(extension_id)
+    success = await extension_manager.delete_extension(extension_id,db)
     if not success:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

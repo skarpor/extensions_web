@@ -7,8 +7,8 @@ from .base import BaseModel
 
 class Extension(BaseModel):
     __tablename__ = "extensions"
-
-    name = Column(String(100), unique=True, index=True, nullable=False)
+    id = Column(String, primary_key=True)
+    name = Column(String(100), index=True, nullable=False)
     description = Column(Text, nullable=True)
     enabled = Column(Boolean, default=False)
     execution_mode = Column(String(255), default="manual")  # 执行方式：立即执行、手动执行、定时执行
@@ -23,4 +23,4 @@ class Extension(BaseModel):
     render_type = Column(String(255), default="html") # 渲染方式
     def __repr__(self):
         return f"<Extension(name='{self.name}', enabled={self.enabled})>"
-    
+

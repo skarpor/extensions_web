@@ -33,15 +33,17 @@ class ExtensionUpdate(BaseModel):
 
 class ExtensionInDBBase(ExtensionBase, BaseSchema):
     """数据库中的扩展模型"""
-    id: Optional[int] = None
+    id: Optional[str] = None
     creator_id: int
     class Config:
         from_attributes = True
 
 class Extension(ExtensionInDBBase):
     """API响应中的扩展模型"""
-    creator: Optional[User] = None
-
+    # creator: Optional[User] = None
+    enabled:bool
+    pass
 class ExtensionInDB(ExtensionInDBBase):
     """数据库中的扩展模型"""
-    pass 
+
+

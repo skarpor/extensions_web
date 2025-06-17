@@ -310,7 +310,8 @@ import Toast from '@/utils/toast';
   
   <style scoped>
   .extension-query {
-    max-width: 1200px;
+    width: 100%;
+    /*max-width: 1200px;*/
     margin: 0 auto;
     padding: 20px;
   }

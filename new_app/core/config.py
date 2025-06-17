@@ -59,7 +59,8 @@ class Settings(BaseSettings):
 
     # Extension settings
     EXTENSIONS_DIR: str = "extensions"
-    
+    EXTENSIONS_ENTRY_POINT_PREFIX: str = "/query/"
+
     # Config directory
     CONFIG_DIR: str = os.path.join(os.path.expanduser("~"), ".config", "data_query_system")
 

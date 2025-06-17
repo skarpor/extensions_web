@@ -169,6 +169,14 @@
 
 <script>
 import axios from '@/utils/axios'
+import {
+  getExtension,
+  createExtension,
+  updateExtension,
+  deleteExtension,
+  getExtensionConfig,
+  saveExtensionConfig
+} from '@/api/extension';
 
 export default {
   name: 'ExtensionDetail',
@@ -196,7 +204,7 @@ export default {
     async fetchExtensionDetail() {
       try {
         this.loading = true
-        const response = await axios.get(`/api/v1/extensions/${this.$route.params.id}`)
+        const response = await getExtension(this.$route.params.id)
         this.extension = response.data
         this.loading = false
       } catch (error) {
@@ -220,7 +228,7 @@ export default {
     async updateExtension() {
       try {
         this.loading = true
-        await axios.put(`/api/v1/extensions/${this.extension.id}`, this.editForm)
+        await updateExtension(this.extension.id, this.editForm)
         this.$toast.success('更新成功')
         this.editDialog = false
         await this.fetchExtensionDetail()
@@ -234,7 +242,7 @@ export default {
     async deleteExtension() {
       try {
         this.loading = true
-        await axios.delete(`/api/v1/extensions/${this.extension.id}`)
+        await deleteExtension(this.extension.id)
         this.$toast.success('删除成功')
         this.deleteDialog = false
         this.$router.push('/extensions')
@@ -248,8 +256,8 @@ export default {
     async toggleExtension(enabled) {
       try {
         this.loading = true
-        await axios.put(`/api/v1/extensions/${this.extension.id}`, {
-          enabled
+        await updateExtension(extension.id, {
+          enabled: extension.enabled
         })
         this.$toast.success(`${enabled ? '启用' : '禁用'}成功`)
         await this.fetchExtensionDetail()

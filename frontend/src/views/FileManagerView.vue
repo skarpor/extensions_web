@@ -148,7 +148,7 @@ export default {
         const toast = Toast
         const currentPath = ref('/')
         return {
-            toast,
+            //toast,
             currentPath
         }
     },
@@ -171,10 +171,9 @@ export default {
       async fetchFiles() {
   try {
     this.loading = true;
-    this.toast.info(`获取(${this.currentPath})文件列表中...`);
+    Toast.info(`获取(${this.currentPath})文件列表中...`);
     const response = await getFileList(this.currentPath);
-    console.log('API响应:', response); // 调试用
-    
+
     // 确保response.data存在且是数组
     if (response && response.data) {
       // 检查返回的数据结构
@@ -208,7 +207,7 @@ export default {
     this.items = [];
     this.filteredItems = [];
     // 可以添加用户通知
-    this.toast?.error('获取文件列表失败，请稍后重试');
+    Toast?.error('获取文件列表失败，请稍后重试');
   } finally {
     this.loading = false;
   }
@@ -269,11 +268,11 @@ async deleteItem(item) {
     } else {
       await deleteFile(item.id,item.filepath)
     }
-    this.toast.success('删除成功')
+    Toast.success('删除成功')
     this.fetchFiles()
   } catch (error) {
     console.error('删除失败', error)
-    this.toast?.error(`删除失败: ${error.response?.data?.detail || error.message}`)
+    Toast?.error(`删除失败: ${error.response?.data?.detail || error.message}`)
   }
 },
       
@@ -283,20 +282,22 @@ async createFolder() {
   if (!folderName) return
   // 如果文件夹名称包含/，则提示错误 空格
   if (folderName.includes('\\') || folderName.includes(':') || folderName.includes('*') || folderName.includes('?') || folderName.includes('"') || folderName.includes('<') || folderName.includes('>') || folderName.includes('|') || folderName.includes(' ')) {
-    this.toast?.error('文件夹名称不能包含\\:*?"<>|空格')
+    Toast?.error('文件夹名称不能包含\\:*?"<>|空格')
     return
   }
   try {
-    
-    
-
-    await createDir(this.currentPath,folderName)
-    
-    this.toast.success('文件夹创建成功')
+    const response = await createDir(this.currentPath,folderName)
+    if (response){
+          Toast.success('文件夹创建成功')
     this.fetchFiles()
+
+    }else {
+                Toast.success('文件夹创建失败')
+
+    }
   } catch (error) {
-    console.error('创建文件夹失败', error)
-    this.toast?.error(`创建失败: ${error.response?.data?.detail || error.message}`)
+    console.error('创建文件夹失败', error.response?.data?.detail)
+    Toast?.error(`创建失败: ${error.response?.data?.detail || error.message}`)
   }
 },
 
@@ -334,14 +335,14 @@ async uploadFiles() {
     await uploadFile(formData, normalizedPath, config)
     this.uploadProgress = 100
     
-    this.toast.success('文件上传成功')
+    Toast.success('文件上传成功')
     this.showUploadModal = false
     this.selectedFiles = []
     this.uploadProgress = 0
     this.fetchFiles()
   } catch (error) {
     console.error('上传文件失败', error)
-    this.toast?.error(`上传失败: ${error.response?.data?.detail || error.message}`)
+    Toast?.error(`上传失败: ${error.response?.data?.detail || error.message}`)
     this.uploadProgress = 0
   }
 },

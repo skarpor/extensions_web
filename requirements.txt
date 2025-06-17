@@ -19,4 +19,14 @@ email-validator>=1.1.0
 websockets>=10.0
 pillow==10.1.0
 python-socketio>=5.4.0
-psutil>=5.9.0 
+psutil>=5.9.0
+
+
+# For extensions, include any functionality you need.
+pandas
+openpyxl
+paramiko
+cx_Oracle
+pymysql
+httpx
+redis

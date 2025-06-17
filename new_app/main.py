@@ -37,7 +37,9 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title=settings.PROJECT_NAME,
         version=settings.VERSION,
-        openapi_url=f"{settings.API_V1_STR}/openapi.json", docs_url=None,
+        openapi_version="3.0.0",  # 明确指定OpenAPI版本
+        openapi_url=f"{settings.API_V1_STR}/openapi.json",
+        docs_url="/api/docs",
     )
 
     # 设置CORS
@@ -57,15 +59,13 @@ def create_app() -> FastAPI:
     # 设置模板引擎
     app.state.templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
 
-    # 注册路由
-    # app.include_router(auth.router, prefix=settings.API_V1_STR)
-    # app.include_router(users.router, prefix=settings.API_V1_STR)
-    # app.include_router(files.router, prefix=settings.API_V1_STR)
-    # app.include_router(extensions.router, prefix=settings.API_V1_STR)
-    # app.include_router(settings_router.router, prefix=settings.API_V1_STR)
-    # app.include_router(chat.router, prefix=settings.API_V1_STR)
-    # app.include_router(websocket.router, prefix=settings.API_V1_STR)
-    
+    # async def get_extension_manager():
+    #     async with get_db() as db:
+    #         yield ExtensionManager(app,db)
+    #
+    # extension_manager = get_extension_manager()
+    #
+
     # 注册数据库API路由 - 直接使用前端需要的路径
     # app.include_router(database.router, prefix=settings.API_V1_STR + "/db")
     app.include_router(api_router,prefix="/api")
@@ -73,11 +73,9 @@ def create_app() -> FastAPI:
     # file_manager = FileManager()
 
     # 初始化扩展管理器
-    extension_manager = ExtensionManager(
-        app=app,
-    )
-    #
-    init_manager(extension_manager)
+    # 初始化扩展管理器（不依赖db）
+    extension_manager = ExtensionManager(app)
+    app.state.extension_manager = extension_manager
 
     @app.on_event("startup")
     async def startup_event():
@@ -88,9 +86,16 @@ def create_app() -> FastAPI:
             # 现在db是真正的AsyncSession实例
             await init_users(db)
             await init_permissions(db)
-        # 加载所有扩展
-        extension_manager.load_all_extensions()
-        
+            # extension_manager = ExtensionManager(app)
+            init_manager(app.state.extension_manager)
+
+            # 加载所有扩展
+            await extension_manager.load_all_extensions(db=db)
+
+        # 添加依赖项
+        def get_extension_manager():
+            return app.state.extension_manager
+
         logger.info("应用启动完成")
 
     @app.on_event("shutdown")

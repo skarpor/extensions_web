@@ -30,11 +30,11 @@ async def login(
     )
     if not user:
         logger.warning(f"用户登录失败: {form_data.username} - 无效凭证")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="用户名或密码错误",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        # raise HTTPException(
+        #     status_code=status.HTTP_401_UNAUTHORIZED,
+        #     detail="用户名或密码错误",
+        #     headers={"WWW-Authenticate": "Bearer"},
+        # )
     elif not user.is_active:
         logger.warning(f"用户登录失败: {form_data.username} - 用户未激活")
         raise HTTPException(
@@ -183,25 +183,31 @@ async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
                 detail="邮箱已存在"
             )
         # 哈希密码
-        hashed_password = auth.get_password_hash(user_data.password)
+        # hashed_password = auth.get_password_hash(user_data.password)
+        # # print(user_data.password,hashed_password)
+#
+        # plain_password = "123456"
+        # hashed = auth.get_password_hash(plain_password)
+        # print("验证结果:", auth.verify_password(plain_password, hashed))  # 应返回 True
+
         logger.info(f"用户注册成功: {user_data.username}")
         # 创建用户
-        user_id = await auth.create_user(db, {
+        user = await auth.create_user(db, {
             "username": user_data.username,
-            "password": hashed_password,
+            "password": user_data.password,
             "nickname": user_data.nickname or user_data.username,
             # "role": "user",  # 默认角色为普通用户
             "email": user_data.email,
             "avatar": user_data.avatar
         })
         
-        if not user_id:
+        if not user:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="创建用户失败"
             )
         
-        return {"status_code": status.HTTP_201_CREATED, "detail": "注册成功", "user_id": user_id}
+        return {"status_code": status.HTTP_201_CREATED, "detail": "注册成功", "user": user}
     
     except HTTPException:
         raise

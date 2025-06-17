@@ -47,7 +47,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def get_password_hash(password: str) -> str:
     """生成密码哈希"""
-    return pwd_context.hash(password)
+    return pwd_context.hash(password.strip())
 
 def create_access_token(
     data: Optional[dict] = None, 
@@ -200,9 +200,12 @@ async def authenticate(db: AsyncSession, username: str, password: str) -> Option
     user = await db.execute(select(User).where(User.username == username))
     user = user.scalar_one_or_none()
     if not user:
-        return None
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"用户{username}不存在！")
     if not verify_password(password, user.hashed_password):
-        return None
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail=f"用户名或密码错误！")
+    user.last_login=datetime.now()
+    db.add(user)
+    await db.commit()
     return user
 
 async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:

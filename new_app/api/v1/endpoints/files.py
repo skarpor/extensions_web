@@ -145,6 +145,7 @@ async def get_files(
     for file in files:
         user = await auth.get_user_by_id(db,file.owner_id)
         file.owner = user
+        file.owner_id = user.id
     return files
 
 # 获取文件列表
