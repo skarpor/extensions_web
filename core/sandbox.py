@@ -97,7 +97,7 @@ async def execute_query_in_sandbox(module: Any, params: Dict, config: Dict, file
             else:
                 parameters.append(param.default)
         print(config,params,db_manager)
-        result = await module.execute_query(*parameters)
+        result =await module.execute_query(*parameters)
         return result
         
     except Exception as e:

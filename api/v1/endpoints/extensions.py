@@ -125,7 +125,7 @@ async def read_extension(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="扩展不存在"
         )
-    extension.document = extension_manager.get_extension_document(extension_id)
+    extension.document =await extension_manager.get_extension_document(extension_id)
     return extension
 
 

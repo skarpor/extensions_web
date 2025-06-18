@@ -715,4 +715,20 @@ class DBManager:
         except Exception as e:
             # 记录错误并重新抛出
             logger.error(f"数据库操作失败: {str(e)}")
-            raise 
+            raise
+
+    async def refresh(self):
+        """
+        刷新表
+        :return:
+        """
+        self.engine=None
+        await self.initialize()
+        return {"status": "success", "message": f"数据库表刷新成功，类型：{self.db_type}"}
+
+    async def shutdown(self):
+        """
+        :return:
+        """
+        self.engine=None
+

@@ -55,8 +55,8 @@ async def initialize_database(
         global db_manager
         # db_type和db_path从params中获取
         db_type = request.query_params.get("db_type")
-        db_path = request.query_params.get("db_path")
-        db_manager = DBManager(db_type=db_type, db_path=db_path)
+        # db_path = request.query_params.get("db_path")
+        db_manager = DBManager(db_type=db_type)
         result = await db_manager.initialize()
         return result
     except Exception as e:

@@ -138,13 +138,23 @@ class ExtensionManager:
             查询端点函数
         """
         # 修改路由接口，支持表单和文件上传
-        print(123,self.loaded_extensions[extension_id]["extension"])
         async def query_endpoint(request: Request):
             logger.info(f"执行扩展查询: {extension_id}")
             
             try:
                 config = self.loaded_extensions[extension_id]["extension"].get("config")
-                print(345,config)
+                # print(config)
+                # print(json.dumps(config))
+                # config=json.loads(json.dumps(config))
+                try:
+                    if config:
+                        config = json.loads(config)  # 尝试解析 JSON 字符串
+                    else:
+                        config = {}
+                except json.JSONDecodeError:
+                    config = {}  # 如果解析失败，设为空字典
+
+                print(config,type(config))
                 # 使用表单接收数据，包括文件
                 form = await request.form()
                 # 打印所有字段和类型
@@ -312,7 +322,10 @@ class ExtensionManager:
             await db.commit()
             print(self.loaded_extensions)
             self.remove_route(f"/query/{extension_id}")
-            self.loaded_extensions.pop(extension_id)
+            try:
+                self.loaded_extensions.pop(extension_id)
+            except:
+                pass
             logger.info(f"数据库 删除扩展 {extension_id} 成功")
             return True
         except Exception as e:

@@ -57,8 +57,8 @@ class ExtensionInDB(ExtensionInDBBase):
     description: str
     enabled: bool
     execution_mode: str
-    show_in_home: str
-    config: str  # 配置表单项
+    show_in_home: bool
+    config: Optional[str] = None  # 配置表单项
     has_query_form: bool  # 是否显示查询表单
     has_config_form: bool  # 是否显示配置表单
     entry_point: str  # 入口文件路径

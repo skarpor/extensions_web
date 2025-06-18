@@ -69,8 +69,8 @@ def validate_config(config):
         return False, "API基础URL不能为空"
     
     return True, ""
-
-def execute_query(params, config):
+from core.db_manager import DBManager
+async def execute_query(params, config:dict,db_manager:DBManager):
     """执行查询
     
     Args:
@@ -79,8 +79,16 @@ def execute_query(params, config):
     """
     # 在实际应用中，这里会使用config中的API密钥等信息调用外部API
     # 这里仅作演示
+    await db_manager.execute_query("raw",sql="""
+    CREATE TABLE if not exists "t55555555" (
+	"tt" INTEGER NOT NULL, 
+	PRIMARY KEY ("tt")
+)
+    """)
+    status = await db_manager.refresh()
     result = {
         "query_params": params,
+        "db_manager": status,
         "config_used": {
             "base_url": config.get("base_url"),
             "timeout": config.get("timeout"),
