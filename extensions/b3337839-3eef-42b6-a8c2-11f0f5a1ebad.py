@@ -1,6 +1,9 @@
-"""
+﻿"""
 示例扩展，展示如何实现配置表单和查询表单
 """
+import sqlite3
+from datetime import datetime
+
 
 def get_default_config():
     """返回扩展的默认配置"""
@@ -37,26 +40,30 @@ def get_query_form():
     """返回查询表单的HTML"""
     return """
     <div class="mb-3">
-        <label for="params.keyword" class="form-label">搜索关键词</label>
-        <input type="text" class="form-control" id="params.keyword" name="params.keyword" 
+        <label for="keyword" class="form-label">搜索关键词</label>
+        <input type="text" class="form-control" id="keyword" name="keyword" 
                placeholder="输入搜索关键词">
     </div>
     
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label for="params.start_date" class="form-label">开始日期</label>
-            <input type="date" class="form-control" id="params.start_date" name="params.start_date">
+            <label for="start_date" class="form-label">开始日期</label>
+            <input type="date" class="form-control" id="start_date" name="start_date">
         </div>
         <div class="col-md-6 mb-3">
-            <label for="params.end_date" class="form-label">结束日期</label>
-            <input type="date" class="form-control" id="params.end_date" name="params.end_date">
+            <label for="end_date" class="form-label">结束日期</label>
+            <input type="date" class="form-control" id="end_date" name="end_date">
         </div>
     </div>
     
     <div class="mb-3">
-        <label for="params.limit" class="form-label">最大结果数</label>
-        <input type="number" class="form-control" id="params.limit" name="params.limit" 
+        <label for="limit" class="form-label">最大结果数</label>
+        <input type="number" class="form-control" id="limit" name="limit" 
                value="10" min="1" max="100">
+    </div>
+    <div class="mb-3">
+        <label>SSL证书</label>
+        <input type="file" class="form-control" name="ssl.cert">
     </div>
     """
 
@@ -69,8 +76,8 @@ def validate_config(config):
         return False, "API基础URL不能为空"
     
     return True, ""
-from core.db_manager import DBManager
-async def execute_query(params, config:dict,db_manager:DBManager):
+
+def execute_query(params, config=None):
     """执行查询
     
     Args:
@@ -79,25 +86,36 @@ async def execute_query(params, config:dict,db_manager:DBManager):
     """
     # 在实际应用中，这里会使用config中的API密钥等信息调用外部API
     # 这里仅作演示
-    await db_manager.execute_query("raw",sql="""
-    CREATE TABLE if not exists "t55555555" (
-	"tt" INTEGER NOT NULL, 
-	PRIMARY KEY ("tt")
-)
-    """)
-    status = await db_manager.refresh()
+    file_manager = params.get("file_manager")
+    if params.get("files"):
+        files = params["files"]
+        for file in files.keys():
+            # print(file, files[file]["content"])
+            # 获取当前python文件的名称
+            file_manager.save_file(filename=files[file]["filename"], file_content=files[file]["content"])
+
+
+    # 保存当前时间到文件,file_content只能接收为文件二进制内容
+    file_manager.save_file(filename=f"{datetime.now().strftime('%Y-%m-%d')}.txt", file_content=datetime.now().strftime('%Y-%m-%d %H:%M:%S').encode('utf-8'))
     result = {
-        "query_params": params,
-        "db_manager": status,
+        "query_params": params.get("query_params", {}),
         "config_used": {
             "base_url": config.get("base_url"),
             "timeout": config.get("timeout"),
             # 不要返回敏感信息如API密钥
         },
-        "results": [
+        "meta": {
+            "total": 3,
+            "page": 1,
+            "page_size": 10,
+            "total_pages": 1,
+            "sql": "select * from table where keyword = 'test'",
+        },
+        "data": [
             {"id": 1, "name": "结果1", "timestamp": "2023-05-01"},
             {"id": 2, "name": "结果2", "timestamp": "2023-05-02"},
             {"id": 3, "name": "结果3", "timestamp": "2023-05-03"}
         ]
+
     }
     return result

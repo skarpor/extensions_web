@@ -122,6 +122,7 @@ class ExtensionManager:
             return self.loaded_extensions[extension_id]
 
         except SandboxException as e:
+            raise
             logger.error(f"扩展 {extension_id} 加载失败(沙箱错误): {str(e)}")
         except Exception as e:
             logger.error(f"扩展 {extension_id} 加载失败: {str(e)}")
@@ -196,7 +197,7 @@ class ExtensionManager:
                 # 如果有文件管理器，传递给沙箱环境
                 if self.file_manager:
                     params["file_manager"] = self.file_manager
-                    params["logger"] = get_logger("extension")
+                    # params["logger"] = get_logger("extension")
 
                 logger.debug(f"查询参数: {str(params)[:1000]}...")  # 日志记录部分参数，避免过大
                 if self.db_manager:
@@ -257,7 +258,7 @@ class ExtensionManager:
             updateExtension: 更新扩展模型
         """
         print(self.loaded_extensions)
-        extension = await db.execute(select(Extension).where(Extension.id == extension_id))
+        extension = await db.execute(select(Extension).where(Extension.id == extension_id and Extension.deleted==False)) # deleted=False
         extension = extension.scalar_one_or_none()
         if not extension:
             logger.error(f"扩展配置不存在: {extension_id}")
@@ -267,8 +268,8 @@ class ExtensionManager:
         update_data = updateExtension.model_dump(exclude_unset=True)
         for field, value in update_data.items():
             setattr(extension, field, value)
-        if update_data.get("enabled"):
-            extension.entry_point=f"/query/{extension_id}"
+        if update_data.get("enabled") and not self.route_exists(settings.EXTENSIONS_ENTRY_POINT_PREFIX+extension_id):
+            # extension.entry_point=f"/query/{extension_id}"
             # 如果扩展启用，注册API路由
             logger.info(f"为扩展 {extension_id} 注册API端点: {extension.entry_point}")
 
@@ -285,7 +286,7 @@ class ExtensionManager:
                 response_description="Extension query result"
             )
             logger.debug(f"扩展 {extension_id} 的API端点注册成功")
-        else:
+        elif extension.deleted==True:
             try:
                 self.remove_route(settings.EXTENSIONS_ENTRY_POINT_PREFIX+extension_id)
                 self.loaded_extensions.pop(extension_id)
@@ -351,11 +352,13 @@ class ExtensionManager:
         await db.commit()
         await self.load_extension(extension_id,db)
         return True
-    async def get_extension_document(self, extension_id: str) -> dict:
+    async def get_extension_document(self, extension_id: str,db:AsyncSession) -> dict:
         """
         获取扩展文档
         """
-        if extension_id not in self.loaded_extensions:
+        extension = await db.execute(select(Extension).where(Extension.id == extension_id))
+        extension = extension.scalar_one_or_none()
+        if not extension:
             logger.error(f"扩展配置不存在: {extension_id}")
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Extension not loaded")
         module = self.loaded_extensions[extension_id]["module"]
@@ -373,3 +376,35 @@ class ExtensionManager:
             "functions": function_docs
         }
     
+
+    async def get_extension_config(self, extension_id: str, db: AsyncSession):
+        """
+        获取扩展配置,配置信息在扩展脚本中的方法中，方法返回html内容，直接渲染到页面
+        """
+        extension = await db.execute(select(Extension).where(Extension.id == extension_id))
+        extension = extension.scalar_one_or_none()
+        if not extension:
+            logger.error(f"扩展配置不存在: {extension_id}")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Extension not loaded")
+        if not extension.has_config_form:
+            return None
+        module = self.loaded_extensions[extension_id]["module"]
+        config_form = module.get_config_form()
+        return config_form
+
+
+
+    async def update_extension_config(self, extension_id: str, config: dict, db: AsyncSession):
+        """
+        更新扩展配置
+        """
+        extension = await db.execute(select(Extension).where(Extension.id == extension_id))
+        extension = extension.scalar_one_or_none()
+        if not extension:
+            logger.error(f"扩展配置不存在: {extension_id}")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Extension not loaded")
+        extension.config = config
+        await db.commit()
+        await db.refresh(extension)
+        return extension
+

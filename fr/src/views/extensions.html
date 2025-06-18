@@ -1,0 +1,624 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block additional_styles %}
+<style>     
+        .config-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            padding: 40px;
+            border: 1px solid var(--border-color);
+        }
+
+        .config-header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: var(--primary-color);
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card {
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            background-color: var(--secondary-color);
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-inactive {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+
+        @media (max-width: 768px) {
+            .config-container {
+                padding: 20px;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+            }
+            /* 添加在<style>标签内 */
+            .alert-link {
+                text-decoration: underline;
+                color: inherit;
+            }
+            .btn-link.alert-link:hover {
+                text-decoration: underline;
+                color: inherit;
+}
+
+        }
+
+    </style>
+
+
+
+{% endblock %}
+{% block content %}
+
+<div class="config-header">
+        <h1>动态查询配置</h1>
+        <p class="text-muted">管理系统扩展和查询配置</p>
+    </div>
+    <!-- 扩展列表 -->
+<div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">已安装扩展</h5>
+            <!-- 刷新，上传 -->
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-secondary" onclick="refreshExtensions()">
+                    <i class="fas fa-sync-alt"></i> 刷新
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="openUploadModal()">
+                    <i class="fas fa-upload"></i> 上传
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>名称</th>
+                        <th>描述</th>
+                        <th>端点</th>
+                        <th>状态</th>
+                        <th>首页显示</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody id="extensionsTableBody">
+                    <!-- 动态加载扩展列表 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+</div>
+
+
+<!-- 配置模态框 -->
+<div class="modal fade" id="configModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="configModalTitle">扩展配置</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="configModalBody">
+                <!-- 动态加载配置表单 -->
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 上传模态框 -->
+<div id="uploadModal" class="modal fade" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadModalTitle">上传扩展</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="uploadModalBody">
+                <!-- 上传新扩展 -->
+
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card" style="display: none">
+    <div class="card-header">
+        <h5 class="mb-0">上传新扩展</h5>
+    </div>
+    <div class="card-body">
+
+        <form id="uploadForm1" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="name" class="form-label">名称</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">描述信息</label>
+                <textarea class="form-control" id="description" name="description" rows="3" required
+                          ></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="extensionFile" class="form-label">选择扩展文件 (.py)</label>
+                <input class="form-control" type="file" id="extensionFile" name="file" accept=".py" required>
+                <div class="form-text">上传包含 execute_query() 函数的Python文件</div>
+            </div>
+            <div class="mb-3">
+                <label for="return_type" class="form-label">页面渲染方式</label>
+                <select class="form-select" id="return_type" name="return_type">
+                    <option value="html" selected>HTML(直接渲染到页面)</option>
+                    <option value="table">JSON列表(数据在data字段中,额外需要显示的内容在meta字段中)</option>
+                </select>
+            </div>
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="showinindex"
+                       name="showinindex"  checked>
+                <label class="form-check-label">首页显示</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-upload me-2"></i>上传扩展
+            </button>
+        </form>
+    </div>
+</div>
+
+
+        <!-- 上传新扩展 -->
+        
+    
+    
+    <!-- 配置模态框 -->
+    <div class="modal fade" id="configModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="configModalTitle">扩展配置</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="configModalBody">
+                    <!-- 动态加载配置表单 -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+{% endblock %}
+{% block additional_scripts %}
+<script src="/static/marked.min.js"></script>
+<script src="/static/bootstrap.bundle.min.js"></script>
+
+
+<script>
+    // 初始化页面
+document.addEventListener('DOMContentLoaded', function() {
+        loadExtensions();
+    setupUploadForm();
+});
+
+// 注销函数
+
+    // 加载扩展列表
+    async function loadExtensions() {
+        try {
+            const response = await axios.get('/api/extensions');
+            const tableBody = document.getElementById('extensionsTableBody');
+            tableBody.innerHTML = '';
+
+            if (response.data.length === 0) {
+                tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                <i class="fas fa-info-circle me-2"></i>暂无已安装的扩展
+                            </td>
+                        </tr>
+                    `;
+                return;
+            }
+
+            response.data.forEach(ext => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                        <td>${ext.name}</td>
+                        <td>${ext.description || '<span class="text-muted">无描述</span>'}</td>
+                        <td><code>${ext.endpoint}</code></td>
+                        <td>
+                            <span class="status-badge ${ext.enabled ? 'status-active' : 'status-inactive'}">
+                                ${ext.enabled ? '已启用' : '已禁用'}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge ${ext.showinindex ? 'status-active' : 'status-inactive'}">
+                                ${ext.showinindex ? '是' : '否'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-primary me-2" onclick="openConfigModal('${ext.id}')">
+                                <i class="fas fa-cog"></i> 配置
+                            </button>
+                            <button class="btn btn-sm btn-primary me-2" onclick="viewExtension('${ext.id}')">
+                                <i class="fas fa-eye"></i> 查看
+                            </button>
+                            
+                            <button class="btn btn-sm btn-danger" onclick="confirmDelete('${ext.id}', '${ext.name}')">
+                                <i class="fas fa-trash-alt"></i> 删除
+                            </button>
+
+                        </td>
+                    `;
+                tableBody.appendChild(row);
+            });
+
+        } catch (error) {
+            showToast('加载扩展列表失败: ' + (error.response?.data?.detail || error.message));
+        }
+    }
+
+
+    // 预览扩展
+    function viewExtension(extensionId) {
+        window.open(`/api/extensions/view/${extensionId}`, '_blank');
+    }
+
+    // 设置上传表单
+    function setupUploadForm() {
+        const form = document.getElementById('uploadForm');
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>上传中...';
+
+            try {
+                // 确保使用正确的表单字段名称
+                const formData = new FormData();
+                formData.append('file', document.getElementById('extensionFile').files[0]);
+                formData.append('name', document.getElementById('name').value);
+                formData.append('description', document.getElementById('description').value);
+
+                formData.append('return_type', document.getElementById('return_type').selectedOptions[0].value);
+                console.log(document.getElementById('return_type').value);
+
+                formData.append('showinindex', document.getElementById('showinindex').checked);
+                console.log(document.getElementById('showinindex').checked);
+                const response = await axios.post('/api/extensions/upload', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    }
+                });
+
+                if (response.data && response.data.success) {
+                    showToast('扩展上传成功！','success');
+                    form.reset();
+                    await loadExtensions();  // 刷新扩展列表
+                } else {
+                    showToast(response.data?.detail || '扩展上传失败！');
+                    //throw new Error(response.data?.detail || '上传失败');
+                }
+            } catch (error) {
+                let errorMessage = '上传失败: ';
+
+                if (error.response?.data?.detail) {
+                    errorMessage += error.response.data.detail;
+                } else {
+                    errorMessage += error.message;
+                }
+
+                showToast(errorMessage);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-upload me-2"></i>上传扩展';
+            }
+        });
+    }
+
+    async function openConfigModal(extensionId) {
+        try {
+            const modal = new bootstrap.Modal(document.getElementById('configModal'));
+            const modalTitle = document.getElementById('configModalTitle');
+            const modalBody = document.getElementById('configModalBody');
+
+            // 显示加载状态
+            modalBody.innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">加载中...</span>
+                    </div>
+                    <p class="mt-2">正在加载扩展配置...</p>
+                </div>
+            `;
+            modal.show();
+
+            // 获取扩展详情
+            const response = await axios.get(`/api/extensions/${extensionId}`);
+            const extension = response.data;
+
+            modalTitle.textContent = `${extension.name} - 配置`;
+
+            // 构建配置表单
+            let formHtml = `
+                <form id="extensionConfigForm">
+                    <input type="hidden" name="id" value="${extension.id}">
+
+                    <div class="card mb-3">
+                        <div class="card-header">基本设置</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">名称</label>
+                                <input type="text" class="form-control"
+                                       name="name" value="${escapeHtml(extension.name)}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">描述</label>
+                                <textarea class="form-control"
+                                          name="description">${escapeHtml(extension.description || '')}</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">API端点</label>
+                                <input type="text" class="form-control"
+                                       name="endpoint" value="${escapeHtml(extension.endpoint)}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">返回值类型</label>
+                                <select class="form-select" name="return_type" >
+                                    <option value="html" ${extension.return_type === 'html' ? 'selected' : ''}>HTML</option>
+                                    <option value="table" ${extension.return_type === 'table' ? 'selected' : ''}>JSON列表</option>
+                                </select>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" 
+                                       name="showinindex" ${extension.showinindex ? 'checked' : ''}>
+                                <label class="form-check-label">首页显示</label>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox"
+                                       name="enabled" ${extension.enabled ? 'checked' : ''}>
+                                <label class="form-check-label">启用扩展</label>
+                            </div>
+                        </div>
+                    </div>
+            `;
+
+            // 添加扩展文档
+            if (extension.documentation) {
+                formHtml += `
+                    <div class="card mb-3">
+                        <div class="card-header">使用说明</div>
+                        <div class="card-body">
+                            <h4>模块说明</h4>
+                            <pre class="bg-light p-3 rounded">${parseMD(extension.documentation.module)|| "无说明"}</pre>
+                            <div class="docs-container">
+                                <h4>方法说明</h4>
+                                <ul>
+                                    <li><strong>execute_query:</strong> ${parseMD(extension.documentation.functions.execute_query|| "无方法说明")}</li>
+                                    <li><strong>get_config_form:</strong> ${parseMD(extension.documentation.functions.get_config_form|| "无方法说明")}</li>
+                                    <li><strong>get_default_config:</strong> ${parseMD(extension.documentation.functions.get_default_config|| "无方法说明")}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 添加扩展配置表单
+            if (extension.has_config_form) {
+                try {
+                    const configResponse = await fetch(`/config/${extensionId}/form`);
+                    const configFormHtml = await configResponse.text();
+                    formHtml += `
+                        <div class="card mb-3">
+                            <div class="card-header">扩展设置</div>
+                            <div class="card-body">
+                                ${configFormHtml}
+                            </div>
+                        </div>
+                    `;
+                } catch (error) {
+                    formHtml += `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            加载扩展配置表单失败: ${escapeHtml(error.message)}
+                        </div>
+                    `;
+                }
+            }
+
+            formHtml += `
+                <div class="d-flex justify-content-end">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    &emsp;<button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>保存配置
+                    </button>
+                </div>
+            </form>
+            `;
+
+            modalBody.innerHTML = formHtml;
+
+            // 设置表单提交事件
+            document.getElementById('extensionConfigForm').addEventListener('submit', async function (e) {
+                e.preventDefault();
+            
+                const form = e.target;
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+
+                // showinindex 是checkbox 需要转换为 boolean
+                data.showinindex = data.showinindex === 'on';
+                data.enabled = data.enabled === 'on';
+                
+                // 处理嵌套配置
+                const config = {};
+                for (const [key, value] of Object.entries(data)) {
+                    if (key.startsWith('config.')) {
+                        const parts = key.split('.');
+                        let current = config;
+                        console.log(key,value,current);
+                        for (let i = 1; i < parts.length - 1; i++) {
+                            if (!current[parts[i]]) {
+                                current[parts[i]] = {};
+                            }
+                            current = current[parts[i]];
+                        }
+                        current[parts[parts.length - 1]] = value;
+                        delete data[key];
+                    }
+                }
+
+                if (Object.keys(config).length > 0) {
+                    data.config = config;
+                }
+
+                try {
+                    await axios.put(`/api/extensions/${extension.id}`, data);
+                    showToast('配置保存成功！','success');
+                    modal.hide();
+                    loadExtensions();
+                } catch (error) {
+                    showToast('保存失败: ' + (error.response?.data?.detail || error.message));
+                }
+            });
+
+        } catch (error) {
+            document.getElementById('configModalBody').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-times-circle me-2"></i>
+                    加载扩展配置失败: ${escapeHtml(error.response?.data?.detail || error.message)}
+                </div>
+            `;
+        }
+    }
+    // HTML转义辅助函数
+    function escapeHtml(unsafe) {
+        return unsafe?.toString()
+               .replace(/&/g, "&amp;")
+               .replace(/</g, "&lt;")
+               .replace(/>/g, "&gt;")
+               .replace(/"/g, "&quot;")
+               .replace(/'/g, "&#039;") || '';
+    }
+// 渲染Markdown文档
+    function renderDocumentation(extId, markdownContent) {
+        const container = document.getElementById(`docs-content-${extId}`);
+        container.innerHTML = marked.parse(markdownContent || "*暂无文档*");
+    }
+    function parseMD(markdownContent) {
+        return marked.parse(markdownContent)
+    }
+    // 确认删除扩展
+    function confirmDelete(extensionId, extensionName) {
+
+        if (confirm(`确定要删除扩展 "${extensionName}" 吗？此操作不可撤销！`)) {
+            deleteExtension(extensionId);
+        }
+    }
+
+    // 删除扩展
+    async function deleteExtension(extensionId) {
+        try {
+            await axios.delete(`/api/extensions/${extensionId}`);
+            showToast('扩展删除成功！','success');
+            loadExtensions();
+        } catch (error) {
+            showToast('删除失败: ' + (error.response?.data?.detail || error.message));
+        }
+    }
+
+    // 刷新扩展列表
+    function refreshExtensions() {
+        loadExtensions();
+        showToast('扩展列表已刷新','success');
+    }
+    // 打开上传模态框
+    function openUploadModal() {
+        const modal = new bootstrap.Modal(document.getElementById('uploadModal'));
+        modal.show();
+        document.getElementById('uploadModalBody').innerHTML = `
+            <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">上传新扩展</h5>
+            </div>
+            <div class="card-body">
+    
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">名称</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">描述信息</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required
+                                  ></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="extensionFile" class="form-label">选择扩展文件 (.py)</label>
+                        <input class="form-control" type="file" id="extensionFile" name="file" accept=".py" required>
+                        <div class="form-text">上传包含 execute_query() 函数的Python文件</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="return_type" class="form-label">页面渲染方式</label>
+                        <select class="form-select" id="return_type" name="return_type">
+                            <option value="html" selected>HTML(直接渲染到页面)</option>
+                            <option value="table">JSON列表(数据在data字段中,额外需要显示的内容在meta字段中)</option>
+                        </select>
+
+                        
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="showinindex"
+                               name="showinindex"  checked>
+                        <label class="form-check-label">首页显示</label>
+                    </div>
+        
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload me-2"></i>上传扩展
+                    </button>
+                </form>
+            </div>
+        </div>
+        `;
+        //modal.show();
+        setupUploadForm();
+    }
+</script>
+
+
+{% endblock %}

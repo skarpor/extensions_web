@@ -72,6 +72,7 @@ def load_module_in_sandbox(filepath: str) -> Any:
     except SandboxException:
         raise
     except Exception as e:
+        raise
         raise SandboxException(f"加载模块失败: {str(e)}")
 from sqlalchemy.ext.asyncio import AsyncSession
 async def execute_query_in_sandbox(module: Any, params: Dict, config: Dict, files: Optional[Dict] = None, file_manager: Optional[FileManager] = None,db_manager:Optional[DBManager]=None) -> Any:

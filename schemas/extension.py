@@ -54,7 +54,7 @@ class ExtensionInDB(ExtensionInDBBase):
     """数据库中的扩展模型"""
     id: str
     name: str
-    description: str
+    description: Optional[str] = None
     enabled: bool
     execution_mode: str
     show_in_home: bool

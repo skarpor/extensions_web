@@ -2,7 +2,7 @@
 扩展相关的API端点
 """
 from datetime import datetime
-from typing import Any, List
+from typing import Any, List, Optional
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy import select
@@ -15,9 +15,8 @@ from db.session import get_db
 from models.extension import Extension
 from schemas.extension import ExtensionInDB, ExtensionUpdate
 from models.user import User
-from core.logger import get_logger
+from core.extension_manager import logger
 
-logger = get_logger("extension")
 router = APIRouter()
 extension_manager: ExtensionManager
 
@@ -52,10 +51,10 @@ async def create_extension(
         *,
         db: AsyncSession = Depends(get_db),
         name: str = Form(...),
-        description: str = Form(...),
+        description: Optional[str] = Form(None),
         execution_mode: str = Form(...),
         render_type: str = Form(...),
-        show_in_home: bool = Form(...),
+        show_in_home: Optional[bool] = Form(None),
         file: UploadFile = File(...),
         current_user: User = Depends(auth.get_current_active_user),
 ) -> Any:
@@ -73,7 +72,6 @@ async def create_extension(
     with open(f"{settings.EXTENSIONS_DIR}/{extension_id}.py", "wb") as f:
         f.write(file.file.read())
     # 先写入数据库
-    print(show_in_home)
     extension = Extension(
         id=extension_id,
         name=name,
@@ -86,20 +84,11 @@ async def create_extension(
         created_at=datetime.now(),
         entry_point=settings.EXTENSIONS_ENTRY_POINT_PREFIX + extension_id
     )
-    print(extension)
     db.add(extension)
     await db.commit()
     await db.refresh(extension)
     # 加载
     extension_ext = await extension_manager.load_extension(extension_id, db)
-    # # 二次保存
-    # # module = extension_ext.module
-    # extension.has_config_form = extension_ext.get("has_config_form")
-    # extension.has_query_form = extension_ext.get("has_query_form")
-    # # 更新数据库
-    # await db.add(extension)
-    # await db.commit()
-    #
     if not extension_ext:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -125,7 +114,7 @@ async def read_extension(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="扩展不存在"
         )
-    extension.document =await extension_manager.get_extension_document(extension_id)
+    extension.document =await extension_manager.get_extension_document(extension_id,db)
     return extension
 
 
@@ -191,3 +180,26 @@ async def delete_extension(
             detail="扩展卸载失败"
         )
     return {"message": "扩展已删除"}
+
+
+@router.get("/{extension_id}/config")
+async def get_extension_config(
+        *,
+        db: AsyncSession = Depends(get_db),
+        extension_id: str,
+        current_user: User = Depends(auth.get_current_active_user),
+) -> Any:
+    """
+    获取扩展配置
+    """
+    extension = await db.execute(select(Extension).where(Extension.id == extension_id))
+    extension = extension.scalar_one_or_none()
+    if not extension:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="扩展不存在"
+        )
+    config_form = await extension_manager.get_extension_config(extension_id, db)
+    return {"config_form": config_form, "config": extension.config}
+
+

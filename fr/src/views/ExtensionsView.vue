@@ -30,9 +30,9 @@
           <div class="extension-version">{{ extension.version || '1.0' }}</div>
         </div>
         <div class="extension-body">
-          <p>{{ extension.description }}</p>
+          <p>{{ extension.description || '暂无描述' }}</p>
           <div class="extension-meta">
-            <div class="extension-author">创建者: {{ extension.creator_id || '系统' }}</div>
+            <div class="extension-author">创建者: {{ extension.creator.nickname || '系统' }}</div>
             <div class="extension-updated">更新时间: {{ formatDate(extension.updated_at || extension.created_at) }}</div>
           </div>
           <div class="extension-features">
@@ -42,11 +42,11 @@
             <span v-if="extension.has_query_form" class="feature-badge">
               <i class="fas fa-search"></i> 查询
             </span>
-            <span v-if="extension.show_in_home" class="feature-badge">
-              <i class="fas fa-home"></i> 首页显示
-            </span>
             <span class="feature-badge" :class="{'active': extension.enabled}">
               <i class="fas fa-power-off"></i> {{ extension.enabled ? '已启用' : '已禁用' }}
+            </span>
+            <span class="feature-badge" :class="{'active': extension.show_in_home}">
+              <i class="fas fa-home"></i> {{ extension.show_in_home ? '首页显示' : '首页隐藏' }}
             </span>
           </div>
         </div>
@@ -57,19 +57,31 @@
               type="checkbox" 
               :id="`extension-${extension.id}`" 
               v-model="extension.enabled"
-              @change="toggleExtension(extension)"
+              @change="toggleExtension(extension, 'enabled')"
             >
             <label class="form-check-label" :for="`extension-${extension.id}`">
-              {{ extension.enabled ? '已启用' : '已禁用' }}
+              {{ extension.enabled ? '启用' : '禁用' }}
+            </label>
+          </div>
+          <div class="form-check form-switch">
+            <input 
+              class="form-check-input" 
+              type="checkbox" 
+              :id="`extension-${extension.id}-show-in-home`" 
+              v-model="extension.show_in_home"
+              @change="toggleExtension(extension, 'show_in_home')"
+            >
+            <label class="form-check-label" :for="`extension-${extension.id}-show-in-home`">
+              {{ extension.show_in_home ? '显示' : '隐藏' }}
             </label>
           </div>
           <div class="extension-actions">
-            <button class="btn btn-sm btn-outline-primary" @click="configureExtension(extension)" v-if="extension.has_config_form">
+            <button class="btn btn-sm btn-outline-primary" @click="configureExtension(extension)">
               <i class="fas fa-cog"></i>
             </button>
-            <RouterLink :to="`/extensions/${extension.id}`" class="btn btn-sm btn-outline-info">
+            <!-- <RouterLink :to="`/extensions/${extension.id}`" class="btn btn-sm btn-outline-info">
               <i class="fas fa-info-circle"></i>
-            </RouterLink>
+            </RouterLink> -->
             <button class="btn btn-sm btn-outline-danger" @click="uninstallExtension(extension)">
               <i class="fas fa-trash"></i>
             </button>
@@ -87,27 +99,28 @@
             <button type="button" class="btn-close" @click="showInstallModal = false"></button>
           </div>
           <div class="modal-body">
-            <div class="mb-3">
-              <label class="form-label">扩展信息</label>
+            <form id="uploadForm" enctype="multipart/form-data">
               <div class="mb-3">
-                <label for="extensionName" class="form-label">扩展名称</label>
+                <label for="name" class="form-label">名称</label>
                 <input 
                   type="text" 
-                  id="extensionName" 
+                  id="name" 
                   class="form-control" 
                   v-model="extensionName"
                   placeholder="输入扩展名称"
+                  required
                 />
               </div>
               
               <div class="mb-3">
-                <label for="extensionDescription" class="form-label">扩展描述</label>
+                <label for="description" class="form-label">描述信息</label>
                 <textarea 
-                  id="extensionDescription" 
+                  id="description" 
                   class="form-control" 
                   v-model="extensionDescription"
                   placeholder="输入扩展描述"
                   rows="3"
+            
                 ></textarea>
               </div>
               
@@ -130,42 +143,32 @@
                 </select>
               </div>
               
-              <div class="form-check mb-3">
+              <div class="form-check form-switch mb-3">
                 <input 
                   type="checkbox" 
-                  id="showInHome" 
+                  id="showinindex" 
                   class="form-check-input" 
                   v-model="showInHome"
+                  checked
                 />
-                <label class="form-check-label" for="showInHome">在首页显示</label>
+                <label class="form-check-label" for="showinindex">首页显示</label>
               </div>
-            </div>
-            
-            <div class="mb-3">
-              <label for="extensionFile" class="form-label">选择扩展文件</label>
-              <input 
-                type="file" 
-                id="extensionFile" 
-                class="form-control" 
-                @change="handleFileSelect"
-                accept=".py"
-              />
-            </div>
-            
-            <div class="install-progress" v-if="installProgress > 0">
-              <div class="progress">
-                <div 
-                  class="progress-bar" 
-                  role="progressbar" 
-                  :style="{ width: installProgress + '%' }" 
-                  :aria-valuenow="installProgress" 
-                  aria-valuemin="0" 
-                  aria-valuemax="100"
-                >
-                  {{ installProgress }}%
+              
+              <div class="install-progress" v-if="installProgress > 0">
+                <div class="progress">
+                  <div 
+                    class="progress-bar" 
+                    role="progressbar" 
+                    :style="{ width: installProgress + '%' }" 
+                    :aria-valuenow="installProgress" 
+                    aria-valuemin="0" 
+                    aria-valuemax="100"
+                  >
+                    {{ installProgress }}%
+                  </div>
                 </div>
               </div>
-            </div>
+            </form>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="showInstallModal = false">取消</button>
@@ -175,7 +178,7 @@
               @click="installExtension" 
               :disabled="!canInstall"
             >
-              安装
+              <i class="fas fa-upload me-2"></i>安装扩展
             </button>
           </div>
         </div>
@@ -201,62 +204,76 @@
               {{ configError }}
             </div>
             <div v-else>
-              <div v-for="(field, key) in configFields" :key="key" class="mb-3">
-                <label :for="`config-${key}`" class="form-label">{{ field.label }}</label>
+              <form id="extensionConfigForm" @submit.prevent="saveConfig">
+                <input type="hidden" name="id" :value="currentExtension?.id">
                 
-                <input 
-                  v-if="field.type === 'text' || field.type === 'number' || field.type === 'password'" 
-                  :type="field.type" 
-                  :id="`config-${key}`" 
-                  class="form-control" 
-                  v-model="configValues[key]"
-                  :placeholder="field.placeholder"
-                />
-                
-                <textarea 
-                  v-else-if="field.type === 'textarea'" 
-                  :id="`config-${key}`" 
-                  class="form-control" 
-                  v-model="configValues[key]"
-                  :placeholder="field.placeholder"
-                  rows="3"
-                ></textarea>
-                
-                <select 
-                  v-else-if="field.type === 'select'" 
-                  :id="`config-${key}`" 
-                  class="form-select" 
-                  v-model="configValues[key]"
-                >
-                  <option v-for="option in field.options" :key="option.value" :value="option.value">
-                    {{ option.label }}
-                  </option>
-                </select>
-                
-                <div class="form-check" v-else-if="field.type === 'checkbox'">
-                  <input 
-                    type="checkbox" 
-                    :id="`config-${key}`" 
-                    class="form-check-input" 
-                    v-model="configValues[key]"
-                  />
-                  <label class="form-check-label" :for="`config-${key}`">{{ field.checkboxLabel }}</label>
+                <div class="card mb-3">
+                  <div class="card-header">基本设置</div>
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <label class="form-label">名称</label>
+                      <input type="text" class="form-control" v-model="configValues.name" required>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">描述</label>
+                      <textarea class="form-control" v-model="configValues.description"></textarea>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">API端点</label>
+                      <input type="text" class="form-control" v-model="configValues.endpoint" required>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">返回值类型</label>
+                      <select class="form-select" v-model="configValues.return_type">
+                        <option value="html">HTML</option>
+                        <option value="table">JSON列表</option>
+                      </select>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                      <input class="form-check-input" type="checkbox" id="showinindex" v-model="configValues.showinindex">
+                      <label class="form-check-label" for="showinindex">首页显示</label>
+                    </div>
+                    
+                    <div class="form-check form-switch mb-3">
+                      <input class="form-check-input" type="checkbox" id="enabled" v-model="configValues.enabled">
+                      <label class="form-check-label" for="enabled">启用扩展</label>
+                    </div>
+                  </div>
                 </div>
                 
-                <small class="form-text text-muted" v-if="field.help">{{ field.help }}</small>
-              </div>
+                <!-- 扩展文档 -->
+                <div class="card mb-3" v-if="extensionDocumentation">
+                  <div class="card-header">使用说明</div>
+                  <div class="card-body">
+                    <h4>模块说明</h4>
+                    <div class="bg-light p-3 rounded" v-html="parsedModuleDoc"></div>
+                    <div class="docs-container">
+                      <h4>方法说明</h4>
+                      <ul>
+                        <li><strong>execute_query:</strong> <span v-html="parsedExecuteQueryDoc"></span></li>
+                        <li><strong>get_config_form:</strong> <span v-html="parsedGetConfigFormDoc"></span></li>
+                        <li><strong>get_default_config:</strong> <span v-html="parsedGetDefaultConfigDoc"></span></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 扩展配置表单 -->
+                <div class="card mb-3" v-if="currentExtension?.has_config_form">
+                  <div class="card-header">扩展设置</div>
+                  <div class="card-body">
+                    <div v-html="configFormHtml"></div>
+                  </div>
+                </div>
+                
+                <div class="d-flex justify-content-end">
+                  <button type="button" class="btn btn-secondary" @click="showConfigModal = false">取消</button>
+                  <button type="submit" class="btn btn-primary ms-2">
+                    <i class="fas fa-save me-2"></i>保存配置
+                  </button>
+                </div>
+              </form>
             </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="showConfigModal = false">取消</button>
-            <button 
-              type="button" 
-              class="btn btn-primary" 
-              @click="saveConfig" 
-              :disabled="configLoading"
-            >
-              保存
-            </button>
           </div>
         </div>
       </div>
@@ -266,6 +283,7 @@
 
 <script>
 import { 
+  getExtension,
   getExtensions, 
   createExtension, 
   updateExtension, 
@@ -274,6 +292,7 @@ import {
   saveExtensionConfig 
 } from '@/api/extension';
 import Toast from '@/utils/toast'
+import { marked } from 'marked'  // 正确导入marked
 
 export default {
   name: 'ExtensionsView',
@@ -290,15 +309,40 @@ export default {
       showInHome: true,
       installProgress: 0,
       currentExtension: null,
-      configFields: {},
       configValues: {},
       configLoading: false,
-      configError: null
+      configError: null,
+      configFormHtml: null,
+      extensionDocumentation: null
     }
   },
   computed: {
+    compiledMarkdown() {
+      return marked(this.markdownContent);
+    },
+
     canInstall() {
       return this.extensionFile && this.extensionName
+    },
+    parsedModuleDoc() {
+      return this.extensionDocumentation?.module ? 
+        this.compiledMarkdown(this.extensionDocumentation.module) : 
+        "无说明"
+    },
+    parsedExecuteQueryDoc() {
+      return this.extensionDocumentation?.functions?.execute_query ? 
+        this.compiledMarkdown(this.extensionDocumentation.functions.execute_query) : 
+        "无方法说明"
+    },
+    parsedGetConfigFormDoc() {
+      return this.extensionDocumentation?.functions?.get_config_form ? 
+        this.compiledMarkdown(this.extensionDocumentation.functions.get_config_form) : 
+        "无方法说明"
+    },
+    parsedGetDefaultConfigDoc() {
+      return this.extensionDocumentation?.functions?.get_default_config ? 
+        this.compiledMarkdown(this.extensionDocumentation.functions.get_default_config) : 
+        "无方法说明"
     }
   },
   created() {
@@ -345,7 +389,6 @@ export default {
         
         await createExtension(formData)
         
-        
         Toast.success('扩展安装成功')
         this.showInstallModal = false
         this.extensionFile = null
@@ -359,18 +402,24 @@ export default {
       } catch (error) {
         console.error('安装扩展失败', error)
         Toast.error('安装扩展失败: ' + (error.response?.data?.detail || error.message))
+      } finally {
+        const submitBtn = document.querySelector('#uploadForm + .modal-footer button[type="button"].btn-primary')
+        if (submitBtn) {
+          submitBtn.disabled = false
+          submitBtn.innerHTML = '<i class="fas fa-upload me-2"></i>安装扩展'
+        }
       }
     },
     
-    async toggleExtension(extension) {
+    async toggleExtension(extension, field) {
       try {
         await updateExtension(extension.id, {
-          enabled: extension.enabled
+          [field]: extension[field]
         })
-        Toast.success(`扩展已${extension.enabled ? '启用' : '禁用'}`)
+        Toast.success(`扩展已${extension[field] ? '启用' : '禁用'}`)
       } catch (error) {
         console.error('切换扩展状态失败', error)
-        extension.enabled = !extension.enabled // 恢复状态
+        extension[field] = !extension[field] // 恢复状态
         Toast.error('切换扩展状态失败: ' + (error.response?.data?.detail || error.message))
       }
     },
@@ -380,11 +429,53 @@ export default {
       this.configLoading = true
       this.configError = null
       this.showConfigModal = true
+      this.configValues = {}
+      this.configFormHtml = null
+      this.extensionDocumentation = null
       
       try {
-        const response = await getExtensionConfig(extension.id)
-        this.configFields = response.data.fields || {}
-        this.configValues = response.data.values || {}
+        // 获取扩展详情
+        const response = await getExtension(extension.id)
+        const extensionData = response.data
+        
+        // 设置基本配置值
+        this.configValues = {
+          id: extensionData.id,
+          name: extensionData.name,
+          description: extensionData.description || '',
+          endpoint: extensionData.entry_point,
+          return_type: extensionData.render_type || 'html',
+          showinindex: extensionData.show_in_home || false,
+          enabled: extensionData.enabled || false
+        }
+        
+        // 获取文档信息
+        this.extensionDocumentation = extensionData.documentation
+        
+        // 如果有配置表单，获取配置表单
+        if (extensionData.has_config_form) {
+          try {
+            const configResponse = await getExtensionConfig(extension.id)
+            let configFormHtml = configResponse.data.config_form
+            const configData = configResponse.data.config || {}
+            
+            // 处理配置表单中的变量
+            if (configData) {
+              // 替换所有的 {{config.xxx}} 为实际的配置值
+              configFormHtml = this.replaceConfigVariables(configFormHtml, configData)
+            }
+            
+            this.configFormHtml = configFormHtml
+          } catch (error) {
+            console.error('获取配置表单失败', error)
+            this.configFormHtml = `
+              <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                加载扩展配置表单失败: ${error.message}
+              </div>
+            `
+          }
+        }
       } catch (error) {
         console.error('获取扩展配置失败', error)
         this.configError = '获取扩展配置失败: ' + (error.response?.data?.detail || error.message)
@@ -393,17 +484,48 @@ export default {
       }
     },
     
-    async saveConfig() {
+    async saveConfig(event) {
       if (!this.currentExtension) return
       
       try {
-        await saveExtensionConfig(this.currentExtension.id, this.configValues)
+        const form = event.target
+        const formData = new FormData(form)
+        const data = Object.fromEntries(formData.entries())
+        
+        // 处理布尔值
+        data.showinindex = data.showinindex === 'on'
+        data.enabled = data.enabled === 'on'
+        
+        // 处理嵌套配置
+        const config = {}
+        for (const [key, value] of Object.entries(data)) {
+          if (key.startsWith('config.')) {
+            const parts = key.split('.')
+            let current = config
+            for (let i = 1; i < parts.length - 1; i++) {
+              if (!current[parts[i]]) {
+                current[parts[i]] = {}
+              }
+              current = current[parts[i]]
+            }
+            current[parts[parts.length - 1]] = value
+            delete data[key]
+          }
+        }
+        
+        if (Object.keys(config).length > 0) {
+          data.config = config
+        }
+        
+        await updateExtension(this.currentExtension.id, data)
         
         Toast.success('配置保存成功')
         this.showConfigModal = false
         this.currentExtension = null
-        this.configFields = {}
         this.configValues = {}
+        this.configFormHtml = null
+        this.extensionDocumentation = null
+        this.fetchExtensions()
       } catch (error) {
         console.error('保存扩展配置失败', error)
         Toast.error('保存扩展配置失败: ' + (error.response?.data?.detail || error.message))
@@ -430,6 +552,40 @@ export default {
       
       const date = new Date(timestamp)
       return date.toLocaleString()
+    },
+    
+    // HTML 转义辅助函数
+    escapeHtml(unsafe) {
+      return unsafe?.toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;") || ''
+    },
+    replaceConfigVariables(html, configData) {
+      if (!html) return '';
+      
+      return html.replace(/\{\{(config\.([\w\.]+))\}\}/g, (match, p1, p2) => {
+        try {
+          // 处理嵌套路径，例如 config.api.key
+          const path = p2.split('.');
+          let value = configData;
+          
+          for (const key of path) {
+            if (value === undefined || value === null) {
+              return match; // 如果中间路径不存在，保留原始模板变量
+            }
+            value = value[key];
+          }
+          
+          // 如果找到值，则返回值；否则返回原始模板变量
+          return value !== undefined ? value : match;
+        } catch (error) {
+          console.error('替换配置变量失败:', error, match);
+          return match; // 发生错误时保留原始模板变量
+        }
+      });
     }
   }
 }
