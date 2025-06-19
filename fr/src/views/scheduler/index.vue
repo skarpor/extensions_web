@@ -228,7 +228,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import {
   getJobs,
-  getJobDetail, resumeJob, deleteJob, pauseJob, runScheJob
+  getJobDetail, resumeJob, deleteJob, pauseJob, runScheduleJob
 } from '@/api/scheduler';
 import { Modal, Toast } from 'bootstrap';
 
@@ -267,7 +267,7 @@ export default {
 
     const runJob = async (jobId) => {
       try {
-        const response = await runScheJob(jobId);
+        const response = await runScheduleJob(jobId);
         showToast('执行成功', response.data.message);
       } catch (error) {
         showToast('执行失败', error.response?.data?.message || '请求执行任务时发生错误', false);

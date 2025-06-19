@@ -38,7 +38,7 @@ def setup_logger(name, level=logging.INFO):
         when="midnight",  # 每天午夜轮转
         interval=1,       # 每天一个文件
         backupCount=30,    # 保留30天日志
-        encoding="gbk"    # 编码
+        encoding="utf-8"    # 编码
     )
     file_handler.setLevel(level)
 
@@ -76,13 +76,13 @@ def get_logger(name,level=logging.INFO):
     logger.addHandler(console_handler)
     log_file = os.path.join(settings.LOG_DIR, f"{name}.log")  # 基础文件名
     file_handler = TimedRotatingFileHandler(
-        log_file, when="midnight", interval=1, backupCount=30, encoding="gbk"
+        log_file, when="midnight", interval=1, backupCount=30, encoding="utf-8"
     )
     file_handler.setLevel(level)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
-    file_handler.encoding = 'gbk'
+    file_handler.encoding = 'utf-8'
 
     return logger
 

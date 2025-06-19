@@ -32,6 +32,12 @@ const router = createRouter({
       meta: { requiresAuth: true, title: '聊天' }
     },
     {
+      path: '/log',
+      name: 'log',
+      component: () => import('../views/log.vue'),
+      meta: { guest: true, title: '日志' }
+    },
+    {
       path: '/files',
       name: 'files',
       component: () => import('../views/FileManagerView.vue'),

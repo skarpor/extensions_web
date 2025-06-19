@@ -1,43 +1,43 @@
-// 扩展接口
+// 定时器
 import axios from '@/utils/axios';
 
-// 获取扩展列表
+// 获取定时器列表
 export const getJobs = async () => {
   return await axios.get('/api/scheduler/jobs');
 };
 
-// 获取扩展详情
-export const runScheJob =async (jobId) => {
+// 运行定时器
+export const runScheduleJob =async (jobId) => {
   return await axios.post(`/api/scheduler/job/${jobId}/run`);
 };
 
-// 创建/安装扩展
+// 暂停定时器
 export const pauseJob =async (jobId) => {
   return await axios.post(`/api/scheduler/job/${jobId}/pause`)
 };
 
-// 更新扩展
+// 恢复定时器
 export const resumeJob = async (jobId) => {
   return await axios.post(`/api/scheduler/job/${jobId}/resume`);
 };
 
-// 删除扩展
+// 删除定时器
 export const deleteJob =async (jobId) => {
   return await axios.delete(`/api/scheduler/job/${jobId}`);
 };
 
-// 获取扩展配置
+// 添加定时器
 export const addJob = async (type,payload) => {
   return await axios.post(`/api/scheduler/jobs/${type}`, payload);
 };
 
 
-// 执行扩展查询
+// 获取定时器详情
 export const getJobDetail = async (id) => {
   return await axios.get(`/api/scheduler/jobs/${id}`);
 };
 
-// 执行扩展查询
+// 获取扩展方法
 export const getExtensionMethods = async () => {
   return await axios.get(`/api/scheduler/extensions`);
 };

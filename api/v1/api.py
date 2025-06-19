@@ -12,6 +12,7 @@ from api.v1.endpoints.database import router as database_router
 from api.v1.endpoints.ws import router as ws_router
 from api.v1.endpoints.dashboard import router as dashboard_router
 from api.v1.endpoints.scheduler import router as scheduler_router
+from api.v1.endpoints.logger import router as log_router
 api_router = APIRouter()
 
 # 注册所有子路由
@@ -26,3 +27,4 @@ api_router.include_router(dashboard_router, prefix="/dashboard", tags=["控制�
 api_router.include_router(ws_router, prefix="/ws", tags=["websocket"])
 
 api_router.include_router(scheduler_router, prefix="/scheduler", tags=["scheduler"])
+api_router.include_router(log_router, prefix="/log", tags=["log"])

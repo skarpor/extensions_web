@@ -214,8 +214,8 @@
 <script>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import {runScheJob, resumeJob, pauseJob, getJobDetail,} from '@/api/scheduler.js'
-import { Modal, Toast, Tooltip } from 'bootstrap'
+import {runScheduleJob, resumeJob, pauseJob, getJobDetail,deleteJob} from '@/api/scheduler.js'
+import { Toast } from '@/utils/toast.js'
 
 export default {
   setup() {
@@ -245,54 +245,45 @@ export default {
         job.value = response.data
       } catch (error) {
         console.error('Error fetching job details:', error)
-        showToast('获取失败', '获取任务详情时发生错误', false)
+        Toast.error('获取失败', '获取任务详情时发生错误', false)
       }
     }
 
-    const showToast = (title, message, isSuccess = true) => {
-      toastTitle.value = title
-      toastMessage.value = message
-      const toastEl = document.getElementById('liveToast')
-      toastEl.className = isSuccess
-        ? 'toast text-white bg-success show'
-        : 'toast text-white bg-danger show'
-      new Toast(toastEl).show()
-    }
 
     const pauseJob = async () => {
       try {
         const response = await pauseJob(job.value.job_id)
-        showToast('操作成功', '任务已暂停')
+        Toast.success('操作成功', '任务已暂停')
         setTimeout(() => {
           fetchJobDetails()
         }, 1000)
       } catch (error) {
-        showToast('操作失败', error.response?.data?.detail || '暂停任务失败', false)
+        Toast.error('操作失败', error.response?.data?.detail || '暂停任务失败', false)
       }
     }
 
     const resumeJob = async () => {
       try {
         const response = await resumeJob(job.value.job_id)
-        showToast('操作成功', '任务已恢复')
+        Toast.success('操作成功', '任务已恢复')
         setTimeout(() => {
           fetchJobDetails()
         }, 1000)
       } catch (error) {
-        showToast('操作失败', error.response?.data?.detail || '恢复任务失败', false)
+        Toast.error('操作失败', error.response?.data?.detail || '恢复任务失败', false)
       }
     }
 
     const runJob = async () => {
       isRunning.value = true
       try {
-        const response = await runScheJob(job.value.job_id)
-        showToast('操作成功', '任务已执行')
+        const response = await runScheduleJob(job.value.job_id)
+        Toast.success('操作成功', '任务已执行')
         setTimeout(() => {
           fetchJobDetails()
         }, 1000)
       } catch (error) {
-        showToast('操作失败', error.response?.data?.detail || '执行任务失败', false)
+        Toast.error('操作失败', error.response?.data?.detail || '执行任务失败', false)
       } finally {
         isRunning.value = false
       }
@@ -306,13 +297,13 @@ export default {
     const deleteJob = async () => {
       try {
         const response = await deleteJob(job.value.job_id)
-        showToast('操作成功', '任务已删除')
+        Toast.success('操作成功', '任务已删除')
         deleteModal.value.hide()
         setTimeout(() => {
           router.push('/scheduler')
         }, 1000)
       } catch (error) {
-        showToast('操作失败', error.response?.data?.detail || '删除任务失败', false)
+        Toast.error('操作失败', error.response?.data?.detail || '删除任务失败', false)
       }
     }
 
