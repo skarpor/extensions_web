@@ -7,7 +7,7 @@ import os
 import shutil
 import hashlib
 import json
-from typing import Optional, Dict, Any, List, Union, Coroutine, Sequence
+from typing import Optional, Dict, Any, List, Union, Sequence
 from pathlib import Path
 from datetime import datetime
 
@@ -16,7 +16,7 @@ from sqlalchemy import delete, select
 from fastapi import UploadFile, Depends, HTTPException,status
 
 from models import File
-from core.config import settings
+from config import settings
 from core.logger import get_logger
 from db.session import get_db
 

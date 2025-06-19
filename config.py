@@ -1,36 +1,105 @@
-# config.py
+"""
+应用配置模块
+"""
+
 import os
-from fastapi.templating import Jinja2Templates
-from passlib.context import CryptContext
-from fastapi.security import OAuth2PasswordBearer
-from passlib.context import CryptContext
-import passlib.handlers.bcrypt  # 显式导入，确保 PyInstaller 能检测到
+import secrets
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, Union
+from pydantic import validator
+from pydantic_settings import BaseSettings
+from pydantic.networks import AnyHttpUrl
 
-# 密码加密配置
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
-# 从环境变量获取密钥，如果没有则使用默认值（不推荐用于生产环境）
-JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "123")
-# if JWT_SECRET_KEY == "SECRET_KEY":
-#     logger.warning("使用默认JWT密钥，这在生产环境中不安全。请设置环境变量JWT_SECRET_KEY")
+class Settings(BaseSettings):
+    PROJECT_NAME: str = "Data Query System"
+    VERSION: str = "2.0.0"
+    API_V1_STR: str = "/api/v1"
+    
+    # Server settings
+    HOST: str = "0.0.0.0"
+    PORT: int = 8000
+    
+    # BACKEND_CORS_ORIGINS is a comma-separated list of origins
+    # BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = ["http://localhost:5173"]
 
-# 设置令牌过期时间（分钟）
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES", "600"))
+    # @validator("BACKEND_CORS_ORIGINS", pre=True)
+    # def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
+    #     if isinstance(v, str) and not v.startswith("["):
+    #         return [i.strip() for i in v.split(",")]
+    #     elif isinstance(v, (list, str)):
+    #         return v
+    #     raise ValueError(v)
 
-# 示例文件目录
-EXAMPLE_DIR = "example"
-TEMPLATE_DIR = "templates"
-token_name="access_token"
-LOG_DIR = "logs"
-templates = Jinja2Templates(directory=TEMPLATE_DIR)
-title="数据查询服务"
-version="1.0.0"
-root_dir = os.path.dirname(os.path.abspath(__file__))
-data_dir = os.environ.get("EXT_DATA_DIR", "data")
-db_path = os.path.join(root_dir, "database.sqlite")
-files_dir = os.path.join(root_dir, "files")
+    # Database configuration
+    SQLALCHEMY_DATABASE_URI: Optional[str] = os.getenv(
+        "DATABASE_URL", "sqlite+aiosqlite:///database.sqlite"
+    )
+    SYNC_SQLALCHEMY_DATABASE_URI: Optional[str] = os.getenv(
+        "DATABASE_URL", "sqlite:///database.sqlite"
+    )
 
-class Settings:
-    DATABASE_PATH=db_path
-    DEBUG=True
-settings=Settings()
+    # JWT configuration
+    SECRET_KEY: str = secrets.token_urlsafe(32)
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
+    # 允许的图片类型
+    ALLOWED_IMAGE_TYPES:List[str] = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+
+    # 创建上传目录
+    CHAT_UPLOAD_DIR:str = os.path.join("static", "uploads", "chat")
+
+    # File storage
+    FILE_UPLOAD_DIR: str = "file_uploads"
+    MAX_UPLOAD_SIZE: int = 1024 * 1024 * 50  # 50MB
+
+    # Templates
+    TEMPLATES_DIR: str = "templates"
+
+    # Logging
+    LOG_LEVEL: str = "INFO"
+    LOG_FILE: str = "logs/app.log"
+    LOG_DIR:str = "logs"
+    # Extension settings
+    EXTENSIONS_DIR: str = "extensions"
+    EXTENSIONS_ENTRY_POINT_PREFIX: str = "/query/"
+
+    # Config directory
+    CONFIG_DIR: str = os.path.join(os.path.expanduser("~"), ".config", "data_query_system")
+
+    # Token name for cookies
+    TOKEN_NAME: str = "access_token"
+
+    # Application expiry time
+    EXPIRE_TIME: Optional[str] = (datetime.now() + timedelta(days=90)).strftime("%Y-%m-%d %H:%M:%S")
+
+    # external DB configuration,异步数据库配置
+    EXT_DB_TYPE: str = "sqlite"
+    EXT_DB_CONFIG: Dict[str, Dict[str, str]] = {
+        "sqlite": {
+            "db_url": "sqlite+aiosqlite:///./database.sqlite"
+        },
+        "postgresql": {
+            "db_url": "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres"
+        },
+        "mysql": {
+            "db_url": "mysql+aiomysql://root:root@localhost:3306/mysql"
+        },
+        "mssql": {
+            "db_url": "mssql+pyodbc://sa:123456@localhost:1433/test?driver=ODBC+Driver+17+for+SQL+Server"
+        }
+    }
+    # 是否允许注册
+    ALLOW_REGISTER: bool = True
+    class Config:
+        case_sensitive = True
+        env_file = ".env"
+
+
+# 创建设置实例
+settings = Settings()
+
+# 确保必要的目录存在
+os.makedirs(settings.FILE_UPLOAD_DIR, exist_ok=True)
+os.makedirs(settings.EXTENSIONS_DIR, exist_ok=True)
+os.makedirs(settings.CONFIG_DIR, exist_ok=True)
+os.makedirs(os.path.dirname(settings.LOG_FILE), exist_ok=True)

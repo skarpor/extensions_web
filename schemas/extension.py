@@ -64,7 +64,7 @@ class ExtensionInDB(ExtensionInDBBase):
     entry_point: str  # 入口文件路径
     # deleted = Column(Boolean, default=False)  # 是否删除
     # creator_id = Column(Integer, ForeignKey("users.id"))
-    creator: User
+    creator: Optional[User]
     render_type: str  # 渲染方式
     class Config:
         from_attributes = True

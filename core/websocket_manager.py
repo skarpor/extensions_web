@@ -8,10 +8,10 @@ from fastapi import WebSocket, WebSocketDisconnect, Depends
 from jose import jwt, JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.config import settings
+from config import settings
 from core.logger import get_logger
 from models.user import User
-from core.auth import ALGORITHM, get_user_by_id, get_user_by_username
+from core.auth import ALGORITHM, get_user_by_username
 from db.session import get_db
 logger = get_logger("websocket_manager")
 

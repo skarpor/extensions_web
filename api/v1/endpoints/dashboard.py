@@ -2,8 +2,7 @@
 控制面板相关的API端点
 """
 from typing import Any, Dict, List
-from datetime import datetime, timedelta
-import os
+from datetime import datetime
 import psutil
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -15,9 +14,9 @@ from db.session import get_db
 from models.user import User as UserModel
 from models.extension import Extension
 from models.file import File
-from models.chat import Chat, Message
+from models.chat import Message
 from models.activity_log import ActivityLog
-from core.config import settings
+from config import settings
 
 router = APIRouter()
 

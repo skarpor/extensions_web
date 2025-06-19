@@ -1,12 +1,11 @@
 import logging
 import os
-from datetime import datetime
 from logging.handlers import TimedRotatingFileHandler  # 关键修改点
 
-from config import LOG_DIR
+from config import settings
 
 # 确保日志目录存在
-os.makedirs(LOG_DIR, exist_ok=True)
+os.makedirs(settings.LOG_DIR, exist_ok=True)
 
 def setup_logger(name, level=logging.INFO):
     """
@@ -27,7 +26,7 @@ def setup_logger(name, level=logging.INFO):
         return logger
 
     # 日志文件名格式（不带日期，由TimedRotatingFileHandler自动处理）
-    log_file = os.path.join(LOG_DIR, f"app.log")  # 基础文件名
+    log_file = os.path.join(settings.LOG_DIR, f"app.log")  # 基础文件名
 
     # 控制台处理器
     console_handler = logging.StreamHandler()
@@ -75,7 +74,7 @@ def get_logger(name,level=logging.INFO):
     )
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
-    log_file = os.path.join(LOG_DIR, f"{name}.log")  # 基础文件名
+    log_file = os.path.join(settings.LOG_DIR, f"{name}.log")  # 基础文件名
     file_handler = TimedRotatingFileHandler(
         log_file, when="midnight", interval=1, backupCount=30, encoding="gbk"
     )

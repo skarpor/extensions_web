@@ -2,14 +2,14 @@
 认证相关的API端点
 """
 from datetime import timedelta
-from typing import Any, Optional
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status, Cookie
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from models.user import Permission,User as DBUser
-from core.config import settings
+from models.user import User as DBUser
+from config import settings
 from db.session import get_db
 from schemas.token import Token
 from schemas.user import UserCreate, User,LoginResponse,UserUpdate

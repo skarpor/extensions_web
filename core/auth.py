@@ -11,7 +11,7 @@ from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from core.config import settings
+from config import settings
 from core.logger import get_logger
 from db.session import get_db
 from models.user import User, Permission

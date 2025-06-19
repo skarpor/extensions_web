@@ -3,6 +3,9 @@
 """
 from contextlib import asynccontextmanager
 
+from core.app_scheduler import AppScheduler
+from core.aps import stop_scheduler, start_scheduler
+
 """
 主应用入口模块
 """
@@ -19,7 +22,7 @@ from core.extension_manager import ExtensionManager
 from db.session import init_models, AsyncSessionLocal
 from api.v1.endpoints.extensions import init_manager
 import uvicorn
-from core.config import settings
+from config import settings
 
 logger = get_logger("main")
 
@@ -115,9 +118,15 @@ def create_app() -> FastAPI:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    logger.info("应用启动...")
     extension_manager = ExtensionManager(app)
     app.state.extension_manager = extension_manager
-    logger.info("应用启动...")
+
+    await start_scheduler()
+    # 创建一个简化的接口供应用使用
+    app.state.scheduler =AppScheduler()
+    logger.info("应用调度器已初始化")
+
     await init_models()  # 创建表
     async with AsyncSessionLocal() as db:
         # 现在db是真正的AsyncSession实例
@@ -131,7 +140,10 @@ async def lifespan(app: FastAPI):
     logger.info("应用启动完成")
     yield
     # Clean up the ML models and release the resources
+    await stop_scheduler()
+    logger.info("应用调度器已关闭")
     logger.info("应用关闭...")
+
 
 
 app = create_app()

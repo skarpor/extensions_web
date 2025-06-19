@@ -317,8 +317,8 @@ export default {
     }
   },
   computed: {
-    compiledMarkdown() {
-      return marked(this.markdownContent);
+    compiledMarkdown(markdownContent) {
+      return marked(markdownContent);
     },
 
     canInstall() {

@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core import auth
 from core.auth import get_current_user
 from core.chat import is_room_member, get_room_or_404, is_room_admin
-from core.config import settings
+from config import settings
 from core.logger import get_logger
 from core.websocket_manager import manager
 from db.session import get_db

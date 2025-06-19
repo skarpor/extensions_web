@@ -64,9 +64,23 @@ const router = createRouter({
     {
       path: '/scheduler',
       name: 'scheduler',
-      component: () => import('../views/SettingsView.vue'),
+      component: () => import('../views/scheduler/index.vue'),
       props: { activeTab: 'scheduler' },
       meta: { requiresAuth: true, requiresAdmin: true, title: '任务调度' }
+    },
+    {
+      path: '/scheduler/add',
+      name: 'AddJob-scheduler',
+      component: () => import('../views/scheduler/AddJob.vue'),
+      props: { activeTab: 'scheduler' },
+      meta: { requiresAuth: true, requiresAdmin: true, title: '添加定时任务' }
+    },
+    {
+      path: '/scheduler/job/:id',
+      name: 'JobDetail-scheduler',
+      component: () => import('../views/scheduler/JobDetail.vue'),
+      props: { activeTab: 'scheduler' },
+      meta: { requiresAuth: true, requiresAdmin: true, title: '管理定时任务' }
     },
     {
       path: '/help',

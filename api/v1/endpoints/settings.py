@@ -10,7 +10,7 @@ from core import auth
 from db.session import get_db
 from schemas.setting import Setting as SettingSchema
 from schemas.setting import SettingCreate, SettingUpdate
-from core.config import settings
+from config import settings
 from models.user import User
 
 router = APIRouter()

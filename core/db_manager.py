@@ -3,20 +3,17 @@
 
 提供动态管理数据库表的功能，允许创建、修改、删除表和数据。
 """
-import json
 import os
-import asyncio
-from typing import Dict, List, Any, Optional, Union
+from typing import Dict, List, Any, Optional
 from datetime import datetime
 
-import sqlalchemy
 from sqlalchemy import MetaData, Table, Column, Integer, String, Float, Boolean, Text, DateTime, func
-from sqlalchemy import create_engine, inspect, select, insert, update, delete
+from sqlalchemy import select, insert, update, delete
 from sqlalchemy.schema import CreateTable, DropTable
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
+from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.sql import text
 
-from core.config import settings
+from config import settings
 from core.logger import get_logger
 
 logger = get_logger("db_manager")

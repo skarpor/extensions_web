@@ -1,11 +1,10 @@
 import os
 import json
-from io import BytesIO
-from typing import Dict, Optional, List
+from typing import Dict, Optional
 
 # from engineio.static_files import content_types
 from datetime import datetime
-from fastapi import FastAPI, HTTPException, status, UploadFile, Request, Depends
+from fastapi import FastAPI, HTTPException, status, UploadFile, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.routing import APIRoute
 from sqlalchemy import select
@@ -16,8 +15,7 @@ from schemas.extension import ExtensionUpdate
 from core.logger import get_logger
 from core.sandbox import load_module_in_sandbox, execute_query_in_sandbox, SandboxException
 from sqlalchemy.ext.asyncio import AsyncSession
-from core.file_manager import FileManager
-from core.config import settings
+from config import settings
 from api.v1.endpoints.database import db_manager
 logger = get_logger("extension")
 class ExtensionManager:
@@ -305,7 +303,9 @@ class ExtensionManager:
         Returns:
             扩展信息列表
         """
+        # stmt = select(Extension).options(joinedload(Extension.creator)).where(Extension.deleted == False)
         extensions = await db.execute(select(Extension).where(Extension.deleted == False))
+
         return extensions.scalars().all()
 
     async def delete_extension(self, extension_id: str,db:AsyncSession):

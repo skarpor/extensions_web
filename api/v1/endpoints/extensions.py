@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File,
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.config import settings
+from config import settings
 from core import auth
 from core.extension_manager import ExtensionManager
 from db.session import get_db
@@ -34,7 +34,7 @@ def init_manager(manager: ExtensionManager):
 
 
 @router.get("", response_model=List[ExtensionInDB])
-async def read_extensions(
+async def get_extensions(
         db: AsyncSession = Depends(get_db),
         skip: int = 0,
         limit: int = 100,
@@ -43,7 +43,11 @@ async def read_extensions(
     """
     获取扩展列表
     """
-    return await extension_manager.list_extensions(db)
+    extensions = await extension_manager.list_extensions(db)
+    for extension in extensions:
+        user =await db.execute(select(User).where(User.id == extension.creator_id))
+        extension.creator = user.scalar_one_or_none()
+    return extensions
 
 
 @router.post("", response_model=ExtensionInDB)
@@ -98,7 +102,7 @@ async def create_extension(
 
 
 @router.get("/{extension_id}", response_model=ExtensionInDB)
-async def read_extension(
+async def get_extension(
         *,
         db: AsyncSession = Depends(get_db),
         extension_id: str,

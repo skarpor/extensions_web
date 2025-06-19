@@ -38,6 +38,11 @@
                 <p>管理系统数据库</p>
             </div>
             <!---->
+            <div class="card" @click="navigateTo('/scheduler')">
+                <h2>定时器调度</h2>
+                <p>管理任务定时器</p>
+            </div>
+
         </div>
     </div>
 </template>
