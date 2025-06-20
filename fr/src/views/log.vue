@@ -415,7 +415,8 @@ export default {
 .log-viewer {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  width:100%;
+  height: 80vh;
   background-color: #1e1e1e;
   color: #e0e0e0;
   font-family: 'Fira Code', 'Consolas', 'Courier New', monospace;

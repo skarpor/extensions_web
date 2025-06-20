@@ -59,6 +59,7 @@ export const createLogStream = (fileName, { onMessage, onError, onOpen }) => {
   };
 
   eventSource.onmessage = (event) => {
+    console.log(123,event.data)
     if (event.data.startsWith('data: ')) {
       onMessage(event.data.substring(6).trim());
     } else if (event.data.startsWith('event: error')) {

@@ -99,7 +99,7 @@ class ExtensionManager:
                 "has_query_form": hasattr(module, "get_query_form")
             }
             extension.has_config_form=hasattr(module, "get_config_form")
-            extension.has_query_form=hasattr(module, "has_query_form")
+            extension.has_query_form=hasattr(module, "get_query_form")
             await db.commit()
             # 如果扩展启用，注册API路由
             if extension.enabled:
@@ -145,15 +145,15 @@ class ExtensionManager:
                 # print(config)
                 # print(json.dumps(config))
                 # config=json.loads(json.dumps(config))
-                try:
-                    if config:
-                        config = json.loads(config)  # 尝试解析 JSON 字符串
-                    else:
-                        config = {}
-                except json.JSONDecodeError:
-                    config = {}  # 如果解析失败，设为空字典
-
-                print(config,type(config))
+                # try:
+                #     if config:
+                #         config = json.loads(config)  # 尝试解析 JSON 字符串
+                #     else:
+                #         config = {}
+                # except json.JSONDecodeError:
+                #     config = {}  # 如果解析失败，设为空字典
+                #
+                # print(config,type(config))
                 # 使用表单接收数据，包括文件
                 form = await request.form()
                 # 打印所有字段和类型
@@ -391,6 +391,20 @@ class ExtensionManager:
         module = self.loaded_extensions[extension_id]["module"]
         config_form = module.get_config_form()
         return config_form
+    async def get_extension_query(self, extension_id: str, db: AsyncSession):
+        """
+        与config类似，可提取合并
+        """
+        extension = await db.execute(select(Extension).where(Extension.id == extension_id))
+        extension = extension.scalar_one_or_none()
+        if not extension:
+            logger.error(f"扩展查询不存在: {extension_id}")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Extension not loaded")
+        if not extension.has_query_form:
+            return None
+        module = self.loaded_extensions[extension_id]["module"]
+        query_form = module.get_query_form()
+        return query_form
 
 
 

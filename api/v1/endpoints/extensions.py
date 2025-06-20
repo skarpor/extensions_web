@@ -7,6 +7,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from config import settings
 from core import auth
@@ -111,7 +112,7 @@ async def get_extension(
     """
     获取扩展信息
     """
-    extension = await db.execute(select(Extension).where(Extension.id == extension_id))
+    extension = await db.execute(select(Extension).where(Extension.id == extension_id).options(selectinload(Extension.creator)))
     extension = extension.scalar_one_or_none()
     if not extension:
         raise HTTPException(
@@ -133,7 +134,7 @@ async def update_extension(
     """
     更新扩展信息
     """
-    extension = await db.execute(select(Extension).where(Extension.id == extension_id))
+    extension = await db.execute(select(Extension).where(Extension.id == extension_id).options(selectinload(Extension.creator)))
     extension = extension.scalar_one_or_none()
     if not extension:
         raise HTTPException(
@@ -205,5 +206,26 @@ async def get_extension_config(
         )
     config_form = await extension_manager.get_extension_config(extension_id, db)
     return {"config_form": config_form, "config": extension.config}
+
+
+@router.get("/{extension_id}/query")
+async def get_extension_config(
+        *,
+        db: AsyncSession = Depends(get_db),
+        extension_id: str,
+        current_user: User = Depends(auth.get_current_active_user),
+) -> Any:
+    """
+    获取扩展配置
+    """
+    extension = await db.execute(select(Extension).where(Extension.id == extension_id))
+    extension = extension.scalar_one_or_none()
+    if not extension:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="扩展不存在"
+        )
+    query_form = await extension_manager.get_extension_query(extension_id, db)
+    return {"query_form": query_form}
 
 

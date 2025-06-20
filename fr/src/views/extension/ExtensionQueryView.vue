@@ -211,7 +211,7 @@ import Toast from '@/utils/toast';
           this.formError[extId] = null
           
           const response = await getExtensionQueryForm(extId)
-          this.formHtml[extId] = response.data
+          this.formHtml[extId] = response.data.query_form
         } catch (error) {
           console.error('加载查询表单失败:', error)
           this.formError[extId] = '加载表单失败: ' + (error.response?.data?.detail || error.message)

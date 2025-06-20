@@ -52,19 +52,19 @@ const router = createRouter({
     {
       path: '/extensions',
       name: 'extensions',
-      component: () => import('../views/ExtensionsView.vue'),
+      component: () => import('../views/extension/ExtensionsView.vue'),
       meta: { requiresAuth: true, requiresAdmin: true, title: '扩展管理' }
     },
     {
       path: '/extensions/:id',
       name: 'extension-detail',
-      component: () => import('../views/ExtensionDetail.vue'),
+      component: () => import('../views/extension/ExtensionDetail.vue'),
       meta: { requiresAuth: true, title: '扩展详情' }
     },
     {
       path: '/settings',
       name: 'settings',
-      component: () => import('../views/SettingsView.vue'),
+      component: () => import('../views/settings/SettingsView.vue'),
       meta: { requiresAuth: true, requiresAdmin: true, title: '系统设置' }
     },
     {
@@ -125,7 +125,7 @@ const router = createRouter({
     {
       path: '/extension-query',
       name: 'extension-query',
-      component: () => import('../views/ExtensionQueryView.vue'),
+      component: () => import('../views/extension/ExtensionQueryView.vue'),
       meta: { requiresAuth: true, title: '扩展查询' }
     },
     //{

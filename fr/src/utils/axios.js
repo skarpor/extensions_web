@@ -1,9 +1,10 @@
 //axios的配置文件
 import axios from 'axios'
 import Toast from '@/utils/toast'
-
+const host='192.168.200.9'
+const port='8000'
 // 配置axios
-axios.defaults.baseURL = 'http://localhost:8000'
+axios.defaults.baseURL = 'http://192.168.200.9:8000'
 axios.defaults.timeout = 5000
 
 // 添加请求拦截器，从localStorage中获取token

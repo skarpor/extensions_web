@@ -1,7 +1,7 @@
 """
 扩展相关的Pydantic模型
 """
-from typing import Optional, List
+from typing import Optional, List, Dict
 from pydantic import BaseModel
 
 from .base import BaseSchema
@@ -29,7 +29,7 @@ class ExtensionUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     enabled: Optional[bool] = None
-    config: Optional[str] = None
+    config: Optional[Dict] = None
     show_in_home: Optional[bool] = None
     render_type: Optional[str] = None
 
@@ -58,7 +58,7 @@ class ExtensionInDB(ExtensionInDBBase):
     enabled: bool
     execution_mode: str
     show_in_home: bool
-    config: Optional[str] = None  # 配置表单项
+    config: Optional[Dict] = None  # 配置表单项
     has_query_form: bool  # 是否显示查询表单
     has_config_form: bool  # 是否显示配置表单
     entry_point: str  # 入口文件路径

@@ -210,9 +210,14 @@ class ChatRoomResponse(BaseModel):
     creator_username: str
     creator_nickname: Optional[str] = None
     member_count: int
-    created_at: str
+    created_at: Optional[str]=None
     updated_at: str
-
+class ChatRoomUpdateResponse(BaseModel):
+    id: int
+    name: str
+    description: Optional[str] = None
+    is_private: bool
+    updated_at: datetime
 
 class ChatMessageResponse(BaseModel):
     id: int

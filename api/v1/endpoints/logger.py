@@ -101,51 +101,76 @@ async def get_log_content(
     lines: Optional[int] = Query(100, gt=0, le=10000, description="获取最后多少行日志")
 ):
     """获取日志文件的部分内容"""
+
     try:
         file_path = validate_log_file(file_name)
-        
-        # 读取文件最后N行
-        with open(file_path, "rb") as f:  # 使用二进制模式
-            # 高效读取最后N行
-            lines_found = []
-            buffer = 4096
-            
+
+        # 尝试多种编码格式
+        encodings = ['utf-8', 'gbk', 'latin-1']  # 常见编码尝试顺序
+
+        for encoding in encodings:
             try:
-                # 尝试seek到文件末尾
-                f.seek(0, os.SEEK_END)
-                file_size = f.tell()
-                
-                block = -1
-                while len(lines_found) < lines and abs(block * buffer) < file_size:
+                with open(file_path, "rb") as f:
+                    # 高效读取最后N行
+                    lines_found: List[str] = []
+                    buffer_size = 4096
+
                     try:
-                        f.seek(block * buffer, os.SEEK_END)
+                        f.seek(0, os.SEEK_END)
+                        file_size = f.tell()
+                        position = f.tell()
+                        remaining_lines = lines
+
+                        while position > 0 and remaining_lines > 0:
+                            # 计算本次读取的位置和大小
+                            chunk_size = min(buffer_size, position)
+                            position -= chunk_size
+                            f.seek(position)
+
+                            chunk = f.read(chunk_size)
+                            decoded_chunk = chunk.decode(encoding, errors='replace')
+
+                            # 分割行并反转顺序
+                            chunk_lines = decoded_chunk.splitlines()
+                            lines_found = chunk_lines + lines_found
+
+                            # 更新剩余需要读取的行数
+                            remaining_lines = lines - len(lines_found)
+
+                        # 获取最后N行
+                        result = lines_found[-lines:]
+                        return {"content": result}
+
                     except io.UnsupportedOperation:
-                        # 如果seek失败，回退到直接读取整个文件
+                        # 不能seek的情况，直接读取整个文件
                         f.seek(0)
-                        lines_found = f.read().decode('utf-8').splitlines()
-                        break
-                        
-                    data = f.read(buffer).decode('utf-8')
-                    lines_found = data.splitlines() + lines_found
-                    block -= 1
-                
-                result = lines_found[-lines:]
-            except io.UnsupportedOperation:
-                # 完全不能seek的情况，读取整个文件
-                f.seek(0)
-                lines_found = f.read().decode('utf-8').splitlines()
-                result = lines_found[-lines:]
-        
-        return {"content": result}
+                        content = f.read().decode(encoding, errors='replace')
+                        return {"content": content.splitlines()[-lines:]}
+
+                # 如果成功则跳出循环
+                break
+
+            except UnicodeDecodeError:
+                # 当前编码失败，尝试下一个
+                continue
+
+        # 所有编码尝试都失败
+        raise HTTPException(
+            status_code=500,
+            detail="无法解码日志文件，尝试了多种编码格式"
+        )
+
     except Exception as e:
         logger.error(f"获取日志内容失败: {file_name}, 错误: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/stream/{file_name}")
 async def stream_logs(file_name: str):
     """SSE流式传输日志内容"""
     try:
         file_path = validate_log_file(file_name)
-        
+        print(file_path)
         return StreamingResponse(
             tail_log_file(file_path),
             media_type="text/event-stream",
@@ -158,5 +183,6 @@ async def stream_logs(file_name: str):
     except HTTPException:
         raise
     except Exception as e:
+        raise
         logger.error(f"SSE流式传输失败: {file_name}, 错误: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

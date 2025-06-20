@@ -22,7 +22,7 @@ from core.websocket_manager import manager
 from db.session import get_db
 from models.chat import ChatMessage, ChatRoom, ChatRoomMember
 from models.user import User
-from schemas.chat import ImageUploadResponse, ChatRoomList, ChatRoomCreate, ChatRoomResponse
+from schemas.chat import ImageUploadResponse, ChatRoomList, ChatRoomCreate, ChatRoomResponse, ChatRoomUpdateResponse
 from core.websocket_manager import handle_chat_message, handle_join_room, handle_typing_status, handle_get_members
 router = APIRouter()
 
@@ -513,7 +513,7 @@ async def delete_chat_room(
 
     return {"message": "聊天室删除成功"}
 
-@router.put("/rooms/{room_id}", response_model=ChatRoomResponse)
+@router.put("/rooms/{room_id}", )
 async def update_chat_room(
         room_id: int,
         room_data: ChatRoomCreate,
@@ -813,7 +813,7 @@ async def upload_chat_image(
 
     # 生成URL
     base_url = str(request.base_url).rstrip("/")
-    image_url = f"{base_url}/{file_path.replace(os.sep, '/')}"
+    image_url = f"/{file_path.replace(os.sep, '/')}"
 
     return {"image_url": image_url}
 

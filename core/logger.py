@@ -48,6 +48,7 @@ def setup_logger(name, level=logging.INFO):
     )
     console_handler.setFormatter(formatter)
     file_handler.setFormatter(formatter)
+    file_handler.encoding = 'utf-8'
 
     # 添加处理器
     logger.addHandler(console_handler)

@@ -98,9 +98,10 @@ async def execute_query_in_sandbox(module: Any, params: Dict, config: Dict, file
             else:
                 parameters.append(param.default)
         print(config,params,db_manager)
+        # 判断方法是否是异步
         result =await module.execute_query(*parameters)
         return result
         
     except Exception as e:
-        raise
+        return {"执行查询失败": str(e)}
         raise SandboxException(f"执行查询失败: {str(e)}") 

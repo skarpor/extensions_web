@@ -42,7 +42,7 @@ export const saveExtensionConfig = (id, config) => {
 
 // 获取扩展查询表单
 export const getExtensionQueryForm = (id) => {
-  return axios.get(`/api/extensions/${id}/query_form`);
+  return axios.get(`/api/extensions/${id}/query`);
 };
 
 // 执行扩展查询

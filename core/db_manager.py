@@ -57,7 +57,7 @@ COLUMN_TYPES = {
 class DBManager:
     """数据库管理器"""
     
-    def __init__(self, db_path: str = "data/app.db", db_type: str = "sqlite"):
+    def __init__(self, db_path: str = f"{settings.EXT_DB_DIR}/app.db", db_type: str = "sqlite"):
         """初始化数据库管理器
         
         Args:

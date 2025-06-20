@@ -79,7 +79,7 @@
                 <div class="message-body">
                   <div v-if="message.message_type === 'text'">{{ message.message }}</div>
                   <div v-else-if="message.message_type === 'image'" class="message-image">
-                    <img :src="message.message" alt="image" @click="viewImage(message.message)">
+                    <img :src="this.baseURL+ message.message" alt="image" @click="viewImage(message.message)">
                   </div>
                 </div>
               </div>
@@ -258,6 +258,7 @@
     name: 'ChatView',
     data() {
       return {
+        baseURL:'http://192.168.200.9:8000',
         menuItems:[],
         currentUser: {},
         rooms: [],
@@ -400,6 +401,7 @@
           console.log('编辑聊天室', room.id, this.newRoom)
           await editChatRoom(this.newRoom.id, this.newRoom)
           Toast.success(`编辑聊天室成功`)
+          this.showEditRoomModal=false
         } catch (error) {
           Toast.error(`编辑聊天室失败`)
         }
@@ -414,7 +416,7 @@
       connectWebSocket() {
         // 创建WebSocket连接
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-        const wsUrl = `${protocol}//localhost:8000/api/ws/chat/${this.currentUser.username}`
+        const wsUrl = `${protocol}//192.168.200.9:8000/api/ws/chat/${this.currentUser.username}`
         
         this.ws = new WebSocket(wsUrl)
         
@@ -764,7 +766,7 @@
       },
       
       viewImage(imageUrl) {
-        this.imagePreview = imageUrl
+        this.imagePreview =this.baseURL+  imageUrl
       },
       
       scrollToBottom() {

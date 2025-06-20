@@ -14,6 +14,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from core.auth import init_permissions, init_users
 from api.v1.api import api_router
@@ -52,7 +53,7 @@ def create_app() -> FastAPI:
     )
 
     # 挂载静态文件
-    # app.mount("/static", StaticFiles(directory="static"), name="static")
+    app.mount("/static", StaticFiles(directory="static"), name="static")
 
     # 设置模板引擎
     # app.state.templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)

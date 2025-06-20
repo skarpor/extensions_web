@@ -1,10 +1,12 @@
-﻿"""
+"""
 示例扩展，展示如何实现配置表单和查询表单
 """
-import sqlite3
-from datetime import datetime
-
-
+import sys
+import os
+import subprocess
+import importlib
+import tempfile
+from pathlib import Path
 def get_default_config():
     """返回扩展的默认配置"""
     return {
@@ -40,32 +42,11 @@ def get_query_form():
     """返回查询表单的HTML"""
     return """
     <div class="mb-3">
-        <label for="keyword" class="form-label">搜索关键词</label>
-        <input type="text" class="form-control" id="keyword" name="keyword" 
-               placeholder="输入搜索关键词">
-    </div>
-    
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <label for="start_date" class="form-label">开始日期</label>
-            <input type="date" class="form-control" id="start_date" name="start_date">
-        </div>
-        <div class="col-md-6 mb-3">
-            <label for="end_date" class="form-label">结束日期</label>
-            <input type="date" class="form-control" id="end_date" name="end_date">
-        </div>
-    </div>
-    
-    <div class="mb-3">
-        <label for="limit" class="form-label">最大结果数</label>
-        <input type="number" class="form-control" id="limit" name="limit" 
-               value="10" min="1" max="100">
-    </div>
-    <div class="mb-3">
         <label>SSL证书</label>
         <input type="file" class="form-control" name="ssl.cert">
     </div>
     """
+
 
 def validate_config(config):
     """验证配置有效性"""
@@ -76,8 +57,36 @@ def validate_config(config):
         return False, "API基础URL不能为空"
     
     return True, ""
+def ensure_package(package_spec, upgrade=False):
+    """确保包已安装并可导入"""
+    package_name = package_spec.split('==')[0].split('>')[0].split('<')[0]
+    
+    try:
+        module = importlib.import_module(package_name)
+        if upgrade:
+            subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', package_spec])
+            module = importlib.reload(module)
+        return module
+    except ImportError:
+        print(f"正在安装 {package_spec}...")
+        
+        # 在临时目录中安装
+        with tempfile.TemporaryDirectory() as temp_dir:
+            cmd = [
+                sys.executable, '-m', 'pip', 'install',
+                '--target', temp_dir,
+                package_spec
+            ]
+            
+            try:
+                subprocess.check_call(cmd)
+                sys.path.insert(0, temp_dir)
+                return importlib.import_module(package_name)
+            except subprocess.CalledProcessError as e:
+                print(f"安装失败: {e}")
+                return None
 
-def execute_query(params, config=None):
+async def execute_query(params, config=None):
     """执行查询
     
     Args:
@@ -86,36 +95,30 @@ def execute_query(params, config=None):
     """
     # 在实际应用中，这里会使用config中的API密钥等信息调用外部API
     # 这里仅作演示
-    file_manager = params.get("file_manager")
-    if params.get("files"):
-        files = params["files"]
-        for file in files.keys():
-            # print(file, files[file]["content"])
-            # 获取当前python文件的名称
-            file_manager.save_file(filename=files[file]["filename"], file_content=files[file]["content"])
-
-
-    # 保存当前时间到文件,file_content只能接收为文件二进制内容
-    file_manager.save_file(filename=f"{datetime.now().strftime('%Y-%m-%d')}.txt", file_content=datetime.now().strftime('%Y-%m-%d %H:%M:%S').encode('utf-8'))
+    result=""
+    rich = None
+    if rich:
+        from rich.console import Console
+        console = Console()
+        console.print("[bold green]成功导入rich库![/bold green]")
+        console.print(f"Rich版本: [yellow]{rich.__version__}[/yellow]")
+        result="成功导入rich库!"
+    else:
+        print("无法加载rich库")
+        result="无法加载rich库!"
+    import pip
     result = {
-        "query_params": params.get("query_params", {}),
+    "pip":pip.__version__,
+        "query_params": params,
         "config_used": {
             "base_url": config.get("base_url"),
             "timeout": config.get("timeout"),
             # 不要返回敏感信息如API密钥
-        },
-        "meta": {
-            "total": 3,
-            "page": 1,
-            "page_size": 10,
-            "total_pages": 1,
-            "sql": "select * from table where keyword = 'test'",
-        },
-        "data": [
+        },"result":result,
+        "results": [
             {"id": 1, "name": "结果1", "timestamp": "2023-05-01"},
             {"id": 2, "name": "结果2", "timestamp": "2023-05-02"},
             {"id": 3, "name": "结果3", "timestamp": "2023-05-03"}
         ]
-
     }
     return result

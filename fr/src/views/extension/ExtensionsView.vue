@@ -127,8 +127,8 @@
               <div class="mb-3">
                 <label for="executionMode" class="form-label">执行模式</label>
                 <select id="executionMode" class="form-select" v-model="executionMode">
-                  <option value="sync">同步</option>
-                  <option value="async">异步</option>
+                  <option value="manual">手动</option>
+                  <option value="auto">自动</option>
                 </select>
               </div>
               
@@ -153,7 +153,12 @@
                 />
                 <label class="form-check-label" for="showinindex">首页显示</label>
               </div>
-              
+              <div class="mb-3">
+                <label for="extensionFile" class="form-label">选择扩展文件 (.py)</label>
+                <input class="form-control" type="file" @change="handleFileSelect" id="extensionFile" name="file" accept=".py" required>
+                <div class="form-text">上传包含 execute_query() 函数的Python文件</div>
+              </div>
+
               <div class="install-progress" v-if="installProgress > 0">
                 <div class="progress">
                   <div 
@@ -175,7 +180,7 @@
             <button 
               type="button" 
               class="btn btn-primary" 
-              @click="installExtension" 
+              @click="installExtension"
               :disabled="!canInstall"
             >
               <i class="fas fa-upload me-2"></i>安装扩展
@@ -220,7 +225,7 @@
                     </div>
                     <div class="mb-3">
                       <label class="form-label">API端点</label>
-                      <input type="text" class="form-control" v-model="configValues.endpoint" required>
+                      <input type="text" class="form-control" v-model="configValues.endpoint" disabled required>
                     </div>
                     <div class="mb-3">
                       <label class="form-label">返回值类型</label>
@@ -304,7 +309,7 @@ export default {
       extensionFile: null,
       extensionName: '',
       extensionDescription: '',
-      executionMode: 'sync',
+      executionMode: 'manual',
       renderType: 'html',
       showInHome: true,
       installProgress: 0,
@@ -313,7 +318,8 @@ export default {
       configLoading: false,
       configError: null,
       configFormHtml: null,
-      extensionDocumentation: null
+      extensionDocumentation: null,
+      config:null
     }
   },
   computed: {
@@ -423,7 +429,17 @@ export default {
         Toast.error('切换扩展状态失败: ' + (error.response?.data?.detail || error.message))
       }
     },
-    
+    async renderTemplate(template, context){
+      return template.replace(/\{\{\s*(.*?)\s*\}\}/g, (match, p1) => {
+        const path = p1.split('.');
+        let result = context;
+        for (const key of path) {
+          result = result?.[key];
+          if (result === undefined) return ""; // 找不到则返回原模板
+        }
+        return result ?? match;
+      });
+    },
     async configureExtension(extension) {
       this.currentExtension = extension
       this.configLoading = true
@@ -458,13 +474,15 @@ export default {
             const configResponse = await getExtensionConfig(extension.id)
             let configFormHtml = configResponse.data.config_form
             const configData = configResponse.data.config || {}
-            
+            this.config = configData
             // 处理配置表单中的变量
             if (configData) {
               // 替换所有的 {{config.xxx}} 为实际的配置值
-              configFormHtml = this.replaceConfigVariables(configFormHtml, configData)
+              // configFormHtml = this.replaceConfigVariables(configFormHtml, configData)
+              configFormHtml =await this.renderTemplate(configFormHtml, { config: this.config })
             }
-            
+            console.log(this.config)
+            console.log(configFormHtml)
             this.configFormHtml = configFormHtml
           } catch (error) {
             console.error('获取配置表单失败', error)
@@ -705,7 +723,7 @@ h1 {
 
 .modal {
   position: fixed;
-  top: 0;
+  top: 5%;
   left: 0;
   width: 100%;
   height: 100%;

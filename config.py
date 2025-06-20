@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     # Server settings
     HOST: str = "0.0.0.0"
     PORT: int = 8000
-    
+    DATA_DIR:str = "data" # 数据根目录，不要以/开头，否则会出现在盘符根目录下
     # BACKEND_CORS_ORIGINS is a comma-separated list of origins
     # BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = ["http://localhost:5173"]
 
@@ -46,22 +46,24 @@ class Settings(BaseSettings):
     ALLOWED_IMAGE_TYPES:List[str] = ["image/jpeg", "image/png", "image/gif", "image/webp"]
 
     # 创建上传目录
-    CHAT_UPLOAD_DIR:str = os.path.join("static", "uploads", "chat")
+    CHAT_UPLOAD_DIR:str = os.path.join("static", "chat", "img")
 
     # File storage
-    FILE_UPLOAD_DIR: str = "file_uploads"
+    FILE_UPLOAD_DIR: str = os.path.join(DATA_DIR,"file")
     MAX_UPLOAD_SIZE: int = 1024 * 1024 * 50  # 50MB
 
     # Templates
     TEMPLATES_DIR: str = "templates"
 
     # Logging
-    LOG_LEVEL: str = "INFO"
-    LOG_FILE: str = "logs/app.log"
-    LOG_DIR:str = "logs"
+    LOG_DIR:str = os.path.join(DATA_DIR,"logs")
+
     # Extension settings
-    EXTENSIONS_DIR: str = "extensions"
+    EXTENSIONS_DIR: str =os.path.join(DATA_DIR,"extensions")
     EXTENSIONS_ENTRY_POINT_PREFIX: str = "/query/"
+
+    # 数据库目录，非系统数据库
+    EXT_DB_DIR:str = os.path.join(DATA_DIR,"db")
 
     # Config directory
     CONFIG_DIR: str = os.path.join(os.path.expanduser("~"), ".config", "data_query_system")
@@ -99,7 +101,9 @@ class Settings(BaseSettings):
 settings = Settings()
 
 # 确保必要的目录存在
+os.makedirs(settings.DATA_DIR, exist_ok=True)
 os.makedirs(settings.FILE_UPLOAD_DIR, exist_ok=True)
+os.makedirs(settings.CHAT_UPLOAD_DIR, exist_ok=True)
 os.makedirs(settings.EXTENSIONS_DIR, exist_ok=True)
 os.makedirs(settings.CONFIG_DIR, exist_ok=True)
-os.makedirs(os.path.dirname(settings.LOG_FILE), exist_ok=True)
+os.makedirs(settings.EXT_DB_DIR, exist_ok=True)

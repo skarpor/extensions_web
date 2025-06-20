@@ -42,6 +42,10 @@
                 <h2>定时器调度</h2>
                 <p>管理任务定时器</p>
             </div>
+            <div class="card" @click="navigateTo('/log')">
+                <h2>日志查询</h2>
+                <p>查看系统运行日志</p>
+            </div>
 
         </div>
     </div>
