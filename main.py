@@ -111,8 +111,8 @@ def create_app() -> FastAPI:
             openapi_url=app.openapi_url,
             title=f"{app.title} - API文档",
             oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
-            swagger_js_url="/static/swagger-ui-bundle.js",
-            swagger_css_url="/static/swagger-ui.min.css",
+            swagger_js_url="/static/swagger/swagger-ui-bundle.min.js",
+            swagger_css_url="/static/swagger/swagger-ui.min.css",
         )
 
     return app

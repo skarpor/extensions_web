@@ -194,36 +194,19 @@
     </div>
   </div>
 
-  <!-- 操作反馈Toast -->
-  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-    <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
-      <div class="toast-header">
-        <i class="fas fa-info-circle me-2"></i>
-        <strong class="me-auto" id="toastTitle">{{ toastTitle }}</strong>
-        <small>刚刚</small>
-        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-      </div>
-      <div class="toast-body" id="toastMessage">
-        {{ toastMessage }}
-      </div>
-    </div>
-  </div>
 </template>
 
 <script>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { addJob,getExtensionMethods } from '@/api/scheduler.js';
-import { Toast } from 'bootstrap';
+import  Toast  from '@/utils/toast.js';
 
 export default {
   setup() {
     const router = useRouter();
     const extensionMethods = ref([]);
     const isSubmitting = ref(false);
-    const toastTitle = ref('操作结果');
-    const toastMessage = ref('操作已完成。');
-    const toast = ref(null);
 
     const cronForm = ref({
       task_func: '',
@@ -251,15 +234,6 @@ export default {
       run_date: ''
     });
 
-    const showToast = (title, message, isSuccess = true) => {
-      toastTitle.value = title;
-      toastMessage.value = message;
-      const toastEl = document.getElementById('liveToast');
-      toastEl.className = isSuccess
-        ? 'toast text-white bg-success show'
-        : 'toast text-white bg-danger show';
-      new Toast(toastEl).show();
-    };
 
     const fetchExtensionMethods = async () => {
       try {
@@ -267,7 +241,7 @@ export default {
         extensionMethods.value = response.data.extension_methods;
       } catch (error) {
         console.error('Error fetching extension methods:', error);
-        showToast('获取失败', '获取扩展方法时发生错误', false);
+        Toast.error('获取失败', '获取扩展方法时发生错误', false);
       }
     };
 
@@ -275,19 +249,19 @@ export default {
       const form = document.getElementById('cronForm');
       if (!form.checkValidity()) {
         form.classList.add('was-validated');
-        showToast('验证失败', '请检查表单数据', false);
+        Toast.error('验证失败', '请检查表单数据', false);
         return;
       }
 
       isSubmitting.value = true;
       try {
         const response = await addJob('cron',cronForm.value);
-        showToast('添加成功', response.data.message);
+        Toast.success('添加成功', response.data.detail);
         setTimeout(() => {
           router.push('/scheduler');
         }, 1500);
       } catch (error) {
-        showToast('添加失败', error.response?.data?.message || '添加任务时发生错误', false);
+        Toast.error('添加失败', error.response?.data?.message || '添加任务时发生错误', false);
       } finally {
         isSubmitting.value = false;
       }
@@ -297,26 +271,26 @@ export default {
       const form = document.getElementById('intervalForm');
       if (!form.checkValidity()) {
         form.classList.add('was-validated');
-        showToast('验证失败', '请检查表单数据', false);
+        Toast.error('验证失败', '请检查表单数据', false);
         return;
       }
 
       // 检查是否至少指定了一个时间间隔
       const { seconds, minutes, hours, days } = intervalForm.value;
       if (seconds === 0 && minutes === 0 && hours === 0 && days === 0) {
-        showToast('验证失败', '必须至少指定一个时间间隔（秒、分钟、小时或天）', false);
+        Toast.error('验证失败', '必须至少指定一个时间间隔（秒、分钟、小时或天）', false);
         return;
       }
 
       isSubmitting.value = true;
       try {
         const response = await addJob('interval', intervalForm.value);
-        showToast('添加成功', response.data.message);
+        Toast.success('添加成功', response.data.message);
         setTimeout(() => {
           router.push('/scheduler');
         }, 1500);
       } catch (error) {
-        showToast('添加失败', error.response?.data?.message || '添加任务时发生错误', false);
+        Toast.error('添加失败', error.response?.data?.message || '添加任务时发生错误', false);
       } finally {
         isSubmitting.value = false;
       }
@@ -326,7 +300,7 @@ export default {
       const form = document.getElementById('dateForm');
       if (!form.checkValidity()) {
         form.classList.add('was-validated');
-        showToast('验证失败', '请检查表单数据', false);
+        Toast.error('验证失败', '请检查表单数据', false);
         return;
       }
 
@@ -334,7 +308,7 @@ export default {
       const runDate = new Date(dateForm.value.run_date);
       const now = new Date();
       if (runDate <= now) {
-        showToast('验证失败', '执行时间必须在未来', false);
+        Toast.error('验证失败', '执行时间必须在未来', false);
         return;
       }
 
@@ -346,12 +320,12 @@ export default {
           run_date: formattedDate
         };
         const response = await addJob('date', payload);
-        showToast('添加成功', response.data.message);
+        Toast.success('添加成功', response.data.message);
         setTimeout(() => {
           router.push('/scheduler');
         }, 1500);
       } catch (error) {
-        showToast('添加失败', error.response?.data?.message || '添加任务时发生错误', false);
+        Toast.error('添加失败', error.response?.data?.message || '添加任务时发生错误', false);
       } finally {
         isSubmitting.value = false;
       }
@@ -359,7 +333,6 @@ export default {
 
     onMounted(() => {
       fetchExtensionMethods();
-      toast.value = new Toast(document.getElementById('liveToast'));
 
       // 设置默认的执行时间为1小时后
       const now = new Date();
@@ -373,8 +346,6 @@ export default {
       intervalForm,
       dateForm,
       isSubmitting,
-      toastTitle,
-      toastMessage,
       submitCronForm,
       submitIntervalForm,
       submitDateForm

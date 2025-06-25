@@ -206,42 +206,22 @@
       </div>
     </div>
   </div>
-
-  <!-- 操作反馈Toast -->
-  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-    <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
-      <div class="toast-header">
-        <i class="fas fa-info-circle me-2"></i>
-        <strong class="me-auto" id="toastTitle">{{ toastTitle }}</strong>
-        <small>刚刚</small>
-        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-      </div>
-      <div class="toast-body" id="toastMessage">
-        {{ toastMessage }}
-      </div>
-    </div>
-  </div>
 </template>
 
 <script>
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import {
   getJobs,
   getJobDetail, resumeJob, deleteJob, pauseJob, runScheduleJob
 } from '@/api/scheduler';
-import { Modal, Toast } from 'bootstrap';
+import Toast from '@/utils/toast.js';
 
 export default {
   setup() {
-    const router = useRouter();
     const jobs = ref([]);
     const groupedJobs = ref({});
     const taskTypes = ref({});
     const jobToDelete = ref(null);
-    const toastTitle = ref('操作结果');
-    const toastMessage = ref('操作已完成。');
-    const toast = ref(null);
 
     const fetchJobs = async () => {
       try {
@@ -251,50 +231,41 @@ export default {
         taskTypes.value = response.data.task_types;
       } catch (error) {
         console.error('Error fetching jobs:', error);
-        showToast('获取失败', '获取任务列表时发生错误', false);
+        Toast.error('获取失败', '获取任务列表时发生错误', false);
       }
     };
 
-    const showToast = (title, message, isSuccess = true) => {
-      toastTitle.value = title;
-      toastMessage.value = message;
-      const toastEl = document.getElementById('liveToast');
-      toastEl.className = isSuccess
-        ? 'toast text-white bg-success show'
-        : 'toast text-white bg-danger show';
-      new Toast(toastEl).show();
-    };
 
     const runJob = async (jobId) => {
       try {
         const response = await runScheduleJob(jobId);
-        showToast('执行成功', response.data.message);
+        Toast.success('执行成功', response.data.message);
       } catch (error) {
-        showToast('执行失败', error.response?.data?.message || '请求执行任务时发生错误', false);
+        Toast.error('执行失败', error.response?.data?.message || '请求执行任务时发生错误', false);
       }
     };
 
     const pauseJob = async (jobId) => {
       try {
         const response = await pauseJob(jobId);
-        showToast('暂停成功', response.data.message);
+        Toast.success('暂停成功', response.data.message);
         setTimeout(() => {
           fetchJobs();
         }, 1000);
       } catch (error) {
-        showToast('暂停失败', error.response?.data?.message || '请求暂停任务时发生错误', false);
+        Toast.error('暂停失败', error.response?.data?.message || '请求暂停任务时发生错误', false);
       }
     };
 
     const resumeJob = async (jobId) => {
       try {
         const response = await resumeJob(jobId);
-        showToast('恢复成功', response.data.message);
+        Toast.success('恢复成功', response.data.message);
         setTimeout(() => {
           fetchJobs();
         }, 1000);
       } catch (error) {
-        showToast('恢复失败', error.response?.data?.message || '请求恢复任务时发生错误', false);
+        Toast.error('恢复失败', error.response?.data?.message || '请求恢复任务时发生错误', false);
       }
     };
 
@@ -309,20 +280,19 @@ export default {
 
       try {
         const response = await deleteJob(jobToDelete.value);
-        showToast('删除成功', response.data.message);
+        Toast.success('删除成功', response.data.message);
         const deleteModal = Modal.getInstance(document.getElementById('deleteModal'));
         deleteModal.hide();
         setTimeout(() => {
           fetchJobs();
         }, 1000);
       } catch (error) {
-        showToast('删除失败', error.response?.data?.message || '请求删除任务时发生错误', false);
+        Toast.error('删除失败', error.response?.data?.message || '请求删除任务时发生错误', false);
       }
     };
 
     onMounted(() => {
       fetchJobs();
-      toast.value = new Toast(document.getElementById('liveToast'));
     });
 
     return {
@@ -330,8 +300,6 @@ export default {
       groupedJobs,
       taskTypes,
       jobToDelete,
-      toastTitle,
-      toastMessage,
       runJob,
       pauseJob,
       resumeJob,

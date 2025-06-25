@@ -194,39 +194,21 @@
       </div>
     </div>
   </div>
-
-  <!-- 操作反馈Toast -->
-  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-    <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
-      <div class="toast-header">
-        <i class="fas fa-info-circle me-2"></i>
-        <strong class="me-auto" id="toastTitle">{{ toastTitle }}</strong>
-        <small>刚刚</small>
-        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-      </div>
-      <div class="toast-body" id="toastMessage">
-        {{ toastMessage }}
-      </div>
-    </div>
-  </div>
 </template>
 
 <script>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {runScheduleJob, resumeJob, pauseJob, getJobDetail,deleteJob} from '@/api/scheduler.js'
-import { Toast } from '@/utils/toast.js'
+import  Toast from '@/utils/toast.js'
 
 export default {
   setup() {
     const route = useRoute()
     const router = useRouter()
     const job = ref(null)
-    const toastTitle = ref('操作结果')
-    const toastMessage = ref('操作已完成。')
     const isRunning = ref(false)
     const deleteModal = ref(null)
-    const toast = ref(null)
 
     const getJobIcon = (type) => {
       switch (type) {
@@ -309,7 +291,6 @@ export default {
 
     onMounted(() => {
       fetchJobDetails()
-      toast.value = new Toast(document.getElementById('liveToast'))
 
       // Initialize tooltips
       const tooltipTriggerList = [].slice.call(
@@ -322,8 +303,6 @@ export default {
 
     return {
       job,
-      toastTitle,
-      toastMessage,
       isRunning,
       getJobIcon,
       pauseJob,
