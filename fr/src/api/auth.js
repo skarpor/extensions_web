@@ -86,3 +86,144 @@ export const updatePassword = async (data) => {
 }
 
 // 获取用户列表接口
+export const getUsersApi = async () => {
+  try {
+    const response = await axios.get('/api/auth/users')
+    return response.data
+  } catch (error) {
+    console.error('获取用户列表失败:', error.response?.data || error.message)
+    throw new Error('获取用户列表失败')
+  }
+}
+
+// 以下是新增的权限管理相关API
+
+// 获取所有权限
+export const getPermissionsApi = async () => {
+  try {
+    const response = await axios.get('/api/auth/permissions')
+    return response.data
+  } catch (error) {
+    console.error('获取权限列表失败:', error.response?.data || error.message)
+    throw new Error('获取权限列表失败')
+  }
+}
+// 获取用户权限
+export const getUserPermissionsApi = async () => {
+  try {
+    const response = await axios.get('/api/auth/permissions')
+    return response.data
+  } catch (error) {
+    console.error('获取用户权限失败:', error.response?.data || error.message)
+    throw new Error('获取用户权限失败')
+  }
+}
+
+// 获取权限列表
+export const getPermissionsApi1 = async () => {
+  try {
+    const response = await axios.get('/api/auth/permissions/list')
+    return response.data
+  } catch (error) {
+    console.error('获取权限列表失败:', error.response?.data || error.message)
+    throw new Error('获取权限列表失败')
+  }
+}
+// 创建权限
+export const createPermissionApi = async (data) => {
+  try {
+    const response = await axios.post('/api/auth/permissions', data)
+    return response.data
+  } catch (error) {
+    console.error('创建权限失败:', error.response?.data || error.message)
+    throw new Error(error.response?.data?.detail || '创建权限失败')
+  }
+}
+
+// 更新权限
+export const updatePermissionApi = async (id, data) => {
+  try {
+    const response = await axios.put(`/api/auth/permissions/${id}`, data)
+    return response.data
+  } catch (error) {
+    console.error('更新权限失败:', error.response?.data || error.message)
+    throw new Error(error.response?.data?.detail || '更新权限失败')
+  }
+}
+
+// 删除权限
+export const deletePermissionApi = async (id) => {
+  try {
+    const response = await axios.delete(`/api/auth/permissions/${id}`)
+    return response.data
+  } catch (error) {
+    console.error('删除权限失败:', error.response?.data || error.message)
+    throw new Error(error.response?.data?.detail || '删除权限失败')
+  }
+}
+
+// 获取所有角色
+export const getRolesApi = async () => {
+  try {
+    const response = await axios.get('/api/auth/roles')
+    return response.data
+  } catch (error) {
+    console.error('获取角色列表失败:', error.response?.data || error.message)
+    throw new Error('获取角色列表失败')
+  }
+}
+
+// 创建角色
+export const createRoleApi = async (data) => {
+  try {
+    const response = await axios.post('/api/auth/roles', data)
+    return response.data
+  } catch (error) {
+    console.error('创建角色失败:', error.response?.data || error.message)
+    throw new Error(error.response?.data?.detail || '创建角色失败')
+  }
+}
+
+// 更新角色
+export const updateRoleApi = async (id, data) => {
+  try {
+    const response = await axios.put(`/api/auth/roles/${id}`, data)
+    return response.data
+  } catch (error) {
+    console.error('更新角色失败:', error.response?.data || error.message)
+    throw new Error(error.response?.data?.detail || '更新角色失败')
+  }
+}
+
+// 删除角色
+export const deleteRoleApi = async (id) => {
+  try {
+    const response = await axios.delete(`/api/auth/roles/${id}`)
+    return response.data
+  } catch (error) {
+    console.error('删除角色失败:', error.response?.data || error.message)
+    throw new Error(error.response?.data?.detail || '删除角色失败')
+  }
+}
+
+// 获取用户角色
+export const getUserRolesApi = async (userId) => {
+  try {
+    const response = await axios.get(`/api/auth/users/${userId}/roles`)
+    return response.data
+  } catch (error) {
+    console.error('获取用户角色失败:', error.response?.data || error.message)
+    throw new Error('获取用户角色失败')
+  }
+}
+
+// 为用户分配角色
+export const assignUserRolesApi = async (data) => {
+  try {
+    const response = await axios.post('/api/auth/users/assign-roles', data)
+    return response.data
+  } catch (error) {
+    console.error('分配用户角色失败:', error.response?.data || error.message)
+    throw new Error(error.response?.data?.detail || '分配用户角色失败')
+  }
+}

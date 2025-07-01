@@ -48,7 +48,7 @@ async def get_logs():
         logger.error(f"获取日志列表失败: {str(e)}")
         raise HTTPException(status_code=500, detail="无法获取日志列表")
 
-async def tail_log_file(filepath: str) -> AsyncGenerator[str, None]:
+async def tail_log_file1(filepath: str) -> AsyncGenerator[str, None]:
     """跟踪日志文件变化并生成内容"""
     try:
         with open(filepath, "r", encoding="utf-8") as f:
@@ -73,6 +73,56 @@ async def tail_log_file(filepath: str) -> AsyncGenerator[str, None]:
     except Exception as e:
         yield f"event: error\ndata: {str(e)}\n\n"
 
+
+async def tail_log_file(filepath: str) -> AsyncGenerator[str, None]:
+    """跟踪日志文件变化并生成内容"""
+    try:
+        # 发送一个初始消息确认连接已建立
+        yield "data: SSE连接已建立\n\n"
+        
+        with open(filepath, "r", encoding="utf-8", errors="replace") as f:
+            # 先读取已有内容
+            while True:
+                line = f.readline()
+                if not line:
+                    break
+                yield f"data: {line}\n\n"
+            
+            # 然后跟踪新内容
+            while True:
+                where = f.tell()
+                line = f.readline()
+                if not line:
+                    await asyncio.sleep(1.0)  # 增加等待时间，减少CPU使用
+                    f.seek(where)
+                else:
+                    yield f"data: {line}\n\n"
+    except FileNotFoundError:
+        yield "event: error\ndata: 日志文件不存在\n\n"
+    except UnicodeDecodeError:
+        # 尝试使用其他编码
+        try:
+            with open(filepath, "r", encoding="gbk", errors="replace") as f:
+                # 读取内容...
+                while True:
+                    line = f.readline()
+                    if not line:
+                        break
+                    yield f"data: {line}\n\n"
+                
+                # 然后跟踪新内容
+                while True:
+                    where = f.tell()
+                    line = f.readline()
+                    if not line:
+                        await asyncio.sleep(1.0)
+                        f.seek(where)
+                    else:
+                        yield f"data: {line}\n\n"
+        except Exception as e:
+            yield f"event: error\ndata: 读取日志文件失败: {str(e)}\n\n"
+    except Exception as e:
+        yield f"event: error\ndata: {str(e)}\n\n"
 def validate_log_file(file_name: str) -> str:
     """验证日志文件名并返回完整路径"""
     try:
@@ -171,14 +221,21 @@ async def stream_logs(file_name: str):
     try:
         file_path = validate_log_file(file_name)
         print(file_path)
+                # 添加CORS相关头信息
+        headers = {
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",  # 禁用Nginx缓冲
+            "Content-Type": "text/event-stream",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type"
+        }
+
         return StreamingResponse(
             tail_log_file(file_path),
             media_type="text/event-stream",
-            headers={
-                "Cache-Control": "no-cache",
-                "Connection": "keep-alive",
-                "X-Accel-Buffering": "no"  # 禁用Nginx缓冲
-            }
+            headers=headers
         )
     except HTTPException:
         raise

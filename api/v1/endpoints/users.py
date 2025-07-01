@@ -11,9 +11,14 @@ from db.session import get_db
 from schemas.user import User, UserUpdate, UserCreate
 from models.user import User as UserModel
 from core.logger import get_logger
+from core.auth import PermissionChecker
 
 router = APIRouter()
 logger = get_logger("users")
+# 定义权限检查器
+view_users = PermissionChecker(["user:read"])
+manage_users = PermissionChecker(["user:create", "user:update", "user:delete"])
+manage_roles = PermissionChecker(["role:manage"])
 
 @router.get("/me", response_model=User)
 async def read_user_me(

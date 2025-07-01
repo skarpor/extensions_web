@@ -1,11 +1,12 @@
 //axios的配置文件
 import axios from 'axios'
 import Toast from '@/utils/toast'
-const host='192.168.200.9'
+const host='localhost'
 const port='8000'
 // 配置axios
-axios.defaults.baseURL = 'http://192.168.200.9:8000'
-axios.defaults.timeout = 5000
+axios.defaults.baseURL = `http://${host}:${port}`
+axios.defaults.timeout = 15000  // 增加超时时间
+axios.defaults.withCredentials = true  // 允许跨域请求发送cookies
 
 // 添加请求拦截器，从localStorage中获取token
 axios.interceptors.request.use(
@@ -14,6 +15,10 @@ axios.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
+    // 添加CORS相关配置
+    config.headers['Access-Control-Allow-Origin'] = '*'
+    config.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+    config.headers['Access-Control-Allow-Headers'] = 'Origin, Content-Type, Accept, Authorization, X-Request-With'
     return config
   },
   function (error) {
@@ -21,13 +26,7 @@ axios.interceptors.request.use(
   }
 )
 
-//响应拦截器，
-// HTTPException(
-//   status_code=status.HTTP_401_UNAUTHORIZED,
-//   detail="用户名或密码错误",
-//   headers={"WWW-Authenticate": "Bearer"},
-// ),会触发哪个拦截器
-
+//响应拦截器
 axios.interceptors.response.use(
   function (response) {
     if (response.status === 200 || response.status === 201) {
@@ -37,10 +36,28 @@ axios.interceptors.response.use(
     }
   },
   function (error) {
-    Toast.error(error.response.data.detail)
-    if (error.response.status === 401) {
-      localStorage.removeItem('token')
-      window.location.href = '/login'
+    // 更完善的错误处理
+    if (error.response) {
+      // 服务器响应了，但状态码不在2xx范围内
+      if (error.response.status === 401) {
+        Toast.error('认证失败，请重新登录')
+        localStorage.removeItem('token')
+        window.location.href = '/login'
+      } else if (error.response.status === 403) {
+        Toast.error('权限不足，无法访问该资源')
+      } else if (error.response.status === 500) {
+        Toast.error('服务器内部错误，请稍后再试')
+      } else {
+        // 尝试显示详细错误信息
+        const errorMsg = error.response.data?.detail || error.response.data?.message || '请求失败'
+        Toast.error(errorMsg)
+      }
+    } else if (error.request) {
+      // 请求发出了，但没有收到响应
+      Toast.error('无法连接到服务器，请检查网络连接')
+    } else {
+      // 请求配置错误
+      Toast.error('请求配置错误: ' + error.message)
     }
     return Promise.reject(error)
   }

@@ -46,14 +46,40 @@ export const getExtensionQueryForm = (id) => {
 };
 
 // 执行扩展查询
-export const executeExtensionQuery = (id, formData) => {
+export const executeExtensionQuery1 = (id, formData) => {
   return axios.post(`/query/${id}`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }
   });
 };
-
+export const executeExtensionQuery = (id, formData = {}) => {
+  // 创建一个FormData对象
+  const form = new FormData()
+  
+  // 即使没有数据，也确保表单格式正确
+  if (Object.keys(formData).length === 0) {
+    // 添加一个空字段确保格式正确
+    form.append('_dummy', '')
+  } else {
+    // 将formData中的数据添加到FormData对象
+    Object.keys(formData).forEach(key => {
+      const value = formData[key]
+      if (value instanceof File) {
+        form.append(key, value, value.name)
+      } else if (value !== null && value !== undefined) {
+        form.append(key, value)
+      }
+    })
+  }
+  
+  // 发送请求，确保使用正确的content-type
+  return axios.post(`/query/${id}`, form, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  }).then(res => res.data)
+}
 export default {
   getExtensions,
   getExtension,

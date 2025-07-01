@@ -2,21 +2,28 @@
 认证相关的API端点
 """
 from datetime import timedelta
-from typing import Any
+from typing import Any, Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from models.user import User as DBUser
+from sqlalchemy import select, update, delete
+from models.user import User as DBUser, Role as DBRole, Permission as DBPermission, user_role, role_permission
 from config import settings
 from db.session import get_db
 from schemas.token import Token
-from schemas.user import UserCreate, User,LoginResponse,UserUpdate
+from schemas.user import UserCreate, User, LoginResponse, UserUpdate, Role, RoleCreate, RoleUpdate, Permission, PermissionCreate, PermissionUpdate, UserWithRoles, AssignRoleRequest
 from core import auth
 from core.logger import auth_logger
+from core.auth import PermissionChecker
 router = APIRouter()
 logger = auth_logger
+
+# 定义权限检查器
+view_users = PermissionChecker(["user:read"])
+manage_users = PermissionChecker(["user:create", "user:update", "user:delete"])
+manage_roles = PermissionChecker(["role:manage"])
+
 @router.post("/login", response_model=LoginResponse)
 async def login(
     db: AsyncSession = Depends(get_db),
@@ -302,5 +309,326 @@ async def get_users(db: AsyncSession = Depends(get_db)):
     获取所有用户列表
     """
     return await auth.get_users(db)
+
+# 新增权限管理接口
+@router.get("/permissions", response_model=List[Permission])
+async def get_permissions(
+    db: AsyncSession = Depends(get_db),
+    current_user: DBUser = Depends(auth.get_current_superuser),
+):
+    """获取所有权限"""
+    query = select(DBPermission)
+    result = await db.execute(query)
+    permissions = result.scalars().all()
+    return permissions
+
+
+@router.get("/permissions", response_model=Dict[str, List])
+async def get_user_permissions(
+    current_user: User = Depends(auth.get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+) -> Any:
+    """
+    获取当前用户的权限
+    """
+    if current_user.is_superuser:
+        # 超级用户拥有所有权限
+        permissions_query = await db.execute(select(Permission))
+        all_permissions = permissions_query.scalars().all()
+        permissions = [p.code for p in all_permissions]
+        
+        roles_query = await db.execute(select(Role))
+        all_roles = roles_query.scalars().all()
+        roles = [r.name for r in all_roles]
+    else:
+        # 获取用户角色
+        roles_query = await db.execute(
+            select(Role).join(user_role, user_role.c.role_id == Role.id)
+            .where(user_role.c.user_id == current_user.id)
+        )
+        user_roles = roles_query.scalars().all()
+        roles = [r.name for r in user_roles]
+        
+        # 获取用户权限
+        permissions = []
+        for role in user_roles:
+            role_permissions = await db.execute(
+                select(Permission).join(role_permission, role_permission.c.permission_id == Permission.id)
+                .where(role_permission.c.role_id == role.id)
+            )
+            for permission in role_permissions.scalars().all():
+                if permission.code not in permissions:
+                    permissions.append(permission.code)
+    
+    return {
+        "permissions": permissions,
+        "roles": roles
+    }
+
+
+@router.post("/permissions", response_model=Permission)
+async def create_permission(
+    permission_in: PermissionCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: DBUser = Depends(auth.get_current_superuser),
+):
+    """创建权限"""
+    # 检查权限代码是否已存在
+    query = select(DBPermission).where(DBPermission.code == permission_in.code)
+    result = await db.execute(query)
+    if result.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="权限代码已存在"
+        )
+    
+    # 创建新权限
+    db_permission = DBPermission(
+        code=permission_in.code,
+        name=permission_in.name,
+        url=permission_in.url,
+        description=permission_in.description
+    )
+    db.add(db_permission)
+    await db.commit()
+    await db.refresh(db_permission)
+    return db_permission
+
+@router.put("/permissions/{permission_id}", response_model=Permission)
+async def update_permission(
+    permission_id: int,
+    permission_in: PermissionUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: DBUser = Depends(auth.get_current_superuser),
+):
+    """更新权限"""
+    # 获取权限
+    query = select(DBPermission).where(DBPermission.id == permission_id)
+    result = await db.execute(query)
+    db_permission = result.scalar_one_or_none()
+    if not db_permission:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="权限不存在"
+        )
+    
+    # 检查权限代码是否已存在
+    if permission_in.code and permission_in.code != db_permission.code:
+        query = select(DBPermission).where(DBPermission.code == permission_in.code)
+        result = await db.execute(query)
+        if result.scalar_one_or_none():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="权限代码已存在"
+            )
+    
+    # 更新权限
+    update_data = permission_in.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_permission, key, value)
+    
+    await db.commit()
+    await db.refresh(db_permission)
+    return db_permission
+
+@router.delete("/permissions/{permission_id}")
+async def delete_permission(
+    permission_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: DBUser = Depends(auth.get_current_superuser),
+):
+    """删除权限"""
+    # 获取权限
+    query = select(DBPermission).where(DBPermission.id == permission_id)
+    result = await db.execute(query)
+    db_permission = result.scalar_one_or_none()
+    if not db_permission:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="权限不存在"
+        )
+    
+    # 删除权限
+    await db.execute(delete(role_permission).where(role_permission.c.permission_id == permission_id))
+    await db.delete(db_permission)
+    await db.commit()
+    return {"detail": "权限已删除"}
+
+# 角色管理接口
+@router.get("/roles", response_model=List[Role])
+async def get_roles(
+    db: AsyncSession = Depends(get_db),
+    current_user: DBUser = Depends(auth.get_current_superuser),
+):
+    """获取所有角色"""
+    query = select(DBRole)
+    result = await db.execute(query)
+    roles = result.scalars().all()
+    return roles
+
+@router.post("/roles", response_model=Role)
+async def create_role(
+    role_in: RoleCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: DBUser = Depends(auth.get_current_superuser),
+):
+    """创建角色"""
+    # 检查角色名是否已存在
+    query = select(DBRole).where(DBRole.name == role_in.name)
+    result = await db.execute(query)
+    if result.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="角色名已存在"
+        )
+    
+    # 创建新角色
+    db_role = DBRole(
+        name=role_in.name,
+        description=role_in.description
+    )
+    db.add(db_role)
+    await db.commit()
+    await db.refresh(db_role)
+    
+    # 添加权限
+    if role_in.permission_ids:
+        for permission_id in role_in.permission_ids:
+            # 检查权限是否存在
+            query = select(DBPermission).where(DBPermission.id == permission_id)
+            result = await db.execute(query)
+            db_permission = result.scalar_one_or_none()
+            if db_permission:
+                db_role.permissions.append(db_permission)
+        
+        await db.commit()
+        await db.refresh(db_role)
+    
+    return db_role
+
+@router.put("/roles/{role_id}", response_model=Role)
+async def update_role(
+    role_id: int,
+    role_in: RoleUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: DBUser = Depends(auth.get_current_superuser),
+):
+    """更新角色"""
+    # 获取角色
+    query = select(DBRole).where(DBRole.id == role_id)
+    result = await db.execute(query)
+    db_role = result.scalar_one_or_none()
+    if not db_role:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="角色不存在"
+        )
+    
+    # 检查角色名是否已存在
+    if role_in.name and role_in.name != db_role.name:
+        query = select(DBRole).where(DBRole.name == role_in.name)
+        result = await db.execute(query)
+        if result.scalar_one_or_none():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="角色名已存在"
+            )
+    
+    # 更新角色
+    update_data = role_in.dict(exclude={"permission_ids"}, exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_role, key, value)
+    
+    # 更新权限
+    if role_in.permission_ids is not None:
+        # 清除现有权限
+        db_role.permissions = []
+        
+        # 添加新权限
+        for permission_id in role_in.permission_ids:
+            query = select(DBPermission).where(DBPermission.id == permission_id)
+            result = await db.execute(query)
+            db_permission = result.scalar_one_or_none()
+            if db_permission:
+                db_role.permissions.append(db_permission)
+    
+    await db.commit()
+    await db.refresh(db_role)
+    return db_role
+
+@router.delete("/roles/{role_id}")
+async def delete_role(
+    role_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: DBUser = Depends(auth.get_current_superuser),
+):
+    """删除角色"""
+    # 获取角色
+    query = select(DBRole).where(DBRole.id == role_id)
+    result = await db.execute(query)
+    db_role = result.scalar_one_or_none()
+    if not db_role:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="角色不存在"
+        )
+    
+    # 删除角色
+    await db.execute(delete(user_role).where(user_role.c.role_id == role_id))
+    await db.delete(db_role)
+    await db.commit()
+    return {"detail": "角色已删除"}
+
+# 用户角色管理接口
+@router.get("/users/{user_id}/roles", response_model=UserWithRoles)
+async def get_user_roles(
+    user_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: DBUser = Depends(auth.get_current_superuser),
+):
+    """获取用户角色"""
+    # 获取用户
+    query = select(DBUser).where(DBUser.id == user_id)
+    result = await db.execute(query)
+    db_user = result.scalar_one_or_none()
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="用户不存在"
+        )
+    
+    return db_user
+
+@router.post("/users/assign-roles", response_model=UserWithRoles)
+async def assign_user_roles(
+    role_request: AssignRoleRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: DBUser = Depends(auth.get_current_superuser),
+):
+    """分配用户角色"""
+    # 获取用户
+    query = select(DBUser).where(DBUser.id == role_request.user_id)
+    result = await db.execute(query)
+    db_user = result.scalar_one_or_none()
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="用户不存在"
+        )
+    
+    # 清除现有角色
+    db_user.roles = []
+    
+    # 添加新角色
+    for role_id in role_request.role_ids:
+        query = select(DBRole).where(DBRole.id == role_id)
+        result = await db.execute(query)
+        db_role = result.scalar_one_or_none()
+        if db_role:
+            db_user.roles.append(db_role)
+    
+    await db.commit()
+    await db.refresh(db_user)
+    return db_user
 
 # 获取用户列表

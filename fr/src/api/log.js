@@ -48,7 +48,7 @@ export const getLogContent = async (fileName, lines = 500) => {
  * }} callbacks 
  * @returns {() => void} 断开连接的函数
  */
-export const createLogStream = (fileName, { onMessage, onError, onOpen }) => {
+export const createLogStream1 = (fileName, { onMessage, onError, onOpen }) => {
   // 确保文件名经过编码
   const encodedFileName = encodeURIComponent(fileName);
   const eventSource = new EventSource(`/api/log/stream/${encodedFileName}`);
@@ -80,7 +80,64 @@ export const createLogStream = (fileName, { onMessage, onError, onOpen }) => {
     eventSource.close();
   };
 };
+/**
+ * 创建SSE连接以流式获取日志
+ * @param {string} fileName 
+ * @param {{
+*   onMessage: (data: string) => void,
+*   onError?: (error: Error) => void,
+*   onOpen?: () => void
+* }} callbacks 
+* @returns {() => void} 断开连接的函数
+*/
+export const createLogStream = (fileName, { onMessage, onError, onOpen }) => {
+ // 确保文件名经过编码
+ const encodedFileName = encodeURIComponent(fileName);
+ 
+ // 使用完整URL，包含协议、主机和端口
+ const host = 'localhost';
+ const port = '8000';
+ const url = `http://${host}:${port}/api/log/stream/${encodedFileName}`;
+ 
+ console.log(`创建SSE连接: ${url}`);
+ 
+ // 创建EventSource连接
+ const eventSource = new EventSource(url);
 
+ eventSource.onopen = () => {
+   console.log(`SSE连接已建立: ${fileName}`);
+   onOpen?.();
+ };
+
+ eventSource.onmessage = (event) => {
+   try {
+     // 直接处理数据，不需要再检查前缀
+     const data = event.data;
+     console.log(`收到SSE消息:`, data);
+     onMessage(data);
+   } catch (err) {
+     console.error('处理SSE消息时出错:', err);
+     onError?.(new Error('处理SSE消息时出错: ' + err.message));
+   }
+ };
+
+ eventSource.onerror = (event) => {
+   console.error('SSE连接错误:', event);
+   const error = new Error('SSE连接错误');
+   onError?.(error);
+   
+   // 不要立即关闭，让EventSource自动尝试重连
+   if (eventSource.readyState === EventSource.CLOSED) {
+     console.log('SSE连接已关闭，将不再自动重连');
+   }
+ };
+
+ // 返回断开连接的函数
+ return () => {
+   console.log(`关闭SSE连接: ${fileName}`);
+   eventSource.close();
+ };
+};
 /**
  * 下载日志文件
  * @param {string} fileName 

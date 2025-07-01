@@ -68,6 +68,12 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true, title: '系统设置' }
     },
     {
+      path: '/permissions',
+      name: 'permissions',
+      component: () => import('../views/settings/PermissionView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true, title: '权限管理' }
+    },
+    {
       path: '/scheduler',
       name: 'scheduler',
       component: () => import('../views/scheduler/index.vue'),
@@ -127,6 +133,12 @@ const router = createRouter({
       name: 'extension-query',
       component: () => import('../views/extension/ExtensionQueryView.vue'),
       meta: { requiresAuth: true, title: '扩展查询' }
+    },
+    {
+      path: '/newauto',
+      name: 'newauto',
+      component: () => import('../views/extension/newauto.vue'),
+      meta: { requiresAuth: true, title: '新自动' }
     },
     //{
     //  path: '/extension-query/:id',

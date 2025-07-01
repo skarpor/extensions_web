@@ -3,6 +3,7 @@
 
 提供安全的扩展执行环境，限制扩展的权限和资源访问。
 """
+import asyncio
 import os
 import sys
 import importlib.util
@@ -97,11 +98,15 @@ async def execute_query_in_sandbox(module: Any, params: Dict, config: Dict, file
                 parameters.append(db_manager)
             else:
                 parameters.append(param.default)
-        print(config,params,db_manager)
+        # print(config,params,db_manager)
         # 判断方法是否是异步
-        result =await module.execute_query(*parameters)
+        if asyncio.iscoroutinefunction(module.execute_query):
+            result = await module.execute_query(*parameters)
+        else:
+            result = module.execute_query(*parameters)
+        print(result)
         return result
         
     except Exception as e:
         return {"执行查询失败": str(e)}
-        raise SandboxException(f"执行查询失败: {str(e)}") 
+        # raise SandboxException(f"执行查询失败: {str(e)}") 

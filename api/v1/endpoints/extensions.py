@@ -17,6 +17,7 @@ from models.extension import Extension
 from schemas.extension import ExtensionInDB, ExtensionUpdate
 from models.user import User
 from core.extension_manager import logger
+from core.auth import PermissionChecker
 
 router = APIRouter()
 extension_manager: ExtensionManager
@@ -33,6 +34,12 @@ def init_manager(manager: ExtensionManager):
     extension_manager = manager
     logger.info("扩展程序初始化完成")
 
+# 定义权限检查器
+view_extensions = PermissionChecker(["extension:view"])
+manage_extensions = PermissionChecker(["extension:manage"])
+upload_extensions = PermissionChecker(["extension:upload"])
+update_extensions = PermissionChecker(["extension:update"])
+delete_extensions = PermissionChecker(["extension:delete"])
 
 @router.get("", response_model=List[ExtensionInDB])
 async def get_extensions(

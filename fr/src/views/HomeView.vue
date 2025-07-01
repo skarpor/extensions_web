@@ -10,6 +10,11 @@
                 <h2>扩展管理</h2>
                 <p>管理系统扩展功能</p>
             </div>
+            <!-- newauto-->
+             <div class="card" @click="navigateTo('/newauto')">
+                <h2>新自动</h2>
+                <p>新自动功能</p>
+             </div>
             <div class="card" @click="navigateTo('/chat')">
                 <h2>聊天</h2>
                 <p>实时聊天功能，支持群聊和私聊</p>
@@ -31,6 +36,11 @@
             <div class="card" @click="navigateTo('/profile')">
                 <h2>用户信息</h2>
                 <p>查看和管理用户信息</p>
+            </div>
+            <!--权限管理-->
+            <div class="card" @click="navigateTo('/permissions')">
+                <h2>权限管理</h2>
+                <p>管理系统权限</p>
             </div>
             <!--DB -->
             <div class="card" @click="navigateTo('/database')">

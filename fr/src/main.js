@@ -8,6 +8,11 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import '../static/js/bootstrap.bundle.min.js'
 import '@fortawesome/fontawesome-free/css/all.min.css'
 
+// 导入Element Plus
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
+
 // import './assets/main.css'
 //cors
 import Toast from 'vue-toastification'
@@ -29,4 +34,8 @@ app.use(Toast, {
     draggablePercent: 0.6,
   })
 app.use(vuetify)
+// 使用Element Plus（配置中文）
+app.use(ElementPlus, {
+  locale: zhCn
+})
 app.mount('#app')

@@ -58,6 +58,11 @@ onMounted(async () => {
             <i class="fas fa-cog"></i> 设置
           </RouterLink>
         </li>
+        <li class="nav-item" v-if="isLoggedIn && user && user.is_superuser">
+          <RouterLink class="nav-link" to="/permissions" :class="{ 'active': $route.path === '/permissions' }">
+            <i class="fas fa-user-shield"></i> 权限管理
+          </RouterLink>
+        </li>
         <li class="nav-item">
           <RouterLink class="nav-link" to="/scheduler" :class="{ 'active': $route.path === '/scheduler' }">
             <i class="fas fa-clock"></i> 定时任务
