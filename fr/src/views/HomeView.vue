@@ -23,6 +23,10 @@
                 <h2>文件管理</h2>
                 <p>上传、下载和管理文件</p>
             </div>
+            <div class="card" @click="navigateTo('/qrfile')">
+                <h2>二维码文件</h2>
+                <p>二维码文件管理</p>
+            </div>
             <div class="card" @click="navigateTo('/settings')">
                 <h2>系统设置</h2>
                 <p>配置系统参数和用户权限</p>

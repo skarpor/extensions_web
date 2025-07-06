@@ -62,6 +62,18 @@ const router = createRouter({
       meta: { requiresAuth: true, title: '扩展详情' }
     },
     {
+      path: '/qrfile',
+      name: 'qrfile',
+      component: () => import('../views/QRFileView.vue'),
+      meta: { requiresAuth: true, title: '文件二维码工具' }
+    },
+    {
+      path: '/qrfile-manage',
+      name: 'qrfile-manage',
+      component: () => import('../views/QRFileManageView.vue'),
+      meta: { requiresAuth: true, title: '二维码文件管理' }
+    },
+    {
       path: '/settings',
       name: 'settings',
       component: () => import('../views/settings/SettingsView.vue'),

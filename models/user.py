@@ -56,6 +56,7 @@ class User(BaseModel):
     # 关联关系
     files = relationship("File", back_populates="owner", cascade="all, delete-orphan")
     chats = relationship("Chat", back_populates="user", cascade="all, delete-orphan")
+    qr_files = relationship("QRFile", back_populates="user", cascade="all, delete-orphan")
     extensions = relationship("Extension", back_populates="creator", cascade="all, delete-orphan")
     activities = relationship("ActivityLog", back_populates="user", cascade="all, delete-orphan")
     chat_rooms = relationship("ChatRoom", foreign_keys="ChatRoom.created_by", back_populates="creator")

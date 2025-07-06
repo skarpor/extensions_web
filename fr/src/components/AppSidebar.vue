@@ -53,6 +53,13 @@
         </li>
         
         <li>
+          <router-link to="/qrfile" class="sidebar-item" active-class="active">
+            <i class="fas fa-qrcode"></i>
+            <span class="sidebar-text">文件二维码</span>
+          </router-link>
+        </li>
+        
+        <li>
           <router-link to="/settings" active-class="active">
             <i class="fas fa-cog"></i>
             <span>系统设置</span>

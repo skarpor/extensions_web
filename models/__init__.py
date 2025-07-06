@@ -9,4 +9,5 @@ from .file import File
 from .extension import Extension
 from .setting import Setting
 from .chat import Chat, Message
-from .log import Log 
+from .log import Log
+from .qrfile import QRFile 

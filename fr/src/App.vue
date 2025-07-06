@@ -44,6 +44,11 @@ onMounted(async () => {
           </RouterLink>
         </li>
         <li class="nav-item">
+          <RouterLink class="nav-link" to="/qrfile" :class="{ 'active': $route.path === '/qrfile' }">
+            <i class="fas fa-qrcode"></i> 文件二维码
+          </RouterLink>
+        </li>
+        <li class="nav-item">
           <RouterLink class="nav-link" to="/example" :class="{ 'active': $route.path === '/example' }">
             <i class="fas fa-question-circle"></i> 帮助文档
           </RouterLink>
