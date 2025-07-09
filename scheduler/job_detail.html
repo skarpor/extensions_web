@@ -1,0 +1,361 @@
+{% extends "base.html" %}
+
+{% block title %}任务详情{% endblock %}
+{% block additional_styles %}
+
+{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>任务详情</h2>
+        <a href="/scheduler" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回任务列表
+        </a>
+    </div>
+
+    {% if job %}
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="fas {% if job.job_type == 'cron' %}fa-clock{% elif job.job_type == 'interval' %}fa-sync{% else %}fa-calendar-day{% endif %} me-2"></i>
+                {{ job.id }}
+                <span class="badge {% if job.active %}bg-success{% else %}bg-warning{% endif %} ms-2">
+                    {{ "活跃" if job.active else "已暂停" }}
+
+                </span>
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-muted">基本信息</h6>
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <th style="width: 30%">任务ID</th>
+                                <td class="partial-content" title="{{ job.id }}">{{ job.id }}</td>
+                            </tr>
+                            <tr>
+                                <th>任务类型</th>
+                                <td>
+                                    {% if job.job_type == 'cron' %}
+                                    <span class="badge bg-primary">Cron定时任务</span>
+                                    {% elif job.job_type == 'interval' %}
+                                    <span class="badge bg-info">间隔任务</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">一次性任务</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>任务函数</th>
+                                <td class="partial-content" title="{{ job.func_name }}">{{ job.func_name }}</td>
+                            </tr>
+                            <tr>
+                                <th>状态</th>
+                                <td>
+                                    {% if job.active %}
+                                    <span class="badge bg-success">活跃</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">已暂停</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-muted">执行信息</h6>
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <th style="width: 30%">下次执行时间</th>
+
+
+                                <td>{{ job.next_run_time if job.next_run_time else "暂无计划" }}</td>
+                            </tr>
+                            {% if job.job_type == 'cron' %}
+                            <tr>
+                                <th>Cron表达式</th>
+                                <td><code>{{ job.trigger }}</code></td>
+                            </tr>
+                            <tr>
+                                <th>表达式描述</th>
+                                <td>{{ job.cron_description }}</td>
+                            </tr>
+                            {% elif job.job_type == 'interval' %}
+                            <tr>
+                                <th>时间间隔</th>
+                                <td>{{ job.trigger }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <th>执行时间</th>
+                                <td>{{ job.trigger }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <th>创建时间</th>
+                                <td>{{ job.created_at }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {% if job.last_run_info %}
+            <h6 class="text-muted mt-4">最近执行记录</h6>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>执行时间</th>
+                            <th>执行结果</th>
+                            <th>耗时</th>
+                            <th>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for run in job.last_run_info %}
+                        <tr>
+                            <td>{{ run.run_time }}</td>
+                            <td>
+                                {% if run.result %}
+                                <div class="text-truncate" style="max-width: 300px;">{{ run.result }}</div>
+                                {% else %}
+                                <span class="text-muted">无返回值</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ run.duration }}秒</td>
+                            <td>
+                                {% if run.success %}
+                                <span class="badge bg-success">成功</span>
+                                {% else %}
+                                <span class="badge bg-danger">失败</span>
+                                <button class="btn btn-link text-danger p-0 ms-2" 
+                                    data-bs-toggle="tooltip" 
+                                    data-bs-placement="top" 
+                                    title="{{ run.error }}">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info mt-4">
+                <i class="fas fa-info-circle me-2"></i> 该任务暂无执行记录
+            </div>
+            {% endif %}
+        </div>
+        <div class="card-footer">
+            <div class="d-flex gap-2">
+                {% if job.active %}
+                <button class="btn btn-warning" id="pauseJob">
+                    <i class="fas fa-pause me-1"></i> 暂停任务
+                </button>
+                {% else %}
+                <button class="btn btn-success" id="resumeJob">
+                    <i class="fas fa-play me-1"></i> 恢复任务
+                </button>
+                {% endif %}
+                <button class="btn btn-primary" id="runJob">
+                    <i class="fas fa-bolt me-1"></i> 立即执行
+                </button>
+                <button class="btn btn-danger" id="deleteJob" data-bs-toggle="modal" data-bs-target="#deleteConfirmModal">
+                    <i class="fas fa-trash-alt me-1"></i> 删除任务
+                </button>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle me-2"></i> 未找到任务信息
+    </div>
+    {% endif %}
+</div>
+
+<!-- 删除确认对话框 -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">确认删除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>您确定要删除任务 <strong>{{ job.id }}</strong> 吗？</p>
+                <p class="text-danger">此操作不可逆，删除后任务将无法恢复。</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">确认删除</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 操作反馈Toast -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong class="me-auto" id="toastTitle">操作结果</strong>
+            <small>刚刚</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMessage">
+            操作已完成。
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block additional_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 初始化工具提示
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // 定义Toast组件
+        const toastEl = document.getElementById('liveToast');
+        const toast = new bootstrap.Toast(toastEl);
+        
+        // 显示Toast消息
+        function showToast(title, message, isSuccess = true) {
+            const toastTitle = document.getElementById('toastTitle');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastTitle.textContent = title;
+            toastMessage.textContent = message;
+            
+            // 设置Toast颜色
+            toastEl.className = isSuccess 
+                ? 'toast text-white bg-success'
+                : 'toast text-white bg-danger';
+            
+            toast.show();
+        }
+        
+        // 暂停任务
+        const pauseBtn = document.getElementById('pauseJob');
+        if (pauseBtn) {
+            pauseBtn.addEventListener('click', function() {
+                fetch('/scheduler/api/jobs/{{ job.id }}/pause', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('操作成功', '任务已暂停');
+                        // 刷新页面以更新状态
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        showToast('操作失败', data.detail || '暂停任务失败', false);
+                    }
+                })
+                .catch(error => {
+                    showToast('操作失败', '请求暂停任务时发生错误', false);
+                    console.error('Error:', error);
+                });
+            });
+        }
+        
+        // 恢复任务
+        const resumeBtn = document.getElementById('resumeJob');
+        if (resumeBtn) {
+            resumeBtn.addEventListener('click', function() {
+                fetch('/scheduler/api/jobs/{{ job.id }}/resume', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('操作成功', '任务已恢复');
+                        // 刷新页面以更新状态
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        showToast('操作失败', data.detail || '恢复任务失败', false);
+                    }
+                })
+                .catch(error => {
+                    showToast('操作失败', '请求恢复任务时发生错误', false);
+                    console.error('Error:', error);
+                });
+            });
+        }
+        
+        // 立即执行任务
+        const runBtn = document.getElementById('runJob');
+        if (runBtn) {
+            runBtn.addEventListener('click', function() {
+                runBtn.disabled = true;
+                runBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 执行中...';
+                
+                fetch('/scheduler/api/jobs/{{ job.id }}/run', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('操作成功', '任务已执行');
+                        // 刷新页面以更新执行记录
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        showToast('操作失败', data.detail || '执行任务失败', false);
+                    }
+                })
+                .catch(error => {
+                    showToast('操作失败', '请求执行任务时发生错误', false);
+                    console.error('Error:', error);
+                })
+                .finally(() => {
+                    runBtn.disabled = false;
+                    runBtn.innerHTML = '<i class="fas fa-bolt me-1"></i> 立即执行';
+                });
+            });
+        }
+        
+        // 删除任务
+        const confirmDeleteBtn = document.getElementById('confirmDelete');
+        if (confirmDeleteBtn) {
+            confirmDeleteBtn.addEventListener('click', function() {
+                fetch('/scheduler/api/jobs/{{ job.id }}', {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('操作成功', '任务已删除');
+                        // 关闭模态框
+                        var deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
+                        deleteModal.hide();
+                        // 跳转回任务列表
+                        setTimeout(() => {
+                            window.location.href = '/scheduler';
+                        }, 1000);
+                    } else {
+                        showToast('操作失败', data.detail || '删除任务失败', false);
+                    }
+                })
+                .catch(error => {
+                    showToast('操作失败', '请求删除任务时发生错误', false);
+                    console.error('Error:', error);
+                });
+            });
+        }
+    });
+</script>
+{% endblock %} 

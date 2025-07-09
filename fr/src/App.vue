@@ -1,27 +1,114 @@
 <script setup>
-    import { ref, onMounted } from 'vue'
-import { useUserStore } from '@/stores/user'
-import { storeToRefs } from 'pinia'
+import {ref, onMounted} from 'vue'
+import {useUserStore} from '@/stores/user'
+import {storeToRefs} from 'pinia'
 import Toast from '@/utils/toast'
 import 'vue-toastification/dist/index.css'
 
 // 直接从 store 获取响应式状态
 const userStore = useUserStore()
-const { user, isLoggedIn } = storeToRefs(userStore)
-const { logout, init } = userStore
-
+const {user, isLoggedIn} = storeToRefs(userStore)
+const {logout, init} = userStore
+let danmuSocket = ref(null)
+let damu_container = ref(null)
 onMounted(async () => {
   try {
     Toast.info('欢迎访问！')
     // 初始化用户状态
     await init()
+    await initWebSocket()
+    // 页面加载时初始化
+    damu_container = document.getElementById('danmu-container');
+
   } catch (error) {
     console.error('获取当前用户失败', error)
   }
 })
+
+
+async function initWebSocket() {
+  if (danmuSocket && danmuSocket.readyState === WebSocket.OPEN) {
+    return;
+  }
+
+  danmuSocket = new WebSocket(`ws://localhost:8000/api/danmu/ws`);
+
+  danmuSocket.onopen = () => {
+    Toast.success('WebSocket连接已建立');
+    // 可以发送初始消息或心跳
+    sendHeartbeat();
+  };
+
+  danmuSocket.onmessage = (event) => {
+    if (event.data === "ping") {
+      console.log("收到心跳");
+      // 响应心跳
+      return;
+    }
+    const danmu = JSON.parse(event.data);
+    createDanmu(danmu.text, danmu.color);
+  };
+
+  danmuSocket.onclose = () => {
+    setTimeout(initWebSocket, 5000);
+  };
+
+  danmuSocket.onerror = (error) => {
+  };
+}
+
+// 全局保存WebSocket引用
+
+// 心跳保持
+function sendHeartbeat() {
+  if (danmuSocket && danmuSocket.readyState === WebSocket.OPEN) {
+    danmuSocket.send("ping");
+    setTimeout(sendHeartbeat, 25000); // 25秒一次心跳
+  }
+}
+
+
+
+// 随机生成Y轴位置
+function getRandomY() {
+  return Math.floor(Math.random() * (window.innerHeight - 30));
+}
+
+// 创建弹幕元素
+function createDanmu(text, color) {
+  const danmu = document.createElement('div');
+  danmu.className = 'danmu';
+  danmu.textContent = text;
+  danmu.style.color = color;
+  danmu.style.left = `${window.innerWidth}px`;
+  danmu.style.top = `${getRandomY()}px`;
+
+  damu_container.appendChild(danmu);
+
+  // 弹幕动画
+  const duration = 10000; // 10秒
+  const startTime = Date.now();
+
+  function animate() {
+    const elapsed = Date.now() - startTime;
+    const progress = elapsed / duration;
+
+    if (progress >= 1) {
+      damu_container.removeChild(danmu);
+      return;
+    }
+
+    const x = window.innerWidth - (window.innerWidth + danmu.offsetWidth) * progress;
+    danmu.style.left = `${x}px`;
+    requestAnimationFrame(animate);
+  }
+
+  requestAnimationFrame(animate);
+}
 </script>
 
 <template>
+
   <div class="app-container">
     <!-- 顶部导航栏 -->
     <div class="top-navbar">
@@ -84,25 +171,44 @@ onMounted(async () => {
         </li>
       </ul>
     </div>
-  
-  
+
+
     <!-- 主容器 -->
     <div class="main-container">
-      <RouterView />
+      <RouterView/>
     </div>
 
-  
-    
+
   </div>
 
 </template>
 
 <style>
+/* 弹幕容器*/
+#danmu-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  pointer-events: none;
+  overflow: hidden;/**/
+}
+/* 弹幕样式 */
+        .danmu {
+            position: absolute;
+            white-space: nowrap;
+            font-size: 100px;
+            color: red;
+            text-shadow: 1px 1px 2px black;
+        }
 #toast-container {
   z-index: 9999;
   /* fixed如何 */
   height: 100px;
 }
+
 :root {
   --primary-color: #4e73df;
   --secondary-color: #f8f9fc;
@@ -118,7 +224,6 @@ body {
   padding: 0;
   min-height: 100vh;
 }
-
 
 
 .app-container {
@@ -143,7 +248,7 @@ body {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  background-color: white; 
+  background-color: white;
   padding: 10px 20px;
   box-shadow: 0 2px 4px rgba(135, 154, 14, 0.1);
   width: 100%;
@@ -197,7 +302,7 @@ body {
     flex-wrap: wrap;
     flex-direction: row; /* 确保在小屏幕上仍然水平排列 */
   }
-  
+
   .nav-item {
     display: inline-block;
   }
@@ -213,6 +318,7 @@ body {
   font-size: 1rem;
   white-space: nowrap; /* 防止文本换行 */
 }
+
 /* 导航栏中的图标 */
 .nav-link i {
   margin-right: 5px;
@@ -220,7 +326,7 @@ body {
 
 
 .main-container {
-  display:flex;
+  display: flex;
   flex-direction: row;
   flex: 2;
   background: white;
@@ -260,10 +366,6 @@ body {
 }
 
 
-
-
-
-
 .nav-link:hover {
   color: red;
   background-color: rgba(0, 131, 44, 0.1);
@@ -282,13 +384,12 @@ body {
 }
 
 
-
 /* 页面内容的通用样式 */
 .main-container {
   flex: 1;
   background: white;
-  padding: 20px 30px;  /* 增加水平内边距 */
-  margin: 20px auto;   /* 上下边距20px，左右自动居中 */
+  padding: 20px 30px; /* 增加水平内边距 */
+  margin: 20px auto; /* 上下边距20px，左右自动居中 */
   border-radius: 8px;
   box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
   border: 1px solid var(--border-color);

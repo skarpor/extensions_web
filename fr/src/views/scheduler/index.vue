@@ -209,15 +209,17 @@
 </template>
 
 <script>
+import { Modal } from 'bootstrap'; // 添加这行
 import { ref, onMounted } from 'vue';
 import {
   getJobs,
-  getJobDetail, resumeJob, deleteJob, pauseJob, runScheduleJob
+  getJobDetail, resumeJobApi, deleteJobApi, pauseJobApi, runScheduleJobApi
 } from '@/api/scheduler';
 import Toast from '@/utils/toast.js';
 
 export default {
-  setup() {
+    props: ['activeTab'], // 添加这行
+    setup(props) {
     const jobs = ref([]);
     const groupedJobs = ref({});
     const taskTypes = ref({});
@@ -226,8 +228,23 @@ export default {
     const fetchJobs = async () => {
       try {
         const response = await getJobs();
-        jobs.value = response.data.jobs;
-        groupedJobs.value = response.data.grouped_jobs;
+        jobs.value = response.data|| [];
+
+        const grouped = {
+          cron: [],
+          interval: [],
+          date: []
+        };
+        jobs.value.forEach(job => {
+          if (job.trigger && job.trigger.toLowerCase().includes('cron')) {
+            grouped.cron.push(job);
+          } else if (job.trigger && job.trigger.toLowerCase().includes('interval')) {
+            grouped.interval.push(job);
+          } else {
+            grouped.date.push(job);
+          }
+        });
+        groupedJobs.value = {};
         taskTypes.value = response.data.task_types;
       } catch (error) {
         console.error('Error fetching jobs:', error);
@@ -238,7 +255,7 @@ export default {
 
     const runJob = async (jobId) => {
       try {
-        const response = await runScheduleJob(jobId);
+        const response = await runScheduleJobApi(jobId);
         Toast.success('执行成功', response.data.message);
       } catch (error) {
         Toast.error('执行失败', error.response?.data?.message || '请求执行任务时发生错误', false);
@@ -247,7 +264,7 @@ export default {
 
     const pauseJob = async (jobId) => {
       try {
-        const response = await pauseJob(jobId);
+        const response = await pauseJobApi(jobId);
         Toast.success('暂停成功', response.data.message);
         setTimeout(() => {
           fetchJobs();
@@ -259,7 +276,7 @@ export default {
 
     const resumeJob = async (jobId) => {
       try {
-        const response = await resumeJob(jobId);
+        const response = await resumeJobApi(jobId);
         Toast.success('恢复成功', response.data.message);
         setTimeout(() => {
           fetchJobs();
@@ -279,7 +296,7 @@ export default {
       if (!jobToDelete.value) return;
 
       try {
-        const response = await deleteJob(jobToDelete.value);
+        const response = await deleteJobApi(jobToDelete.value);
         Toast.success('删除成功', response.data.message);
         const deleteModal = Modal.getInstance(document.getElementById('deleteModal'));
         deleteModal.hide();

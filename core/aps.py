@@ -15,7 +15,7 @@ async def start_scheduler():
     """启动调度器"""
     try:
         # scheduler = get_scheduler(db_url=f"sqlite:///{db_path}")
-        scheduler = get_scheduler(db_url=settings.SYNC_SQLALCHEMY_DATABASE_URI,async_mode=False)
+        scheduler = get_scheduler(db_url=settings.SYNC_SQLALCHEMY_DATABASE_URI,async_mode=True)
         scheduler.start()
         logger.info("调度器已启动")
     except Exception as e:

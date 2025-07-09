@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>弹幕演示</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            overflow: hidden;
+        }
+
+        #danmu-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+        }
+
+        .danmu {
+            position: absolute;
+            white-space: nowrap;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px #000;
+            pointer-events: none;
+        }
+
+        #control-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        #danmu-input {
+            width: 300px;
+            padding: 8px;
+            border-radius: 4px;
+            border: none;
+        }
+
+        #send-btn {
+            padding: 8px 16px;
+            background-color: #ff5500;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #send-btn:hover {
+            background-color: #ff7733;
+        }
+    </style>
+</head>
+<body>
+<div id="danmu-container"></div>
+
+<div id="control-panel">
+    <input type="text" id="danmu-input" placeholder="输入弹幕内容...">
+    <button id="send-btn">发送</button>
+</div>
+<script src="/static/vue.global.prod.js"></script>
+
+<script>
+    const { createApp, reactive, toRefs } = Vue;
+    createApp({
+      setup() {
+          const state = reactive({})
+      }}).mount('#app');
+    async function initWebSocket() {
+        if (danmuSocket && danmuSocket.readyState === WebSocket.OPEN) {
+            return;
+        }
+
+        danmuSocket = new WebSocket(`ws://localhost:8000/api/danmu/ws`);
+
+        danmuSocket.onopen = () => {
+            console.log("弹幕WebSocket连接已建立");
+            // 可以发送初始消息或心跳
+            sendHeartbeat();
+        };
+
+        danmuSocket.onmessage = (event) => {
+            if (event.data === "ping") {
+                return;
+            }
+            const danmu = JSON.parse(event.data);
+            createDanmu(danmu.text, danmu.color);
+        };
+
+        danmuSocket.onclose = () => {
+            console.log("弹幕连接关闭，5秒后重连...");
+            setTimeout(initWebSocket, 5000);
+        };
+
+        danmuSocket.onerror = (error) => {
+            console.error("弹幕WebSocket错误:", error);
+        };
+    }
+
+    // 全局保存WebSocket引用
+    let danmuSocket = null;
+
+    // 心跳保持
+    function sendHeartbeat() {
+        if (danmuSocket && danmuSocket.readyState === WebSocket.OPEN) {
+            danmuSocket.send("ping");
+            setTimeout(sendHeartbeat, 25000); // 25秒一次心跳
+        }
+    }
+
+    // 页面加载时初始化
+    window.addEventListener('load', initWebSocket);
+
+    // 发送弹幕函数修改
+    async function sendDanmu() {
+        const text = input.value.trim();
+        if (!text) return;
+
+        if (!danmuSocket || danmuSocket.readyState !== WebSocket.OPEN) {
+            console.error("弹幕连接未就绪");
+            await initWebSocket();
+            return;
+        }
+
+        const color = "#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+
+        try {
+            const response = await fetch('/api/danmu/send_danmu', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    text: text,
+                    color: color
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP错误! 状态码: ${response.status}`);
+            }
+
+            input.value = '';
+        } catch (error) {
+            console.error('发送失败:', error);
+        }
+    }
+
+
+    const container = document.getElementById('danmu-container');
+    const input = document.getElementById('danmu-input');
+    const sendBtn = document.getElementById('send-btn');
+
+    // 连接WebSocket
+    //const ws = new WebSocket(`ws://192.168.2.75:8000/ws`);
+
+    // 随机生成Y轴位置
+    function getRandomY() {
+        return Math.floor(Math.random() * (window.innerHeight - 30));
+    }
+
+    // 创建弹幕元素
+    function createDanmu(text, color) {
+        const danmu = document.createElement('div');
+        danmu.className = 'danmu';
+        danmu.textContent = text;
+        danmu.style.color = color;
+        danmu.style.left = `${window.innerWidth}px`;
+        danmu.style.top = `${getRandomY()}px`;
+
+        container.appendChild(danmu);
+
+        // 弹幕动画
+        const duration = 10000; // 10秒
+        const startTime = Date.now();
+
+        function animate() {
+            const elapsed = Date.now() - startTime;
+            const progress = elapsed / duration;
+
+            if (progress >= 1) {
+                container.removeChild(danmu);
+                return;
+            }
+
+            const x = window.innerWidth - (window.innerWidth + danmu.offsetWidth) * progress;
+            danmu.style.left = `${x}px`;
+            requestAnimationFrame(animate);
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+
+    // 绑定事件
+    sendBtn.addEventListener('click', sendDanmu);
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendDanmu();
+    });
+</script>
+</body>
+</html>

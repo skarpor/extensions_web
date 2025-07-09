@@ -255,7 +255,13 @@ export default {
 
       isSubmitting.value = true;
       try {
-        const response = await addJob('cron',cronForm.value);
+        // 使用form表单,将payload中所有数据添加到formData中
+        const formData = new FormData();
+        Object.entries(cronForm.value).forEach(([key, value]) => {
+          formData.append(key, value);
+        });
+
+        const response = await addJob('cron',formData);
         Toast.success('添加成功', response.data.detail);
         setTimeout(() => {
           router.push('/scheduler');
@@ -284,7 +290,11 @@ export default {
 
       isSubmitting.value = true;
       try {
-        const response = await addJob('interval', intervalForm.value);
+        const formData = new FormData();
+        Object.entries(intervalForm.value).forEach(([key, value]) => {
+          formData.append(key, value);
+        });
+        const response = await addJob('interval', formData);
         Toast.success('添加成功', response.data.message);
         setTimeout(() => {
           router.push('/scheduler');
@@ -298,15 +308,16 @@ export default {
 
     const submitDateForm = async () => {
       const form = document.getElementById('dateForm');
-      if (!form.checkValidity()) {
-        form.classList.add('was-validated');
-        Toast.error('验证失败', '请检查表单数据', false);
-        return;
-      }
+      // if (!form.checkValidity()) {
+      //   form.classList.add('was-validated');
+      //   Toast.error('验证失败1', '请检查表单数据', false);
+      //   return;
+      // }
 
       // 检查执行时间是否在未来
       const runDate = new Date(dateForm.value.run_date);
       const now = new Date();
+      console.log(runDate,now)
       if (runDate <= now) {
         Toast.error('验证失败', '执行时间必须在未来', false);
         return;
@@ -314,12 +325,17 @@ export default {
 
       isSubmitting.value = true;
       try {
-        const formattedDate = runDate.toISOString().replace('T', ' ').substr(0, 19);
-        const payload = {
-          ...dateForm.value,
-          run_date: formattedDate
-        };
-        const response = await addJob('date', payload);
+        // const formattedDate = runDate.toISOString().replace('T', ' ').slice(0, 19);
+        const formData = new FormData();
+        Object.entries(dateForm.value).forEach(([key, value]) => {
+          // 如果是时间，则修改T为空格
+          if (key === 'run_date') {
+            value = value.replace('T', ' ');
+          }
+          formData.append(key, value);
+        });
+        // formData.append('run_date', formattedDate);
+        const response = await addJob('date', formData);
         Toast.success('添加成功', response.data.message);
         setTimeout(() => {
           router.push('/scheduler');
@@ -335,9 +351,19 @@ export default {
       fetchExtensionMethods();
 
       // 设置默认的执行时间为1小时后
-      const now = new Date();
-      now.setHours(now.getHours() + 1);
-      dateForm.value.run_date = now.toISOString().slice(0, 16);
+      // const now = new Date();
+      // now.setHours(now.getHours() + 1);
+      // dateForm.value.run_date = now.toISOString().slice(0, 16);
+        const now = new Date();
+        now.setHours(now.getHours() + 1);
+        const cstTime = now.toLocaleString('zh-CN', {
+          timeZone: 'Asia/Shanghai',
+          hour12: false
+        });
+        console.log(cstTime.slice(0, 16));
+        console.log(now.toISOString().slice(0, 16));
+        dateForm.value.run_date = new Date(now.getTime() + 8 * 3600 * 1000).toISOString().slice(0, 19);
+
     });
 
     return {

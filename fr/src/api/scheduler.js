@@ -7,22 +7,22 @@ export const getJobs = async () => {
 };
 
 // 运行定时器
-export const runScheduleJob =async (jobId) => {
+export const runScheduleJobApi =async (jobId) => {
   return await axios.post(`/api/scheduler/job/${jobId}/run`);
 };
 
 // 暂停定时器
-export const pauseJob =async (jobId) => {
+export const pauseJobApi =async (jobId) => {
   return await axios.post(`/api/scheduler/job/${jobId}/pause`)
 };
 
 // 恢复定时器
-export const resumeJob = async (jobId) => {
+export const resumeJobApi = async (jobId) => {
   return await axios.post(`/api/scheduler/job/${jobId}/resume`);
 };
 
 // 删除定时器
-export const deleteJob =async (jobId) => {
+export const deleteJobApi =async (jobId) => {
   return await axios.delete(`/api/scheduler/job/${jobId}`);
 };
 
@@ -34,7 +34,7 @@ export const addJob = async (type,payload) => {
 
 // 获取定时器详情
 export const getJobDetail = async (id) => {
-  return await axios.get(`/api/scheduler/jobs/${id}`);
+  return await axios.get(`/api/scheduler/job/${id}`);
 };
 
 // 获取扩展方法

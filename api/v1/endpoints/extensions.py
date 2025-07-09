@@ -3,7 +3,6 @@
 """
 from datetime import datetime
 from typing import Any, List, Optional
-import uuid
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -78,8 +77,10 @@ async def create_extension(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="扩展管理器未初始化"
         )
-    # 创建UUID
-    extension_id = str(uuid.uuid4())
+    # extension_id = str(uuid.uuid4())
+    import secrets
+    extension_id = "ext_" + secrets.token_hex(4)  # 8字符
+
     # 直接写入到文件
     with open(f"{settings.EXTENSIONS_DIR}/{extension_id}.py", "wb") as f:
         f.write(file.file.read())
@@ -102,6 +103,16 @@ async def create_extension(
     # 加载
     extension_ext = await extension_manager.load_extension(extension_id, db)
     if not extension_ext:
+        # 删除文件
+        import os
+        try:
+            logger.info(f"安装失败, 删除文件: {settings.EXTENSIONS_DIR}/{extension_id}.py")
+            os.remove(f"{settings.EXTENSIONS_DIR}/{extension_id}.py")
+        except Exception as e:
+            logger.error(f"安装失败, 删除文件失败: {e}")
+        # 删除数据库
+        await db.delete(extension)
+        await db.commit()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="扩展安装失败"
@@ -111,9 +122,9 @@ async def create_extension(
 
 @router.get("/{extension_id}", response_model=ExtensionInDB)
 async def get_extension(
-        *,
-        db: AsyncSession = Depends(get_db),
         extension_id: str,
+        # *,
+        db: AsyncSession = Depends(get_db),
         current_user: User = Depends(auth.get_current_active_user),
 ) -> Any:
     """

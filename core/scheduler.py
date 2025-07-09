@@ -9,12 +9,11 @@ import pickle
 from typing import Dict, Any, List, Union, Callable
 
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
-from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
+from apscheduler.executors.asyncio import AsyncIOExecutor
 from apscheduler.job import Job, ref_to_obj
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.schedulers.background import BackgroundScheduler
-from sqlalchemy.ext.asyncio import create_async_engine
 
 from config import settings
 from .sandbox import load_module_in_sandbox
@@ -57,7 +56,7 @@ class CustomJob(Job):
             module_path = f"{settings.EXTENSIONS_DIR}/{module_name}.py"
 
             try:
-                module = load_module_in_sandbox(module_name, module_path)
+                module = load_module_in_sandbox(module_path)
                 self.func = getattr(module, func_name)
             except Exception as e:
                 raise LookupError(f"无法加载动态函数: {e}")
@@ -78,14 +77,13 @@ class CustomSQLAlchemyJobStore(SQLAlchemyJobStore):
             job.__setstate__(job_state)
             return job
         except Exception as e:
-            # print(f"任务恢复失败，删除: {e}")
             raise LookupError("任务无效")  # 让 APScheduler 清理该任务
 
 
 class SchedulerManager:
     """定时任务调度管理器"""
     
-    def __init__(self, db_url: str = None, async_mode: bool = False):
+    def __init__(self, db_url: str = None, async_mode: bool = True):
         """
         初始化调度管理器
         
@@ -113,8 +111,9 @@ class SchedulerManager:
         
         # 配置执行器
         executors = {
-            'default': ThreadPoolExecutor(20),  # 默认线程池
-            'processpool': ProcessPoolExecutor(5)  # 进程池
+            'default': AsyncIOExecutor()  # 最佳选择
+            # 'default': ThreadPoolExecutor(20),  # 默认线程池
+            # 'processpool': ProcessPoolExecutor(5)  # 进程池
         }
         
         # 任务默认配置
@@ -126,7 +125,6 @@ class SchedulerManager:
 
         # 创建调度器
         if self.async_mode:
-
             self.scheduler = AsyncIOScheduler(
                 jobstores=jobstores,
                 executors=executors,
@@ -483,7 +481,7 @@ class SchedulerManager:
 
 # 创建一个全局的调度器实例
 scheduler_instance = None
-def get_scheduler(db_url: str=None, async_mode: bool = False) -> SchedulerManager:
+def get_scheduler(db_url: str=None, async_mode: bool = True) -> SchedulerManager:
     """
     获取调度器实例（单例模式）
     
@@ -497,4 +495,5 @@ def get_scheduler(db_url: str=None, async_mode: bool = False) -> SchedulerManage
     global scheduler_instance
     if scheduler_instance is None:
         scheduler_instance = SchedulerManager(db_url, async_mode)
-    return scheduler_instance 
+    return scheduler_instance
+

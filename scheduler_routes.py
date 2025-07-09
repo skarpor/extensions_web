@@ -13,19 +13,19 @@ import os
 import pytz
 import importlib
 import importlib.util
-from api.v1.endpoints.extensions import get_extensions,get_extension
-from core.auth import get_current_user
-from core.logger import get_logger
-# from core.app_scheduler import AppScheduler
+from app.api.extension_routes import get_extensions
+from app.core.auth import get_current_user
+from app.core.logger import get_logger
+from app.core.app_scheduler import AppScheduler
 from pydantic import BaseModel
 
-from core.sandbox import load_module_in_sandbox,execute_query_in_sandbox
-from db.session import get_db
-from models.user import User
-logger = get_logger("scheduler")
-router = APIRouter()
-from config import settings
-templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
+from app.core.sandbox import load_module_in_sandbox, execute_query_in_sandbox
+from app.models.user import User
+logger = get_logger("scheduler_routes")
+from .extension_routes import get_extension
+router = APIRouter(prefix="/scheduler", tags=["scheduler"])
+from config import TEMPLATE_DIR,data_dir
+templates = Jinja2Templates(directory=TEMPLATE_DIR)
 
 # 任务类型定义
 TASK_TYPES = {
@@ -75,22 +75,29 @@ async def scheduler_page(request: Request, user=Depends(get_current_user)):
         }
     )
 
-@router.get("/job/{job_id}")
+@router.get("/job/{job_id}", response_class=HTMLResponse)
 async def job_detail_page(request: Request, job_id: str, user=Depends(get_current_user)):
     """任务详情页面"""
     scheduler = request.app.state.scheduler
     job = await scheduler.get_job(job_id)
     
     if not job:
-        return
-
+        return templates.TemplateResponse(
+            "scheduler/error.html",
+            {
+                "request": request,
+                "message": f"任务 {job_id} 不存在",
+                "user": user
+            }
+        )
+    
     # 确定任务类型
     job_type = "cron" if "cron" in job["trigger"].lower() else \
               "interval" if "interval" in job["trigger"].lower() else "date"
     job['active']=job.get("next_run_time")
-    job['user']=user
+    job['func_name']=job.get("func_name")
     job['job_type']=job_type
-    return job
+    print(job,job_type)
     return templates.TemplateResponse(
         "scheduler/job_detail.html",
         {
@@ -127,30 +134,7 @@ async def add_job_page(request: Request, user=Depends(get_current_user)):
     )
 
 # API路由
-
-@router.get("/extensions",)
-async def add_job_page(request: Request, user=Depends(get_current_user),db=Depends(get_db)):
-    """添加任务页面"""
-    # 获取所有扩展中的扩展名及execute_query方法，以便添加定时任务
-    extensions = await get_extensions(db)
-    extension_methods = [
-        {
-            "extension_name": extension.name,
-            "method_name": "execute_query",
-            "extension_id": extension.id
-        }
-        for extension in extensions
-    ]
-
-    return {
-            "task_types": TASK_TYPES,
-            "extension_methods": extension_methods,
-            "user": user
-        }
-
-
-
-@router.get("/jobs", response_model=List[Dict[str, Any]])
+@router.get("/api/jobs", response_model=List[Dict[str, Any]])
 async def list_jobs(request: Request, user=Depends(get_current_user)):
     """获取所有任务"""
     try:
@@ -161,7 +145,7 @@ async def list_jobs(request: Request, user=Depends(get_current_user)):
         logger.error(f"获取任务列表失败: {str(e)}")
         raise HTTPException(status_code=500, detail=f"获取任务列表失败: {str(e)}")
 
-@router.get("/job/{job_id}", response_model=Dict[str, Any])
+@router.get("/api/job/{job_id}", response_model=Dict[str, Any])
 async def get_job(request: Request, job_id: str, user=Depends(get_current_user)):
     """获取任务详情"""
     try:
@@ -176,7 +160,7 @@ async def get_job(request: Request, job_id: str, user=Depends(get_current_user))
         logger.error(f"获取任务详情失败: {str(e)}")
         raise HTTPException(status_code=500, detail=f"获取任务详情失败: {str(e)}")
 
-@router.post("/job/{job_id}/pause")
+@router.post("/api/job/{job_id}/pause")
 async def pause_job(request: Request, job_id: str, user=Depends(get_current_user)):
     """暂停任务"""
     try:
@@ -193,7 +177,7 @@ async def pause_job(request: Request, job_id: str, user=Depends(get_current_user
         logger.error(f"暂停任务失败: {str(e)}")
         raise HTTPException(status_code=500, detail=f"暂停任务失败: {str(e)}")
 
-@router.post("/job/{job_id}/resume")
+@router.post("/api/job/{job_id}/resume")
 async def resume_job(request: Request, job_id: str, user=Depends(get_current_user)):
     """恢复任务"""
     try:
@@ -210,7 +194,7 @@ async def resume_job(request: Request, job_id: str, user=Depends(get_current_use
         logger.error(f"恢复任务失败: {str(e)}")
         raise HTTPException(status_code=500, detail=f"恢复任务失败: {str(e)}")
 
-@router.post("/job/{job_id}/run")
+@router.post("/api/job/{job_id}/run")
 async def run_job(request: Request, job_id: str, user=Depends(get_current_user)):
     """立即执行任务"""
     try:
@@ -227,7 +211,7 @@ async def run_job(request: Request, job_id: str, user=Depends(get_current_user))
         logger.error(f"执行任务失败: {str(e)}")
         raise HTTPException(status_code=500, detail=f"执行任务失败: {str(e)}")
 
-@router.delete("/job/{job_id}")
+@router.delete("/api/job/{job_id}")
 async def remove_job(request: Request, job_id: str, user=Depends(get_current_user)):
     """删除任务"""
     try:
@@ -274,17 +258,8 @@ TASK_FUNCTIONS = {
     "cleanup_temp": cleanup_temp_task,
     "send_report": send_report_task
 }
-async def async_task_wrapper(func, **kwargs):
-    """包装异步任务函数"""
-    try:
-        result = await func(**kwargs)
-        logger.info(f"任务执行完成，结果: {result}")
-        return result
-    except Exception as e:
-        logger.error(f"任务执行失败: {str(e)}")
-        raise
 
-@router.post("/jobs/cron")
+@router.post("/api/jobs/cron")
 async def add_cron_job(
     request: Request,
     task_func: str = Form(...),
@@ -295,7 +270,7 @@ async def add_cron_job(
     month: str = Form("*"),
     day_of_week: str = Form("*"),
     second: str = Form("0"),
-    user:User=Depends(get_current_user),db=Depends(get_db)
+    user:User=Depends(get_current_user)
 ):
     """添加Cron任务"""
     try:
@@ -312,15 +287,15 @@ async def add_cron_job(
         # 动态导入模块
         # 创建模块
 
-        # module = load_module_in_sandbox(f"data/extensions/{task_func}.py")
+        # module = load_module_in_sandbox(task_func, f"data/extensions/{task_func}.py")
 
-        extension = await get_extension(task_func,db=db)
-        config = extension.config
-        # func = execute_query_in_sandbox
+        extension = await get_extension(task_func)
+        config = extension.get("config")
+        func = execute_query_in_sandbox
         # 添加任务
         job_id = await scheduler.add_cron_job(
-            async_task_wrapper,
-            kwargs={"func": execute_query_in_sandbox,"params": {"extension_id": task_func},"config":config,"module":None} ,
+            func,
+            kwargs={"module":None,"params": {"file_manager":request.app.state.file_manager,"extension_id": task_func},"config":config} ,
             job_id=job_id,
             minute=minute,
             hour=hour,
@@ -339,11 +314,10 @@ async def add_cron_job(
     except HTTPException:
         raise
     except Exception as e:
-        raise
         logger.error(f"添加Cron任务失败: {str(e)}")
         raise HTTPException(status_code=500, detail=f"添加Cron任务失败: {str(e)}")
 
-@router.post("/jobs/interval")
+@router.post("/api/jobs/interval")
 async def add_interval_job(
     request: Request,
     task_func: str = Form(...),
@@ -352,7 +326,7 @@ async def add_interval_job(
     minutes: int = Form(0),
     hours: int = Form(0),
     days: int = Form(0),
-    user=Depends(get_current_user),db=Depends(get_db)
+    user=Depends(get_current_user)
 ):
     """添加间隔任务"""
     try:
@@ -369,18 +343,18 @@ async def add_interval_job(
         
         scheduler = request.app.state.scheduler
         # 动态导入模块
-        # py_path = os.path.join(settings.EXTENSIONS_DIR,f"{task_func}.py")
-        # module = load_module_in_sandbox(os.path.abspath(py_path))
+        # py_path = os.path.join(data_dir,f"extensions/{task_func}.py")
+        # module = load_module_in_sandbox(task_func, os.path.abspath(py_path))
 
         # 获取函数
-        extension = await get_extension(task_func,db=db)
-        config = extension.config
-        # func = execute_query_in_sandbox
+        extension = await get_extension(task_func)
+        config = extension.get("config")
+        func = execute_query_in_sandbox
 
         # 添加任务
         job_id = await scheduler.add_interval_job(
-            async_task_wrapper,
-            kwargs={"func": execute_query_in_sandbox,"params": {"extension_id": task_func},"config":config,"module":None} ,
+            func,
+            kwargs={"module":None,"params": {"file_manager":request.app.state.file_manager,"extension_id": task_func},"config":config} ,
             job_id=job_id,
             seconds=seconds,
             minutes=minutes,
@@ -400,13 +374,13 @@ async def add_interval_job(
         logger.error(f"添加间隔任务失败: {str(e)}")
         raise HTTPException(status_code=500, detail=f"添加间隔任务失败: {str(e)}")
 
-@router.post("/jobs/date")
+@router.post("/api/jobs/date")
 async def add_date_job(
     request: Request,
     task_func: str = Form(...),
     job_id: Optional[str] = Form(None),
     run_date: str = Form(...),  # 格式: YYYY-MM-DD HH:MM:SS
-    user=Depends(get_current_user),db=Depends(get_db)
+    user=Depends(get_current_user)
 ):
     """添加一次性任务"""
     try:
@@ -430,17 +404,17 @@ async def add_date_job(
         scheduler = request.app.state.scheduler
 
         # 动态导入模块
-        # module = load_module_in_sandbox(f"data/extensions/{task_func}.py")
+        # module = load_module_in_sandbox(task_func, f"data/extensions/{task_func}.py")
 
         # 获取函数
-        extension = await get_extension(task_func,db)
-        config = extension.config
-        # func = execute_query_in_sandbox
+        extension = await get_extension(task_func)
+        config = extension.get("config")
+        func = execute_query_in_sandbox
 
         # 添加任务
         job_id = await scheduler.add_date_job(
-            async_task_wrapper,
-            kwargs={"func": execute_query_in_sandbox,"params": {"extension_id": task_func},"config":config,"module":None} ,
+            func,
+            kwargs={"module":None,"params": {"file_manager":request.app.state.file_manager,"extension_id": task_func},"config":config} ,
             job_id=job_id,
             run_date=run_datetime
         )
@@ -489,15 +463,15 @@ async def job_detail_page(request: Request, job_id: str):
     job_info = job.copy()
     
     # 确定任务类型
-    if job.get("trigger").startswith("cron"):
+    if job.trigger.startswith("cron"):
         job_info["type"] = "cron"
         # 从trigger中提取cron表达式
-        trigger_parts = job.get("trigger").split(":", 1)[1]
+        trigger_parts = job.trigger.split(":", 1)[1]
         job_info["cron_expression"] = trigger_parts
         job_info["cron_description"] = "每" + _describe_cron(trigger_parts)
-    elif job.get("trigger").startswith("interval"):
+    elif job.trigger.startswith("interval"):
         job_info["type"] = "interval"
-        interval_parts = job.get("trigger").split(":", 1)[1]
+        interval_parts = job.trigger.split(":", 1)[1]
         job_info["interval_description"] = _describe_interval(interval_parts)
     else:
         job_info["type"] = "date"

@@ -26,13 +26,13 @@
                 <tbody>
                   <tr>
                     <th style="width: 30%">任务ID</th>
-                    <td>{{ job.job_id }}</td>
+                    <td>{{ job.id }}</td>
                   </tr>
                   <tr>
                     <th>任务类型</th>
                     <td>
-                      <span v-if="job.type === 'cron'" class="badge bg-primary">Cron定时任务</span>
-                      <span v-else-if="job.type === 'interval'" class="badge bg-info"
+                      <span v-if="job.job_type === 'cron'" class="badge bg-primary">Cron定时任务</span>
+                      <span v-else-if="job.job_type === 'interval'" class="badge bg-info"
                         >间隔任务</span
                       >
                       <span v-else class="badge bg-warning">一次性任务</span>
@@ -40,7 +40,7 @@
                   </tr>
                   <tr>
                     <th>任务函数</th>
-                    <td>{{ job.func_name }}</td>
+                    <td>{{ job.func }}</td>
                   </tr>
                   <tr>
                     <th>状态</th>
@@ -48,7 +48,12 @@
                       <span v-if="job.active" class="badge bg-success">活跃</span>
                       <span v-else class="badge bg-warning">已暂停</span>
                     </td>
+
                   </tr>
+                <tr>
+                  <th>创建用户</th>
+                  <td>{{ job.user?.nickname ||job.user?.username || '未知' }}</td>
+                </tr>
                 </tbody>
               </table>
             </div>
@@ -76,7 +81,7 @@
                   </tr>
                   <tr v-else>
                     <th>执行时间</th>
-                    <td>{{ job.run_date }}</td>
+                    <td>{{ job.trigger }}</td>
                   </tr>
                   <tr>
                     <th>创建时间</th>
@@ -197,9 +202,10 @@
 </template>
 
 <script>
+import { Modal } from 'bootstrap'; // 添加这行
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import {runScheduleJob, resumeJob, pauseJob, getJobDetail,deleteJob} from '@/api/scheduler.js'
+import {runScheduleJobApi, resumeJobApi, pauseJobApi, getJobDetail,deleteJobApi} from '@/api/scheduler.js'
 import  Toast from '@/utils/toast.js'
 
 export default {
@@ -234,7 +240,7 @@ export default {
 
     const pauseJob = async () => {
       try {
-        const response = await pauseJob(job.value.job_id)
+        const response = await pauseJobApi(job.value.id)
         Toast.success('操作成功', '任务已暂停')
         setTimeout(() => {
           fetchJobDetails()
@@ -246,7 +252,7 @@ export default {
 
     const resumeJob = async () => {
       try {
-        const response = await resumeJob(job.value.job_id)
+        const response = await resumeJobApi(job.value.id)
         Toast.success('操作成功', '任务已恢复')
         setTimeout(() => {
           fetchJobDetails()
@@ -259,7 +265,7 @@ export default {
     const runJob = async () => {
       isRunning.value = true
       try {
-        const response = await runScheduleJob(job.value.job_id)
+        const response = await runScheduleJobApi(job.value.id)
         Toast.success('操作成功', '任务已执行')
         setTimeout(() => {
           fetchJobDetails()
@@ -278,7 +284,7 @@ export default {
 
     const deleteJob = async () => {
       try {
-        const response = await deleteJob(job.value.job_id)
+        const response = await deleteJobApi(job.value.id)
         Toast.success('操作成功', '任务已删除')
         deleteModal.value.hide()
         setTimeout(() => {

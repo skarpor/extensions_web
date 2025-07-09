@@ -11,6 +11,7 @@ from typing import Any, Dict, Optional
 from io import BytesIO
 import inspect
 
+from config import settings
 from core.db_manager import DBManager
 from core.file_manager import FileManager
 class SandboxException(Exception):
@@ -73,7 +74,6 @@ def load_module_in_sandbox(filepath: str) -> Any:
     except SandboxException:
         raise
     except Exception as e:
-        raise
         raise SandboxException(f"加载模块失败: {str(e)}")
 from sqlalchemy.ext.asyncio import AsyncSession
 async def execute_query_in_sandbox(module: Any, params: Dict, config: Dict, files: Optional[Dict] = None, file_manager: Optional[FileManager] = None,db_manager:Optional[DBManager]=None) -> Any:
@@ -84,6 +84,9 @@ async def execute_query_in_sandbox(module: Any, params: Dict, config: Dict, file
             file_api = FileManagerAPI(file_manager, module.__name__)
             params["files"] = files
             params["file_manager"] = file_api
+        if not module:
+            extension_id = params.get("extension_id")
+            module = load_module_in_sandbox(f"{settings.EXTENSIONS_DIR}/{extension_id}.py")
         parameters=[]
         # 执行查询,根据参数名称注入所需的参数
         # 获取execute_query方法的参数
@@ -104,7 +107,7 @@ async def execute_query_in_sandbox(module: Any, params: Dict, config: Dict, file
             result = await module.execute_query(*parameters)
         else:
             result = module.execute_query(*parameters)
-        print(result)
+        # print(result)
         return result
         
     except Exception as e:
