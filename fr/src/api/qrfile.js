@@ -59,13 +59,15 @@ export const scanVideo = async (videoFile) => {
 }
 
 // 获取二维码图片URL
-export const getQRCodeUrl = (sessionId, name) => {
-  return `/api/qrfile/qrcode/${sessionId}/${name}`
+export const getQRCodeUrl =async (sessionId, name) => {
+  return await axios.get(
+    `/api/qrfile/qrcode/${sessionId}/${name}`)
 }
 
 // 获取下载链接
-export const getDownloadUrl = (filename) => {
-  return `/api/qrfile/download/${filename}`
+export const getDownloadUrl =async (filename) => {
+  return await axios.get(
+     `/api/qrfile/download/${filename}`)
 }
 
 // 从文本内容恢复文件
