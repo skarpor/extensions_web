@@ -46,7 +46,7 @@ def create_app() -> FastAPI:
     # 允许 WebSocket 和跨域请求
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],  # 允许所有来源（生产环境应限制）
+        allow_origins=["*",'http://localhost:5173'],  # 允许所有来源（生产环境应限制）
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

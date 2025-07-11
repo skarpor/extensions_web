@@ -547,7 +547,7 @@
     methods: {
       async fetchCurrentUser() {
         try {
-          const response = await axios.get('/api/auth/current-user')
+          const response = await axios.get('/api/auth/me')
           this.currentUser = response.data
         } catch (error) {
           console.error('获取当前用户失败', error)

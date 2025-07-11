@@ -1,12 +1,12 @@
 //axios的配置文件
 import axios from 'axios'
 import Toast from '@/utils/toast'
-const host='localhost'
-const port='8000'
+const host=import.meta.env.VITE_HOST
+const port=import.meta.env.VITE_PORT
 // 配置axios
 axios.defaults.baseURL = `http://${host}:${port}`
 axios.defaults.timeout = 15000  // 增加超时时间
-axios.defaults.withCredentials = true  // 允许跨域请求发送cookies
+//axios.defaults.withCredentials = true  // 允许跨域请求发送cookies
 
 // 添加请求拦截器，从localStorage中获取token
 axios.interceptors.request.use(

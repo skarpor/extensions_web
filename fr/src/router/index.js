@@ -152,12 +152,6 @@ const router = createRouter({
       component: () => import('../views/extension/newauto.vue'),
       meta: { requiresAuth: true, title: '新自动' }
     },
-    {
-      path: '/danmu',
-      name: 'danmu',
-      component: () => import('../views/Danmu.vue'),
-      meta: { title: '弹幕演示' }
-    },
     //{
     //  path: '/extension-query/:id',
     //  name: 'extension-query-detail',

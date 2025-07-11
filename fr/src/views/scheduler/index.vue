@@ -178,7 +178,7 @@
             <p>在指定的日期和时间执行一次，执行后自动从调度器中移除。</p>
             <p><strong>例如：</strong></p>
             <ul>
-              <li>2023-12-31 23:59:59</li>
+              <li>2025-12-31 23:59:59</li>
               <li>明天上午10点</li>
               <li>1小时后</li>
             </ul>
@@ -220,7 +220,8 @@ import Toast from '@/utils/toast.js';
 export default {
     props: ['activeTab'], // 添加这行
     setup(props) {
-    const jobs = ref([]);
+	const xx=props.activeTab; // 可以访问 props.activeTab
+	const jobs = ref([]);
     const groupedJobs = ref({});
     const taskTypes = ref({});
     const jobToDelete = ref(null);

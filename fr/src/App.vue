@@ -31,7 +31,7 @@ async function initWebSocket() {
     return;
   }
 
-  danmuSocket = new WebSocket(`ws://localhost:8000/api/danmu/ws`);
+  danmuSocket = new WebSocket(`ws://${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/api/danmu/ws`);
 
   danmuSocket.onopen = () => {
     Toast.success('WebSocket连接已建立');

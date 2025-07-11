@@ -60,10 +60,6 @@
                 <h2>日志查询</h2>
                 <p>查看系统运行日志</p>
             </div>
-          <div class="card" @click="navigateTo('/danmu')">
-                <h2>弹幕</h2>
-                <p>弹幕</p>
-            </div>
 
         </div>
     </div>
