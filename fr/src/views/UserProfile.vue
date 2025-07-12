@@ -103,7 +103,7 @@
                 label="新密码"
                 type="password"
                 outlined
-                :rules="passwordRules"
+
               ></v-text-field>
             </v-col>
             <v-col cols="12" md="6">
@@ -162,7 +162,7 @@
                   class="mr-2 mb-2"
                   small
                 >
-                  {{ role }}
+                  {{ role.name }}
                 </v-chip>
                 <span v-if="!userInfo.roles || userInfo.roles.length === 0">无角色</span>
               </div>
@@ -353,6 +353,10 @@ export default {
 <style scoped>
 .user-profile {
   padding: 20px;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+
 }
 
 .info-item {
@@ -368,6 +372,7 @@ export default {
 
 .value {
   flex-grow: 1;
+
 }
 
 .permissions-list {

@@ -102,7 +102,7 @@ async def update_user(
     db: AsyncSession = Depends(get_db),
     user_id: int,
     user_in: UserUpdate,
-    current_user: UserModel = Depends(auth.get_current_superuser),
+    current_user: UserModel = Depends(manage_users),
 ) -> Any:
     """
     更新用户信息（仅超级管理员）

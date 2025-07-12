@@ -38,8 +38,8 @@ axios.interceptors.response.use(
   function (error) {
     // 更完善的错误处理
     if (error.response) {
-      // 服务器响应了，但状态码不在2xx范围内
-      if (error.response.status === 401) {
+      // 服务器响应了，但状态码不在2xx范围内，401错误并且当前页面不是登录页
+      if (error.response.status === 401 && window.location.pathname !== '/login') {
         Toast.error('认证失败，请重新登录')
         localStorage.removeItem('token')
         window.location.href = '/login'

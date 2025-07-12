@@ -25,6 +25,10 @@ class UserCreate(UserBase):
 class UserUpdate(UserBase):
     """用户更新模型"""
     password: Optional[str] = None
+class UserUpdatePassword(BaseModel):
+    """用户更新密码模型"""
+    old_password: str
+    new_password: str
 
 class UserInDBBase(UserBase, BaseSchema):
     """数据库中的用户模型"""

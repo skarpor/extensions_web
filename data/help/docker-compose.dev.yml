@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  # 开发环境后端服务
+  backend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      target: development
+    container_name: data-query-backend-dev
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DATABASE_URL=sqlite+aiosqlite:///app/data/database.sqlite
+      - SECRET_KEY=dev-secret-key
+      - ALLOW_REGISTER=true
+      - DEBUG=true
+      - RELOAD=true
+      - DATA_DIR=/app/data
+    volumes:
+      # 开发时挂载源代码，支持热重载
+      - .:/app
+      - ./docker-data/data:/app/data
+      - ./docker-data/logs:/app/logs
+      # 排除 node_modules 和其他不需要的目录
+      - /app/fr/node_modules
+      - /app/fr/dist
+    depends_on:
+      - redis-dev
+    networks:
+      - data-query-dev-network
+    command: ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  # 开发环境前端服务 (Vite 开发服务器)
+  frontend-dev:
+    build:
+      context: ./fr
+      dockerfile: Dockerfile.dev
+    container_name: data-query-frontend-dev
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    volumes:
+      # 挂载前端源代码
+      - ./fr:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_API_BASE_URL=http://localhost:8000
+    networks:
+      - data-query-dev-network
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+
+  # 开发环境 Redis
+  redis-dev:
+    image: redis:7-alpine
+    container_name: data-query-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./docker-data/redis-dev:/data
+    networks:
+      - data-query-dev-network
+
+  # 数据库管理工具
+  adminer-dev:
+    image: adminer:latest
+    container_name: data-query-adminer-dev
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    networks:
+      - data-query-dev-network
+
+networks:
+  data-query-dev-network:
+    driver: bridge

@@ -15,6 +15,7 @@ from api.v1.endpoints.scheduler import router as scheduler_router
 from api.v1.endpoints.logger import router as log_router
 from api.v1.endpoints.qrfile import router as qrfile_router  # 导入二维码处理路由
 from api.v1.endpoints.danmu import router as danmu_router  # 导入弹幕路由
+from api.v1.endpoints.help import router as help_router  # 导入帮助路由
 
 api_router = APIRouter()
 
@@ -32,3 +33,4 @@ api_router.include_router(scheduler_router, prefix="/scheduler", tags=["schedule
 api_router.include_router(log_router, prefix="/log", tags=["log"])
 api_router.include_router(qrfile_router, prefix="/qrfile", tags=["qrfile"])  # 添加二维码路由
 api_router.include_router(danmu_router, prefix="/danmu", tags=["弹幕"])  # 添加二维码路由
+api_router.include_router(help_router, prefix="/help", tags=["帮助"])  # 添加帮助路由

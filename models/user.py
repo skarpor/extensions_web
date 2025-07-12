@@ -41,7 +41,7 @@ class User(BaseModel):
     # 角色和权限
     # roles = Column(JSON, default=list)  # 用户角色列表
     # permissions = Column(JSON, default=list)  # 用户权限列表
-    roles = relationship("Role", secondary=user_role, back_populates="users")
+    roles = relationship("Role", secondary=user_role, back_populates="users",lazy="selectin")
 
     # 时间戳
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -166,7 +166,7 @@ class Role(BaseModel):
     # 与用户的多对多关系
     users = relationship("User", secondary=user_role, back_populates="roles")
     # 与权限的多对多关系
-    permissions = relationship("Permission", secondary=role_permission, back_populates="roles")
+    permissions = relationship("Permission", secondary=role_permission, back_populates="roles",lazy="selectin")
 
 
 class Permission(BaseModel):
@@ -181,3 +181,34 @@ class Permission(BaseModel):
 
     # 与角色的多对多关系
     roles = relationship("Role", secondary=role_permission, back_populates="permissions")
+
+
+# class DBRole(BaseModel):
+#     __tablename__ = "roles"
+#
+#     id = Column(Integer, primary_key=True, index=True)
+#     name = Column(String, unique=True, index=True)
+#     description = Column(String)
+#
+#     permissions = relationship(
+#         "DBPermission",
+#         secondary="role_permission",
+#         lazy="selectin",  # 使用selectin加载策略提高性能
+#         back_populates="roles"
+#     )
+#
+#
+# class DBPermission(BaseModel):
+#     __tablename__ = "permissions"
+#
+#     id = Column(Integer, primary_key=True, index=True)
+#     code = Column(String, unique=True)
+#     name = Column(String)
+#     description = Column(String)
+#
+#     roles = relationship(
+#         "DBRole",
+#         secondary="role_permission",
+#         lazy="selectin",
+#         back_populates="permissions"
+#     )

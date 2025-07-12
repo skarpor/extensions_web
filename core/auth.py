@@ -252,10 +252,10 @@ async def update_user(db: AsyncSession, db_obj: User, obj_in: UserCreate) -> Use
     db.add(user)
     await db.commit()
     return user
-async def update_password(db: AsyncSession, db_obj: User, obj_in: UserCreate) -> User:
+async def update_password(db: AsyncSession, db_obj: User, new_password: str) -> User:
     """更新用户密码"""
     user = db_obj
-    user.password = get_password_hash(obj_in.password)
+    user.hashed_password = get_password_hash(new_password)
     db.add(user)
     await db.commit()
     return user

@@ -8,6 +8,8 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
+from sqlalchemy.orm import selectinload
+
 from models.user import User as DBUser, Role as DBRole, Permission as DBPermission, user_role, role_permission
 from config import settings
 from db.session import get_db
@@ -15,7 +17,8 @@ from schemas.token import Token
 from schemas.user import UserCreate, User, LoginResponse, UserUpdate, Role, RoleCreate, RoleUpdate, Permission, PermissionCreate, PermissionUpdate, UserWithRoles, AssignRoleRequest
 from core import auth
 from core.logger import auth_logger
-from core.auth import PermissionChecker
+from core.auth import PermissionChecker, get_password_hash
+
 router = APIRouter()
 logger = auth_logger
 
@@ -291,16 +294,16 @@ async def update_user(user_data: UserUpdate, db: AsyncSession = Depends(get_db),
 
 # 更新用户密码
 @router.put("/me/password")
-async def update_password(password_data: UserUpdate, db: AsyncSession = Depends(get_db),current_user: User = Depends(auth.get_current_user)):
+async def update_password(password_data: Dict, db: AsyncSession = Depends(get_db),current_user: User = Depends(auth.get_current_user)):
     """
     更新当前用户密码
     """
-    # 获取当前用户
-    current_user = await db.execute(select(DBUser).filter(DBUser.id == current_user.id))
+    # 通过id及密码获取当前用户
+    current_user = await db.execute(select(DBUser).filter(DBUser.id == current_user.id ))
     user = current_user.scalar_one_or_none()
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="用户不存在")
-    return await auth.update_password(db, user, password_data)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="验证失败")
+    return await auth.update_password(db, user, password_data.get("new_password"))
 
 # 获取用户列表
 @router.get("/users")
@@ -466,45 +469,70 @@ async def get_roles(
     roles = result.scalars().all()
     return roles
 
+
 @router.post("/roles", response_model=Role)
 async def create_role(
-    role_in: RoleCreate,
-    db: AsyncSession = Depends(get_db),
-    current_user: DBUser = Depends(auth.get_current_superuser),
+        role_in: RoleCreate,
+        db: AsyncSession = Depends(get_db),
+        current_user: DBUser = Depends(auth.get_current_superuser),
 ):
     """创建角色"""
-    # 检查角色名是否已存在
-    query = select(DBRole).where(DBRole.name == role_in.name)
-    result = await db.execute(query)
-    if result.scalar_one_or_none():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="角色名已存在"
+    try:
+        # 检查角色名是否已存在
+        existing_role = await db.execute(
+            select(DBRole).where(DBRole.name == role_in.name))
+        if existing_role.scalar_one_or_none():
+
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="角色名已存在"
+            )
+
+        # 创建新角色
+        db_role = DBRole(
+            name=role_in.name,
+            description=role_in.description
         )
-    
-    # 创建新角色
-    db_role = DBRole(
-        name=role_in.name,
-        description=role_in.description
-    )
-    db.add(db_role)
-    await db.commit()
-    await db.refresh(db_role)
-    
-    # 添加权限
-    if role_in.permission_ids:
-        for permission_id in role_in.permission_ids:
-            # 检查权限是否存在
-            query = select(DBPermission).where(DBPermission.id == permission_id)
-            result = await db.execute(query)
-            db_permission = result.scalar_one_or_none()
-            if db_permission:
-                db_role.permissions.append(db_permission)
-        
-        await db.commit()
+        db.add(db_role)
+        await db.flush()
         await db.refresh(db_role)
-    
-    return db_role
+
+        # 添加权限 - 需要确保权限存在并正确关联
+        if role_in.permission_ids:
+            # 先获取所有权限
+            permissions = await db.execute(
+                select(DBPermission).where(DBPermission.id.in_(role_in.permission_ids))
+            )
+            valid_permissions = permissions.scalars().all()
+
+            # 检查是否有无效权限ID
+            if len(valid_permissions) != len(role_in.permission_ids):
+                invalid_ids = set(role_in.permission_ids) - {p.id for p in valid_permissions}
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"以下权限ID不存在: {invalid_ids}"
+                )
+
+            # 关联权限到角色
+            for permission in valid_permissions:
+                db_role.permissions.append(permission)
+
+            await db.commit()
+            await db.refresh(db_role)
+
+        return db_role
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"创建角色时发生错误: {str(e)}")
+        raise
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="创建角色时发生错误"
+        )
+
 
 @router.put("/roles/{role_id}", response_model=Role)
 async def update_role(
@@ -588,7 +616,8 @@ async def get_user_roles(
 ):
     """获取用户角色"""
     # 获取用户
-    query = select(DBUser).where(DBUser.id == user_id)
+    # 使用selectin加载策略预先加载roles
+    query = select(DBUser).options(selectinload(DBUser.roles)).where(DBUser.id == user_id)
     result = await db.execute(query)
     db_user = result.scalar_one_or_none()
     if not db_user:

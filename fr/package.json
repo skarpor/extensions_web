@@ -18,6 +18,7 @@
     "element-plus": "^2.10.2",
     "marked": "^15.0.12",
     "pinia": "^3.0.3",
+    "prismjs": "^1.30.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.1",
     "vue-toastification": "^2.0.0-rc.5",

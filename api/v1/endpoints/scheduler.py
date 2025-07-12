@@ -5,7 +5,6 @@
 """
 from fastapi import APIRouter, Request, Depends, HTTPException, Form, Query
 from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.templating import Jinja2Templates
 from typing import Dict, Any, List, Optional, Union
 import datetime
 import json
@@ -25,7 +24,6 @@ from models.user import User
 logger = get_logger("scheduler")
 router = APIRouter()
 from config import settings
-templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
 
 # 任务类型定义
 TASK_TYPES = {
@@ -43,88 +41,7 @@ example_tasks = {
     "tasks.example.backup_database": "数据库备份"
 }
 
-# 页面路由
-@router.get("/", response_class=HTMLResponse)
-async def scheduler_page(request: Request, user=Depends(get_current_user)):
-    """定时任务管理页面"""
-    # 获取所有任务
-    scheduler = request.app.state.scheduler
-    jobs = await scheduler.get_jobs()
-    
-    # 按任务类型分组
-    grouped_jobs = {
-        "cron": [],
-        "interval": [],
-        "date": []
-    }
-    
-    for job in jobs:
-        job_type = "cron" if "cron" in job["trigger"].lower() else \
-                  "interval" if "interval" in job["trigger"].lower() else "date"
-        grouped_jobs[job_type].append(job)
-    
-    return templates.TemplateResponse(
-        "scheduler/index.html",
-        {
-            "request": request,
-            "jobs": jobs,
-            "grouped_jobs": grouped_jobs,
-            "task_types": TASK_TYPES,
-            "example_tasks": example_tasks,
-            "user": user
-        }
-    )
 
-@router.get("/job/{job_id}")
-async def job_detail_page(request: Request, job_id: str, user=Depends(get_current_user)):
-    """任务详情页面"""
-    scheduler = request.app.state.scheduler
-    job = await scheduler.get_job(job_id)
-    
-    if not job:
-        return
-
-    # 确定任务类型
-    job_type = "cron" if "cron" in job["trigger"].lower() else \
-              "interval" if "interval" in job["trigger"].lower() else "date"
-    job['active']=job.get("next_run_time")
-    job['user']=user
-    job['job_type']=job_type
-    return job
-    return templates.TemplateResponse(
-        "scheduler/job_detail.html",
-        {
-            "request": request,
-            "job": job,
-            "job_type": job_type,
-            "task_types": TASK_TYPES,
-            "user": user
-        }
-    )
-
-@router.get("/add", response_class=HTMLResponse)
-async def add_job_page(request: Request, user=Depends(get_current_user)):
-    """添加任务页面"""
-    # 获取所有扩展中的扩展名及execute_query方法，以便添加定时任务
-    extensions = await get_extensions()
-    extension_methods = [
-        {
-            "extension_name": extension['name'],
-            "method_name": "execute_query",
-            "extension_id": extension['id']
-        }
-        for extension in extensions
-    ]
-    
-    return templates.TemplateResponse(
-        "scheduler/add_job.html",
-        {
-            "request": request,
-            "task_types": TASK_TYPES,
-            "extension_methods": extension_methods,
-            "user": user
-        }
-    )
 
 # API路由
 
@@ -470,66 +387,6 @@ class JobResponse(BaseModel):
     job_id: Optional[str] = None
     detail: Optional[str] = None
 
-@router.get("/jobs/{job_id}", response_class=HTMLResponse)
-async def job_detail_page(request: Request, job_id: str):
-    """任务详情页面"""
-    scheduler = request.app.state.scheduler
-    job = await scheduler.get_job(job_id)
-    
-    if not job:
-        return templates.TemplateResponse(
-            "scheduler/job_detail.html", 
-            {
-                "request": request,
-                "job": None
-            }
-        )
-    
-    # 添加更多有用的任务信息
-    job_info = job.copy()
-    
-    # 确定任务类型
-    if job.get("trigger").startswith("cron"):
-        job_info["type"] = "cron"
-        # 从trigger中提取cron表达式
-        trigger_parts = job.get("trigger").split(":", 1)[1]
-        job_info["cron_expression"] = trigger_parts
-        job_info["cron_description"] = "每" + _describe_cron(trigger_parts)
-    elif job.get("trigger").startswith("interval"):
-        job_info["type"] = "interval"
-        interval_parts = job.get("trigger").split(":", 1)[1]
-        job_info["interval_description"] = _describe_interval(interval_parts)
-    else:
-        job_info["type"] = "date"
-    
-    # 格式化时间
-    if job_info.get("next_run_time"):
-        job_info["next_run_time"] = _format_datetime(job_info["next_run_time"])
-    
-    # 添加最近执行记录信息（模拟数据，实际应用中应该从执行记录中获取）
-    # 在实际应用中，可以从日志或数据库中获取任务的执行记录
-    job_info["last_run_info"] = [
-        {
-            "run_time": _format_datetime(datetime.now()),
-            "result": "执行成功，处理了123条数据",
-            "duration": 1.25,
-            "success": True
-        },
-        {
-            "run_time": _format_datetime(datetime.now().replace(hour=datetime.now().hour-1)),
-            "result": None,
-            "duration": 0.85,
-            "success": True
-        }
-    ]
-    
-    return templates.TemplateResponse(
-        "scheduler/job_detail.html", 
-        {
-            "request": request,
-            "job": job_info
-        }
-    )
 
 @router.get("/api/jobs", response_class=JSONResponse)
 async def get_all_jobs(request: Request):
@@ -723,69 +580,3 @@ async def delete_job(request: Request, job_id: str):
         return {"success": True, "message": "任务已删除"}
     except Exception as e:
         return {"success": False, "detail": str(e)}
-
-def _format_datetime(dt: datetime) -> str:
-    """格式化日期时间为友好格式"""
-    if not dt:
-        return ""
-    
-    local_tz = pytz.timezone('Asia/Shanghai')
-    
-    # 如果dt不包含时区信息，假定为UTC时间并转换为本地时间
-    if dt.tzinfo is None:
-        dt = pytz.utc.localize(dt).astimezone(local_tz)
-    elif dt.tzinfo != local_tz:
-        dt = dt.astimezone(local_tz)
-    
-    return dt.strftime("%Y-%m-%d %H:%M:%S")
-
-def _describe_cron(cron_expression: str) -> str:
-    """描述cron表达式"""
-    parts = cron_expression.split()
-    if len(parts) < 6:
-        return "自定义时间"
-    
-    second, minute, hour, day, month, day_of_week = parts
-    
-    if second == "0" and minute == "0" and hour == "0" and day == "*" and month == "*" and day_of_week == "*":
-        return "天 00:00:00"
-    elif second == "0" and minute == "0" and hour == "*" and day == "*" and month == "*" and day_of_week == "*":
-        return "小时 00:00"
-    elif second == "0" and minute == "*" and hour == "*" and day == "*" and month == "*" and day_of_week == "*":
-        return "分钟 :00秒"
-    elif second == "0" and minute == "0" and hour == "9" and day == "*" and month == "*" and day_of_week == "1-5":
-        return "工作日 09:00:00"
-    elif second == "0" and minute == "0" and hour == "0" and day == "1" and month == "*" and day_of_week == "*":
-        return "月1日 00:00:00"
-    
-    return "自定义时间"
-
-def _describe_interval(interval_string: str) -> str:
-    """描述间隔时间"""
-    parts = interval_string.split(",")
-    interval_dict = {}
-    
-    for part in parts:
-        key, value = part.strip().split("=")
-        interval_dict[key.strip()] = int(value.strip())
-    
-    if "days" in interval_dict and interval_dict["days"] == 1:
-        return "每天"
-    elif "hours" in interval_dict and interval_dict["hours"] == 1:
-        return "每小时"
-    elif "minutes" in interval_dict and interval_dict["minutes"] == 1:
-        return "每分钟"
-    elif "seconds" in interval_dict and interval_dict["seconds"] == 1:
-        return "每秒"
-    
-    parts = []
-    if "days" in interval_dict and interval_dict["days"] > 0:
-        parts.append(f"{interval_dict['days']}天")
-    if "hours" in interval_dict and interval_dict["hours"] > 0:
-        parts.append(f"{interval_dict['hours']}小时")
-    if "minutes" in interval_dict and interval_dict["minutes"] > 0:
-        parts.append(f"{interval_dict['minutes']}分钟")
-    if "seconds" in interval_dict and interval_dict["seconds"] > 0:
-        parts.append(f"{interval_dict['seconds']}秒")
-    
-    return "每" + "".join(parts) 

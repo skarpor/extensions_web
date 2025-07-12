@@ -21,6 +21,15 @@ import 'vuetify/styles'
 import '@mdi/font/css/materialdesignicons.css'
 import vuetify from './plugins/vuetify'
 const app = createApp(App)
+// 注册全局指令
+app.directive('prism', {
+  mounted(el) {
+    Prism.highlightElement(el)
+  },
+  updated(el) {
+    Prism.highlightElement(el)
+  }
+})
 
 app.use(createPinia())
 app.use(router)

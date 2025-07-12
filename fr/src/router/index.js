@@ -109,8 +109,14 @@ const router = createRouter({
     {
       path: '/help',
       name: 'help',
-      component: () => import('../views/HelpView.vue'),
+      component: () => import('../views/HelpIndex.vue'),
       meta: { title: '帮助' }
+    },
+    {
+      path: '/help/:filename',
+      name: 'help-view',
+      component: () => import('../views/HelpView.vue'),
+      meta: { title: '帮助详情' }
     },
     {
       path: '/example',
