@@ -42,11 +42,12 @@ class Settings(BaseSettings):
     SECRET_KEY: str = secrets.token_urlsafe(32)
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
-    # 允许的图片类型
-    ALLOWED_IMAGE_TYPES:List[str] = ["image/jpeg", "image/png", "image/gif", "image/webp"]
-
-    # 创建上传目录
-    CHAT_UPLOAD_DIR:str = os.path.join("static", "chat", "img")
+    # 聊天图片配置
+    ALLOWED_IMAGE_TYPES: List[str] = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+    ALLOWED_IMAGE_EXTENSIONS: List[str] = [".jpg", ".jpeg", ".png", ".gif", ".webp"]
+    MAX_IMAGE_SIZE: int = 10 * 1024 * 1024  # 10MB
+    CHAT_UPLOAD_DIR: str = os.path.join("static", "chat", "img")
+    CHAT_IMAGE_URL_PREFIX: str = "/static/chat/img"
 
     # File storage
     FILE_UPLOAD_DIR: str = os.path.join(DATA_DIR,"file")

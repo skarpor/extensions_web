@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前端图标测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .icon-test {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .icon-test.success {
+            background: #f0f9ff;
+            border-color: #67c23a;
+        }
+        .icon-test.error {
+            background: #fef0f0;
+            border-color: #f56c6c;
+        }
+        .room-type-badge {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+        .public-badge { background: #67c23a; }
+        .group-badge { background: #e6a23c; }
+        .private-badge { background: #f56c6c; }
+        .channel-badge { background: #909399; }
+    </style>
+</head>
+<body>
+    <h1>聊天室类型图标测试</h1>
+    
+    <div class="icon-test success">
+        <div class="room-type-badge public-badge">🌍</div>
+        <div>
+            <strong>公开聊天室</strong>
+            <div>所有人都可以查看和参与聊天</div>
+        </div>
+    </div>
+    
+    <div class="icon-test success">
+        <div class="room-type-badge group-badge">🔒</div>
+        <div>
+            <strong>私密聊天室</strong>
+            <div>只有受邀请的成员才能查看和聊天</div>
+        </div>
+    </div>
+    
+    <div class="icon-test success">
+        <div class="room-type-badge private-badge">💬</div>
+        <div>
+            <strong>私聊</strong>
+            <div>仅限两人之间的对话</div>
+        </div>
+    </div>
+    
+    <div class="icon-test success">
+        <div class="room-type-badge channel-badge">📢</div>
+        <div>
+            <strong>频道</strong>
+            <div>只有管理员可以发言，其他人只能查看</div>
+        </div>
+    </div>
+    
+    <h2>权限模型说明</h2>
+    <ul>
+        <li><strong>公开聊天室</strong>：所有登录用户都可以直接参与，无需权限检查</li>
+        <li><strong>私密聊天室</strong>：只有受邀请的用户才能查看和参与</li>
+        <li><strong>私聊</strong>：仅限两个参与者之间，双方都可以查看</li>
+        <li><strong>频道</strong>：管理员发布，成员只读</li>
+    </ul>
+    
+    <h2>前端视觉区分</h2>
+    <ul>
+        <li>不同类型的聊天室使用不同的颜色和图标</li>
+        <li>聊天室名称旁边显示类型标识</li>
+        <li>头像使用不同的渐变色</li>
+        <li>类型标识徽章显示在头像右下角</li>
+    </ul>
+    
+    <script>
+        console.log('前端图标测试页面加载完成');
+        console.log('如果聊天页面无法加载，可能是图标导入问题');
+        console.log('建议使用 Element Plus 官方文档中的图标名称');
+    </script>
+</body>
+</html>

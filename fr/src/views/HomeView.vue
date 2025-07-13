@@ -60,7 +60,10 @@
                 <h2>日志查询</h2>
                 <p>查看系统运行日志</p>
             </div>
-
+            <div class="card" @click="navigateTo('/modern-chat')">
+                <h2>现代化聊天室</h2>
+                <p>现代化聊天室功能</p>
+            </div>
         </div>
     </div>
 </template>

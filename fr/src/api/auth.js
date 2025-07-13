@@ -4,7 +4,7 @@ import axios from '@/utils/axios' // 或其他 HTTP 客户端
 // 登录接口
 export const loginApi = async (credentials) => {
   try {
-    const response = await axios.post('/api/auth/login', credentials)
+    const response = await axios.post('/api/auth/login-json', credentials)
     // 如果登录成功，将token存储到localStorage
     if (response.data.access_token) {
       localStorage.setItem('token', response.data.access_token)
@@ -101,11 +101,52 @@ export const getUsersApi = async () => {
 // 获取所有权限
 export const getPermissionsApi = async () => {
   try {
-    const response = await axios.get('/api/auth/permissions')
+    const response = await axios.get('/api/auth/permissions/all')
     return response.data
   } catch (error) {
     console.error('获取权限列表失败:', error.response?.data || error.message)
     throw new Error('获取权限列表失败')
+  }
+}
+
+// 权限分组管理接口
+export const getPermissionGroupsApi = async () => {
+  try {
+    const response = await axios.get('/api/auth/permission-groups')
+    return response.data
+  } catch (error) {
+    console.error('获取权限分组失败:', error)
+    throw error
+  }
+}
+
+export const createPermissionGroupApi = async (groupData) => {
+  try {
+    const response = await axios.post('/api/auth/permission-groups', groupData)
+    return response.data
+  } catch (error) {
+    console.error('创建权限分组失败:', error)
+    throw error
+  }
+}
+
+export const updatePermissionGroupApi = async (groupId, groupData) => {
+  try {
+    const response = await axios.put(`/api/auth/permission-groups/${groupId}`, groupData)
+    return response.data
+  } catch (error) {
+    console.error('更新权限分组失败:', error)
+    throw error
+  }
+}
+
+export const deletePermissionGroupApi = async (groupId) => {
+  try {
+    const response = await axios.delete(`/api/auth/permission-groups/${groupId}`)
+    return response.data
+  } catch (error) {
+    console.error('删除权限分组失败:', error)
+    throw error
   }
 }
 // 获取用户权限

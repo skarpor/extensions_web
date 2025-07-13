@@ -383,7 +383,7 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
-from models.chat import ChatMessage,ChatRoom,ChatRoomMember
+from models.chat import ChatMessage, ChatRoom, chat_room_members
 async def handle_chat_message(session: AsyncSession, username: str, user_id: int, message_data: Dict):
     """处理聊天消息"""
     try:

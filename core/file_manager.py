@@ -81,7 +81,7 @@ class FileManager:
             #     raise ValueError("非法路径")
 
             # 创建目录（如果不存在）
-            # os.makedirs(target_dir, exist_ok=True)
+            os.makedirs(target_dir, exist_ok=True)
 
             # 生成安全文件名
             safe_filename = self._generate_safe_filename(file.filename)

@@ -20,13 +20,13 @@ export default defineConfig({
     open: true,
     host: '0.0.0.0',
     port: 5173,
-    // proxy: {
-    //   '/api': {
-    //     target: 'http://localhost:8000', // 后端地址
-    //     changeOrigin: true,
-    //     //rewrite: (path) => path.replace(/^\/api/, '') // 可选：去掉 /api 前缀
-    //   }
-    // }
+    proxy: {
+      '/static/chat/img': {
+        target: 'http://localhost:8000', // 后端地址
+        changeOrigin: true,
+        //rewrite: (path) => path.replace(/^\/api/, '') // 可选：去掉 /api 前缀
+      }
+    }
   }
 
 })

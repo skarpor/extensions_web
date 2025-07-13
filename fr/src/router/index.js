@@ -76,14 +76,38 @@ const router = createRouter({
     {
       path: '/settings',
       name: 'settings',
-      component: () => import('../views/settings/SettingsView.vue'),
+      component: () => import('../views/settings/SystemSettingsView.vue'),
       meta: { requiresAuth: true, requiresAdmin: true, title: '系统设置' }
     },
     {
       path: '/permissions',
       name: 'permissions',
-      component: () => import('../views/settings/PermissionView.vue'),
+      component: () => import('../views/settings/PermissionGroupView.vue'),
       meta: { requiresAuth: true, requiresAdmin: true, title: '权限管理' }
+    },
+    {
+      path: '/permissions-old',
+      name: 'permissions-old',
+      component: () => import('../views/settings/PermissionView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true, title: '权限管理(旧版)' }
+    },
+    {
+      path: '/system-settings',
+      name: 'system-settings',
+      component: () => import('../views/settings/SystemSettingsView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true, title: '系统设置' }
+    },
+    {
+      path: '/modern-chat',
+      name: 'modern-chat',
+      component: () => import('../views/chat/ModernChatView.vue'),
+      meta: { requiresAuth: true, title: '现代化聊天室' }
+    },
+    {
+      path: '/debug/token',
+      name: 'token-debug',
+      component: () => import('../views/debug/TokenDebug.vue'),
+      meta: { requiresAuth: false, title: 'Token调试' }
     },
     {
       path: '/scheduler',

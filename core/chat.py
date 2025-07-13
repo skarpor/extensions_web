@@ -6,7 +6,7 @@ from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends, HTTPException
 
-from models.chat import ChatRoomMember, ChatRoom
+from models.chat import ChatRoom, chat_room_members
 from schemas.chat import Chat, Message
 from db.session import get_db
 
@@ -91,10 +91,10 @@ async def get_room_or_404(session: AsyncSession, room_id: int) -> ChatRoom:
 
 async def is_room_member(session: AsyncSession, room_id: int, user_id: int) -> bool:
     """检查用户是否为聊天室成员"""
-    query = select(ChatRoomMember).where(
+    query = select(chat_room_members).where(
         and_(
-            ChatRoomMember.room_id == room_id,
-            ChatRoomMember.user_id == user_id
+            chat_room_members.c.room_id == room_id,
+            chat_room_members.c.user_id == user_id
         )
     )
     result = await session.execute(query)
@@ -103,11 +103,11 @@ async def is_room_member(session: AsyncSession, room_id: int, user_id: int) -> b
 
 async def is_room_admin(session: AsyncSession, room_id: int, user_id: int) -> bool:
     """检查用户是否为聊天室管理员"""
-    query = select(ChatRoomMember).where(
+    query = select(chat_room_members).where(
         and_(
-            ChatRoomMember.room_id == room_id,
-            ChatRoomMember.user_id == user_id,
-            ChatRoomMember.is_admin == True
+            chat_room_members.c.room_id == room_id,
+            chat_room_members.c.user_id == user_id,
+            chat_room_members.c.role == "admin"
         )
     )
     result = await session.execute(query)

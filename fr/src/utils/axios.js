@@ -15,10 +15,10 @@ axios.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
-    // 添加CORS相关配置
-    config.headers['Access-Control-Allow-Origin'] = '*'
-    config.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
-    config.headers['Access-Control-Allow-Headers'] = 'Origin, Content-Type, Accept, Authorization, X-Request-With'
+    // 确保Content-Type正确设置
+    if (!config.headers['Content-Type'] && config.data) {
+      config.headers['Content-Type'] = 'application/json'
+    }
     return config
   },
   function (error) {

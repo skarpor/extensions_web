@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录和WebSocket测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .log {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+        .log-entry.success {
+            color: green;
+        }
+        .log-entry.error {
+            color: red;
+        }
+        .log-entry.info {
+            color: blue;
+        }
+        button {
+            background: #409eff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #337ecc;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>登录和WebSocket测试</h1>
+    
+    <div class="container">
+        <h3>用户登录</h3>
+        <div>
+            <input type="text" id="username" placeholder="用户名" value="admin">
+            <input type="password" id="password" placeholder="密码" value="123">
+            <button onclick="login()">登录</button>
+        </div>
+        <p>登录状态: <span id="loginStatus">未登录</span></p>
+        <p>访问令牌: <span id="tokenDisplay">无</span></p>
+    </div>
+    
+    <div class="container">
+        <h3>WebSocket连接</h3>
+        <div>
+            <button onclick="connectWebSocket()">连接全局WebSocket</button>
+            <button onclick="disconnectWebSocket()">断开连接</button>
+            <button onclick="sendPing()">发送心跳</button>
+        </div>
+        <p>WebSocket状态: <span id="wsStatus">未连接</span></p>
+    </div>
+    
+    <div class="container">
+        <h3>操作日志</h3>
+        <div id="log" class="log"></div>
+        <button onclick="clearLog()">清空日志</button>
+    </div>
+
+    <script>
+        let globalWebSocket = null;
+        let accessToken = null;
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateLoginStatus(status, token = null) {
+            document.getElementById('loginStatus').textContent = status;
+            document.getElementById('tokenDisplay').textContent = token ? token.substring(0, 20) + '...' : '无';
+            accessToken = token;
+        }
+
+        function updateWSStatus(status) {
+            document.getElementById('wsStatus').textContent = status;
+        }
+
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                log('请输入用户名和密码', 'error');
+                return;
+            }
+
+            try {
+                log('尝试登录...', 'info');
+                
+                const formData = new FormData();
+                formData.append('username', username);
+                formData.append('password', password);
+
+                const response = await fetch('http://localhost:8000/api/auth/login', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    log('登录成功!', 'success');
+                    updateLoginStatus('已登录', data.access_token);
+                    
+                    // 保存token到localStorage
+                    localStorage.setItem('access_token', data.access_token);
+                    
+                    log('访问令牌已保存到localStorage', 'success');
+                } else {
+                    const errorText = await response.text();
+                    log(`登录失败: ${errorText}`, 'error');
+                    updateLoginStatus('登录失败');
+                }
+            } catch (error) {
+                log(`登录错误: ${error.message}`, 'error');
+                updateLoginStatus('登录错误');
+            }
+        }
+
+        function connectWebSocket() {
+            if (!accessToken) {
+                log('请先登录获取访问令牌', 'error');
+                return;
+            }
+
+            if (globalWebSocket) {
+                globalWebSocket.close();
+                globalWebSocket = null;
+            }
+
+            try {
+                const wsUrl = 'ws://localhost:8000/api/global-ws';
+                log(`尝试连接到: ${wsUrl}`, 'info');
+                
+                globalWebSocket = new WebSocket(wsUrl);
+
+                globalWebSocket.onopen = () => {
+                    log('WebSocket连接已建立', 'success');
+                    updateWSStatus('已连接');
+                    
+                    // 发送认证消息
+                    const authMessage = {
+                        type: 'auth',
+                        token: accessToken
+                    };
+                    
+                    globalWebSocket.send(JSON.stringify(authMessage));
+                    log('发送认证消息', 'info');
+                };
+
+                globalWebSocket.onmessage = (event) => {
+                    try {
+                        const message = JSON.parse(event.data);
+                        log(`收到消息: ${JSON.stringify(message, null, 2)}`, 'success');
+                        
+                        if (message.type === 'auth_response') {
+                            if (message.data && message.data.success) {
+                                log('WebSocket认证成功!', 'success');
+                                updateWSStatus('已认证');
+                            } else {
+                                log('WebSocket认证失败: ' + (message.data ? message.data.message : '未知错误'), 'error');
+                                updateWSStatus('认证失败');
+                            }
+                        }
+                    } catch (error) {
+                        log('解析WebSocket消息失败: ' + error.message, 'error');
+                    }
+                };
+
+                globalWebSocket.onclose = (event) => {
+                    log(`WebSocket连接已关闭 (代码: ${event.code}, 原因: ${event.reason})`, 'info');
+                    updateWSStatus('已断开');
+                };
+
+                globalWebSocket.onerror = (error) => {
+                    log('WebSocket错误: ' + error.message, 'error');
+                    updateWSStatus('连接错误');
+                };
+
+            } catch (error) {
+                log('创建WebSocket连接失败: ' + error.message, 'error');
+            }
+        }
+
+        function disconnectWebSocket() {
+            if (globalWebSocket) {
+                globalWebSocket.close();
+                globalWebSocket = null;
+                log('主动断开WebSocket连接', 'info');
+            }
+        }
+
+        function sendPing() {
+            if (!globalWebSocket || globalWebSocket.readyState !== WebSocket.OPEN) {
+                log('WebSocket未连接', 'error');
+                return;
+            }
+
+            const pingMessage = {
+                type: 'ping'
+            };
+
+            globalWebSocket.send(JSON.stringify(pingMessage));
+            log('发送心跳消息', 'info');
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        // 页面加载时检查是否有保存的token
+        window.onload = () => {
+            log('页面已加载', 'info');
+            
+            const savedToken = localStorage.getItem('access_token');
+            if (savedToken) {
+                log('发现保存的访问令牌', 'info');
+                updateLoginStatus('已登录', savedToken);
+            }
+        };
+    </script>
+</body>
+</html>

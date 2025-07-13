@@ -16,13 +16,17 @@ from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from core.auth import init_permissions, init_users
+from core.auth import init_permissions, init_users, init_default_roles
 from api.v1.api import api_router
 from core.logger import get_logger
 from core.extension_manager import ExtensionManager
 from db.session import init_models, AsyncSessionLocal
 from api.v1.endpoints.extensions import init_manager
+from core.middleware import ExpiryCheckMiddleware, SecurityHeadersMiddleware, RequestLoggingMiddleware
+from core.config_manager import config_manager
+# from core.chat_manager import start_cleanup_task  # 已移除
 import uvicorn
+import asyncio
 from config import settings
 
 logger = get_logger("main")
@@ -42,15 +46,19 @@ def create_app() -> FastAPI:
     )
 
     # 设置CORS
-    # if settings.BACKEND_CORS_ORIGINS:
-    # 允许 WebSocket 和跨域请求
+    # 开发环境允许所有来源，避免代理IP变化导致的问题
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*",'http://localhost:5173'],  # 允许所有来源（生产环境应限制）
-        allow_credentials=True,
+        allow_origins=["*"],  # 允许所有来源（开发环境）
+        allow_credentials=False,  # 当allow_origins=["*"]时，必须设置为False
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # 添加自定义中间件
+    app.add_middleware(RequestLoggingMiddleware)
+    app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(ExpiryCheckMiddleware)
 
     # 挂载静态文件
     app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -133,12 +141,15 @@ async def lifespan(app: FastAPI):
         # 现在db是真正的AsyncSession实例
         await init_users(db)
         await init_permissions(db)
+        await init_default_roles(db)
         # extension_manager = ExtensionManager(app)
         init_manager(app.state.extension_manager)
 
         # 加载所有扩展
         await extension_manager.load_all_extensions(db=db)
     logger.info("应用启动完成")
+
+    # 启动聊天室清理任务 (已移除)
     yield
     # Clean up the ML models and release the resources
     await stop_scheduler()
@@ -174,6 +185,13 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 
 if __name__ == "__main__":
+    # 删除数据库
+    import os
+    try:
+        os.remove("database.sqlite")
+        print('删除')
+    except:
+        pass
     uvicorn.run(
         app,
         host=settings.HOST,

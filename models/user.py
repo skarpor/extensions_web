@@ -60,9 +60,13 @@ class User(BaseModel):
     extensions = relationship("Extension", back_populates="creator", cascade="all, delete-orphan")
     activities = relationship("ActivityLog", back_populates="user", cascade="all, delete-orphan")
     chat_rooms = relationship("ChatRoom", foreign_keys="ChatRoom.created_by", back_populates="creator")
-    chat_room_memberships = relationship("ChatRoomMember", back_populates="user")
+    # chat_room_memberships = relationship("ChatRoomMember", back_populates="user")  # 已移除
     sent_messages = relationship("ChatMessage", foreign_keys="ChatMessage.sender_id", back_populates="sender")
-    received_messages = relationship("ChatMessage", foreign_keys="ChatMessage.receiver_id", back_populates="receiver")
+    # received_messages = relationship("ChatMessage", foreign_keys="ChatMessage.receiver_id", back_populates="receiver")  # 新模型中没有receiver_id
+
+    # 现代化聊天室关系（暂时注释，避免循环依赖）
+    # joined_rooms = relationship("ChatRoom", secondary="chat_room_members_new", back_populates="members")
+    # created_modern_rooms = relationship("ChatRoom", foreign_keys="ChatRoom.created_by")
 
     # def __init__(self, **kwargs):
     #     """初始化用户实例"""
@@ -89,52 +93,6 @@ class User(BaseModel):
                     return True
         return False
 
-    # def add_role(self, role: str) -> None:
-    #     """添加角色"""
-    #     if role not in self.roles:
-    #         self.roles.append(role)
-    
-    # def remove_role(self, role: str) -> None:
-    #     """移除角色"""
-    #     if role in self.roles:
-    #         self.roles.remove(role)
-    #
-    # def add_permission(self, permission: str) -> None:
-    #     """添加权限"""
-    #     if permission not in self.permissions:
-    #         self.permissions.append(permission)
-    #
-    # def remove_permission(self, permission: str) -> None:
-    #     """移除权限"""
-    #     if permission in self.permissions:
-    #         self.permissions.remove(permission)
-    
-    # def has_role(self, role: str) -> bool:
-    #     """检查是否具有指定角色"""
-    #     return role in self.roles
-    #
-    # def has_permission(self, permission: str) -> bool:
-    #     """检查是否具有指定权限"""
-    #     # 超级用户拥有所有权限
-    #     if self.is_superuser:
-    #         return True
-    #     return permission in self.permissions
-    #
-    # def update_settings(self, settings: dict) -> None:
-    #     """更新用户设置"""
-    #     self.settings.update(settings)
-    #
-    # def get_setting(self, key: str, default: Optional[any] = None) -> any:
-    #     """获取用户设置"""
-    #     return self.settings.get(key, default)
-    #
-    # def update_config(self, config: dict) -> None:
-    #     """更新用户配置"""
-    #     self.config.update(config)
-    #
-    # def get_config(self, key: str, default: Optional[any] = None) -> any:
-    #     """获取用户配置"""
-    #     return self.config.get(key, default)
     
     def to_dict(self) -> dict:
         """转换为字典"""
@@ -169,6 +127,21 @@ class Role(BaseModel):
     permissions = relationship("Permission", secondary=role_permission, back_populates="roles",lazy="selectin")
 
 
+class PermissionGroup(BaseModel):
+    """权限分组表"""
+    __tablename__ = 'permission_groups'
+
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(50), unique=True, nullable=False)  # 分组代码，如"user_management"
+    name = Column(String(100), nullable=False)  # 分组名称，如"用户管理"
+    description = Column(String(255))
+    sort_order = Column(Integer, default=0)  # 排序
+    icon = Column(String(50), nullable=True)  # 图标
+
+    # 与权限的一对多关系
+    permissions = relationship("Permission", back_populates="group", cascade="all, delete-orphan")
+
+
 class Permission(BaseModel):
     """权限表"""
     __tablename__ = 'permissions'
@@ -178,7 +151,10 @@ class Permission(BaseModel):
     name = Column(String(100), nullable=False)  # 权限名称，如"创建用户"
     url = Column(String(255),nullable=True)  # 权限URL，如"/user/create"
     description = Column(String(255))
+    group_id = Column(Integer, ForeignKey('permission_groups.id'), nullable=True)  # 所属分组
 
+    # 与分组的多对一关系
+    group = relationship("PermissionGroup", back_populates="permissions")
     # 与角色的多对多关系
     roles = relationship("Role", secondary=role_permission, back_populates="permissions")
 

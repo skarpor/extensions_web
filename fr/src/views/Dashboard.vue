@@ -310,7 +310,7 @@ export default {
 
 <style scoped>
 .dashboard {
-  padding: 20px;
+  padding: 20px;width: 100%;
 }
 
 .stat-card {

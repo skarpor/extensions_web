@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket连接测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .log {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+        .log-entry.success {
+            color: green;
+        }
+        .log-entry.error {
+            color: red;
+        }
+        .log-entry.info {
+            color: blue;
+        }
+        button {
+            background: #409eff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #337ecc;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>WebSocket连接测试</h1>
+    
+    <div class="container">
+        <h3>连接控制</h3>
+        <div>
+            <input type="text" id="tokenInput" placeholder="输入访问令牌" style="width: 300px;">
+            <button onclick="connectWebSocket()">连接全局WebSocket</button>
+            <button onclick="disconnectWebSocket()">断开连接</button>
+        </div>
+        <p>状态: <span id="status">未连接</span></p>
+    </div>
+    
+    <div class="container">
+        <h3>消息测试</h3>
+        <div>
+            <button onclick="sendPing()">发送心跳</button>
+            <button onclick="getOnlineUsers()">获取在线用户</button>
+            <button onclick="sendCustomMessage()">发送自定义消息</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h3>连接日志</h3>
+        <div id="log" class="log"></div>
+        <button onclick="clearLog()">清空日志</button>
+    </div>
+
+    <script>
+        let globalWebSocket = null;
+        let isConnected = false;
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateStatus(status) {
+            document.getElementById('status').textContent = status;
+        }
+
+        function connectWebSocket() {
+            const token = document.getElementById('tokenInput').value.trim();
+            if (!token) {
+                log('请输入访问令牌', 'error');
+                return;
+            }
+
+            if (globalWebSocket) {
+                globalWebSocket.close();
+                globalWebSocket = null;
+            }
+
+            try {
+                const wsUrl = 'ws://localhost:8000/api/global-ws';
+                log(`尝试连接到: ${wsUrl}`, 'info');
+                
+                globalWebSocket = new WebSocket(wsUrl);
+
+                globalWebSocket.onopen = () => {
+                    log('WebSocket连接已建立', 'success');
+                    updateStatus('已连接');
+                    isConnected = true;
+                    
+                    // 发送认证消息
+                    const authMessage = {
+                        type: 'auth',
+                        token: token
+                    };
+                    
+                    globalWebSocket.send(JSON.stringify(authMessage));
+                    log('发送认证消息', 'info');
+                };
+
+                globalWebSocket.onmessage = (event) => {
+                    try {
+                        const message = JSON.parse(event.data);
+                        log(`收到消息: ${JSON.stringify(message, null, 2)}`, 'success');
+                        
+                        if (message.type === 'auth_response') {
+                            if (message.data.success) {
+                                log('认证成功!', 'success');
+                                updateStatus('已认证');
+                            } else {
+                                log('认证失败: ' + message.data.message, 'error');
+                            }
+                        }
+                    } catch (error) {
+                        log('解析消息失败: ' + error.message, 'error');
+                    }
+                };
+
+                globalWebSocket.onclose = (event) => {
+                    log(`WebSocket连接已关闭 (代码: ${event.code}, 原因: ${event.reason})`, 'info');
+                    updateStatus('已断开');
+                    isConnected = false;
+                };
+
+                globalWebSocket.onerror = (error) => {
+                    log('WebSocket错误: ' + error.message, 'error');
+                    updateStatus('连接错误');
+                    isConnected = false;
+                };
+
+            } catch (error) {
+                log('创建WebSocket连接失败: ' + error.message, 'error');
+            }
+        }
+
+        function disconnectWebSocket() {
+            if (globalWebSocket) {
+                globalWebSocket.close();
+                globalWebSocket = null;
+                log('主动断开WebSocket连接', 'info');
+            }
+        }
+
+        function sendPing() {
+            if (!isConnected || !globalWebSocket) {
+                log('WebSocket未连接', 'error');
+                return;
+            }
+
+            const pingMessage = {
+                type: 'ping'
+            };
+
+            globalWebSocket.send(JSON.stringify(pingMessage));
+            log('发送心跳消息', 'info');
+        }
+
+        function getOnlineUsers() {
+            if (!isConnected || !globalWebSocket) {
+                log('WebSocket未连接', 'error');
+                return;
+            }
+
+            const message = {
+                type: 'get_online_users'
+            };
+
+            globalWebSocket.send(JSON.stringify(message));
+            log('请求在线用户列表', 'info');
+        }
+
+        function sendCustomMessage() {
+            if (!isConnected || !globalWebSocket) {
+                log('WebSocket未连接', 'error');
+                return;
+            }
+
+            const content = prompt('输入自定义消息内容:');
+            if (!content) return;
+
+            const message = {
+                type: 'custom',
+                data: {
+                    content: content
+                }
+            };
+
+            globalWebSocket.send(JSON.stringify(message));
+            log('发送自定义消息: ' + content, 'info');
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        // 页面加载时的提示
+        window.onload = () => {
+            log('WebSocket测试页面已加载', 'info');
+            log('请先获取访问令牌，然后点击"连接全局WebSocket"按钮', 'info');
+        };
+    </script>
+</body>
+</html>

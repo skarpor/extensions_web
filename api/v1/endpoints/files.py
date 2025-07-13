@@ -11,6 +11,7 @@ from fastapi.security import SecurityScopes
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core import auth
+from core.auth import upload_files, download_files, view_files, delete_files, manage_files
 from core.file_manager import FileManager
 from db.session import get_db
 from schemas.file import File as FileSchema
@@ -27,7 +28,7 @@ async def upload_file(
         *,
         db: AsyncSession = Depends(get_db),
         files: List[UploadFile] = File(...),
-        current_user: UserModel = Depends(auth.get_current_user),
+        current_user: UserModel = Depends(upload_files),
         file_path: str = Path(..., description="文件存储路径")
 ) -> Any:
     """
@@ -71,7 +72,7 @@ async def download_file(
     db: AsyncSession = Depends(get_db),
     file_id: int,
     request: Request,
-    current_user: UserModel = Depends(auth.get_current_user),
+    current_user: UserModel = Depends(download_files),
 ) -> Any:
     """
     下载文件
@@ -101,7 +102,7 @@ async def delete_file(
     db: AsyncSession = Depends(get_db),
     request: Request,
     file_id: int,
-    current_user: UserModel = Depends(auth.get_current_user),
+    current_user: UserModel = Depends(delete_files),
 ) -> Any:
     """
     删除文件
@@ -130,9 +131,9 @@ async def delete_file(
 async def get_files(
     *,
     db: AsyncSession = Depends(get_db),
-    current_user: UserModel = Depends(auth.get_current_user),
+    current_user: UserModel = Depends(view_files),
     request: Request,
-    
+
 ) -> Any:
     """
     获取当前用户的文件列表
@@ -150,9 +151,9 @@ async def get_files(
 
 # 获取文件列表
 @router.get("/list/{path:path}")
-async def get_files(
+async def get_files_by_path(
     path: str = Path(..., description="目录路径"),
-    current_user: UserModel = Depends(auth.get_current_user),
+    current_user: UserModel = Depends(view_files),
     db: AsyncSession = Depends(get_db)
 ):
     file_manager = FileManager(db)

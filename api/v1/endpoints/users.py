@@ -3,7 +3,7 @@
 """
 from typing import Any, List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core import auth
@@ -114,4 +114,89 @@ async def update_user(
             detail="用户不存在"
         )
     user = await auth.update_user(db, db_obj=user, obj_in=user_in)
-    return user 
+    return user
+
+@router.get("/search/users")
+async def search_users(
+    q: str = Query(..., description="搜索关键词"),
+    limit: int = Query(10, description="返回数量限制"),
+    current_user: UserModel = Depends(auth.get_current_active_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """搜索用户"""
+    try:
+        if not q or len(q.strip()) < 2:
+            return []
+
+        from sqlalchemy import select, and_, or_
+
+        search_term = f"%{q.strip()}%"
+
+        # 简化搜索逻辑，避免复杂的条件表达式
+        query = select(UserModel).where(
+            and_(
+                or_(
+                    UserModel.username.ilike(search_term),
+                    UserModel.nickname.ilike(search_term)
+                ),
+                UserModel.is_active == True,
+                UserModel.id != current_user.id  # 排除当前用户
+            )
+        ).order_by(UserModel.username).limit(limit)
+
+        result = await db.execute(query)
+        users = result.scalars().all()
+
+        # 转换为响应格式
+        user_list = []
+        for user in users:
+            user_list.append({
+                "id": user.id,
+                "username": user.username,
+                "nickname": user.nickname,
+                "avatar": getattr(user, 'avatar', None),
+                "is_active": user.is_active
+            })
+
+        return user_list
+
+    except Exception as e:
+        logger.error(f"搜索用户失败: {e}")
+        raise HTTPException(status_code=500, detail="搜索用户失败")
+
+@router.get("/contacts/recent")
+async def get_recent_contacts(
+    limit: int = Query(10, description="返回数量限制"),
+    current_user: UserModel = Depends(auth.get_current_active_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """获取最近联系人"""
+    try:
+        # 简单返回一些活跃用户作为最近联系人
+        from sqlalchemy import select, desc, and_
+
+        query = select(UserModel).where(
+            and_(
+                UserModel.is_active == True,
+                UserModel.id != current_user.id
+            )
+        ).order_by(desc(UserModel.created_at)).limit(limit)
+
+        result = await db.execute(query)
+        users = result.scalars().all()
+
+        user_list = []
+        for user in users:
+            user_list.append({
+                "id": user.id,
+                "username": user.username,
+                "nickname": user.nickname,
+                "avatar": getattr(user, 'avatar', None),
+                "is_active": user.is_active
+            })
+
+        return user_list
+
+    except Exception as e:
+        logger.error(f"获取最近联系人失败: {e}")
+        return []  # 失败时返回空列表

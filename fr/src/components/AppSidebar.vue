@@ -30,6 +30,13 @@
             <span>聊天</span>
           </router-link>
         </li>
+
+        <li>
+          <router-link to="/modern-chat" class="sidebar-item" active-class="active">
+            <i class="fas fa-comment-dots"></i>
+            <span class="sidebar-text">现代聊天室</span>
+          </router-link>
+        </li>
         
         <li>
           <router-link to="/extensions" active-class="active">
@@ -63,6 +70,13 @@
           <router-link to="/settings" active-class="active">
             <i class="fas fa-cog"></i>
             <span>系统设置</span>
+          </router-link>
+        </li>
+
+        <li v-if="userStore.user?.is_superuser">
+          <router-link to="/system-settings" class="sidebar-item" active-class="active">
+            <i class="fas fa-server"></i>
+            <span class="sidebar-text">高级设置</span>
           </router-link>
         </li>
       </ul>

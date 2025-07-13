@@ -48,6 +48,38 @@ from .token import Token
 class LoginResponse(Token):
     user:User
 
+# 新增权限分组相关模型
+class PermissionGroupBase(BaseModel):
+    """权限分组基础模型"""
+    code: str
+    name: str
+    description: Optional[str] = None
+    sort_order: Optional[int] = 0
+    icon: Optional[str] = None
+
+class PermissionGroupCreate(PermissionGroupBase):
+    """权限分组创建模型"""
+    pass
+
+class PermissionGroupUpdate(PermissionGroupBase):
+    """权限分组更新模型"""
+    code: Optional[str] = None
+    name: Optional[str] = None
+
+class PermissionGroup(PermissionGroupBase, BaseSchema):
+    """API响应中的权限分组模型"""
+    id: int
+
+    class Config:
+        from_attributes = True
+
+class PermissionGroupWithPermissions(PermissionGroup):
+    """带权限列表的权限分组模型"""
+    permissions: List["Permission"] = []
+
+    class Config:
+        from_attributes = True
+
 # 新增权限和角色相关模型
 class PermissionBase(BaseModel):
     """权限基础模型"""
@@ -55,6 +87,7 @@ class PermissionBase(BaseModel):
     name: str
     url: Optional[str] = None
     description: Optional[str] = None
+    group_id: Optional[int] = None
 
 class PermissionCreate(PermissionBase):
     """权限创建模型"""
@@ -68,7 +101,8 @@ class PermissionUpdate(PermissionBase):
 class Permission(PermissionBase, BaseSchema):
     """API响应中的权限模型"""
     id: int
-    
+    group: Optional[PermissionGroup] = None
+
     class Config:
         from_attributes = True
 
@@ -105,3 +139,6 @@ class AssignRoleRequest(BaseModel):
     """分配角色请求模型"""
     user_id: int
     role_ids: List[int]
+
+# 更新前向引用
+PermissionGroupWithPermissions.model_rebuild()

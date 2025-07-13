@@ -416,9 +416,9 @@
       connectWebSocket() {
         // 创建WebSocket连接
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-        const wsUrl = `${protocol}//${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/api/ws/chat/${this.currentUser.username}`
+        //const wsUrl = `${protocol}//${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/api/ws/chat/${this.currentUser.username}`
         
-        this.ws = new WebSocket(wsUrl)
+        this.ws = new WebSocket('')
         
         // WebSocket事件处理
         this.ws.onopen = this.handleSocketOpen
