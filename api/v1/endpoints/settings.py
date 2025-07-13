@@ -12,6 +12,7 @@ from schemas.setting import Setting as SettingSchema
 from schemas.setting import SettingCreate, SettingUpdate
 from config import settings
 from models.user import User
+from core.auth import view_settings,update_settings
 
 router = APIRouter()
 
@@ -19,7 +20,7 @@ router = APIRouter()
 async def read_settings(
     *,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(auth.get_current_active_user),
+    current_user: User = Depends(view_settings),
 ) -> Any:
     """
     获取当前用户的设置列表
@@ -32,7 +33,7 @@ async def create_setting(
     *,
     db: AsyncSession = Depends(get_db),
     setting_in: SettingCreate,
-    current_user: User = Depends(auth.get_current_active_user),
+    current_user: User = Depends(update_settings),
 ) -> Any:
     """
     创建新设置
@@ -62,7 +63,7 @@ async def read_setting(
     *,
     db: AsyncSession = Depends(get_db),
     setting_id: int,
-    current_user: User = Depends(auth.get_current_active_user),
+    current_user: User = Depends(view_setting),
 ) -> Any:
     """
     获取设置信息
@@ -86,7 +87,7 @@ async def update_setting(
     db: AsyncSession = Depends(get_db),
     setting_id: int,
     setting_in: SettingUpdate,
-    current_user: User = Depends(auth.get_current_active_user),
+    current_user: User = Depends(update_settings),
 ) -> Any:
     """
     更新设置

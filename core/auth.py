@@ -240,6 +240,8 @@ def require_any_permission(*permissions: str):
 
 # 系统管理权限
 manage_system = require_permissions("system:manage")
+view_settings = require_permissions("settings:view")
+update_settings = require_permissions("settings:update")
 
 # 用户管理权限
 manage_users = require_permissions("user:create", "user:update", "user:delete")
@@ -255,6 +257,15 @@ view_roles = require_permissions("role:read")
 update_roles = require_permissions("role:update")
 delete_roles = require_permissions("role:delete")
 
+# 数据库、表管理权限
+manage_database = require_permissions("database:manage")
+view_database = require_permissions("database:view")
+update_database = require_permissions("database:update")
+delete_database = require_permissions("database:delete")
+view_table = require_permissions("table:view")
+update_table = require_permissions("table:update")
+delete_table = require_permissions("table:delete")
+
 # 文件管理权限
 manage_files = require_permissions("file:manage")
 upload_files = require_permissions("file:upload")
@@ -262,8 +273,8 @@ download_files = require_permissions("file:download")
 view_files = require_permissions("file:view")
 delete_files = require_permissions("file:delete")
 # 文件夹管理
-create_dir = require_permissions("dir:create")
-delete_dir = require_permissions("dir:delete")
+create_dir = require_permissions("file:createdir")
+delete_dir = require_permissions("file:deletedir")
 
 # 扩展管理权限
 manage_extensions = require_permissions("extension:manage")
@@ -271,6 +282,7 @@ upload_extensions = require_permissions("extension:upload")
 view_extensions = require_permissions("extension:view")
 update_extensions = require_permissions("extension:update")
 delete_extensions = require_permissions("extension:delete")
+query_extensions = require_permissions("extension:execute")
 
 # 聊天管理权限
 manage_chats = require_permissions("chat:create", "chat:update", "chat:delete")
@@ -296,6 +308,28 @@ view_messages = require_permissions("message:read")
 update_messages = require_permissions("message:update")
 delete_messages = require_permissions("message:delete")
 
+# 日志权限
+view_logs = require_permissions("log:read")
+
+# 帮助文档权限
+view_help = require_permissions("help:read")
+delete_help = require_permissions("help:delete")
+upload_help = require_permissions("help:upload")
+
+# 二维码文件权限
+create_qrfile = require_permissions("qrfile:create")
+view_qrfile = require_permissions("qrfile:read")
+delete_qrfile = require_permissions("qrfile:delete")
+download_qrfile = require_permissions("qrfile:download")
+# 调度器权限
+manage_scheduler = require_permissions("scheduler:manage")
+create_scheduler = require_permissions("scheduler:create")
+view_scheduler = require_permissions("scheduler:read")
+update_scheduler = require_permissions("scheduler:update")
+delete_scheduler = require_permissions("scheduler:delete")
+execute_scheduler = require_permissions("scheduler:execute")
+resume_scheduler = require_permissions("scheduler:resume")
+pause_scheduler = require_permissions("scheduler:pause")
 # 组合权限验证
 file_read_write = require_any_permission("file:upload", "file:download", "file:view")
 extension_read_write = require_any_permission("extension:upload", "extension:view", "extension:update")

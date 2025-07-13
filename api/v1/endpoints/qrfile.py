@@ -25,8 +25,8 @@ import threading
 import asyncio
 import numpy as np
 
-from models.user import User
-from core.auth import get_current_user
+from schemas.user import User
+from core.auth import delete_qrfile,download_qrfile,get_current_user
 from db.session import get_db
 from config import settings
 from core.logger import get_logger
@@ -1050,7 +1050,7 @@ async def scan_video(
 @router.get("/download/{filename}")
 async def download_restored_file(
     filename: str,
-    # current_user: User = Depends(get_current_user),
+    current_user: User = Depends(download_qrfile),
 ):
     """
     下载恢复的文件

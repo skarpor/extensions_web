@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Path, Body, Upload
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 
-from core.auth import get_current_active_user, RoleChecker, PermissionChecker
+from core.auth import get_current_active_user, RoleChecker, PermissionChecker, view_database, view_table, update_table, delete_table, manage_database
 from core.db_manager import DBManager
 from schemas.database import (
     TableSchema, 
@@ -28,9 +28,6 @@ router = APIRouter()
 # 初始化数据库管理器
 db_manager = DBManager()
 
-# 权限检查器
-manage_database = PermissionChecker(["manage_database"])
-view_database = PermissionChecker(["view_database"])
 
 # --------------
 # 表管理API
@@ -64,7 +61,7 @@ async def initialize_database(
 
 @router.get("/tables", response_model=List[TableInfo])
 async def list_tables(
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(view_table)
 ):
     """
     获取所有表的列表
@@ -80,7 +77,7 @@ async def list_tables(
 async def create_table(
     table_name: str = Body(..., description="表名"),
     schema: TableSchema = Body(..., description="表结构定义"),
-    # current_user: User = Depends(manage_database)
+    current_user: User = Depends(update_table)
 ):
     """
     创建新表
@@ -99,7 +96,7 @@ async def create_table(
 @router.get("/tables/{table_name}/schema", response_model=Dict[str, Any])
 async def get_table_schema(
     table_name: str = Path(..., description="表名"),
-    # current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(view_table)
 ):
     """
     获取指定表的结构定义
@@ -119,7 +116,7 @@ async def get_table_schema(
 async def update_table(
     table_name: str = Path(..., description="表名"),
     schema: TableSchema = Body(..., description="表结构定义"),
-    # current_user: User = Depends(manage_database)
+    current_user: User = Depends(update_table)
 ):
     """
     更新表结构
@@ -138,7 +135,7 @@ async def update_table(
 @router.delete("/tables/{table_name}", status_code=200)
 async def delete_table(
     table_name: str = Path(..., description="表名"),
-    # current_user: User = Depends(manage_database)
+    current_user: User = Depends(delete_table)
 ):
     """
     删除指定表
@@ -166,7 +163,7 @@ async def get_table_data(
     search: Optional[str] = Query(None, description="搜索关键词"),
     sort_by: Optional[str] = Query(None, description="排序字段"),
     sort_desc: bool = Query(False, description="是否降序排序"),
-    # current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(view_table)
 ):
     """
     获取表数据，支持分页、搜索和排序
@@ -224,7 +221,7 @@ async def get_table_data(
 async def create_table_record(
     table_name: str = Path(..., description="表名"),
     data: Dict[str, Any] = Body(..., description="记录数据"),
-    # current_user: User = Depends(manage_database)
+    current_user: User = Depends(update_table)
 ):
     """
     在表中创建新记录,如果主键存在，则更新，否则插入
@@ -273,7 +270,7 @@ async def create_table_record(
 async def get_table_record(
     table_name: str = Path(..., description="表名"),
     record_id: Union[int, str] = Path(..., description="记录ID"),
-    # current_user: User = Depends(view_database)
+    current_user: User = Depends(view_table)
 ):
     """
     获取表中特定记录
@@ -313,7 +310,7 @@ async def update_table_record(
     table_name: str = Path(..., description="表名"),
     record_id: Union[int, str] = Path(..., description="记录ID"),
     data: Dict[str, Any] = Body(..., description="更新数据"),
-    # current_user: User = Depends(manage_database)
+    current_user: User = Depends(update_table)
 ):
     """
     更新表中特定记录
@@ -360,7 +357,7 @@ async def update_table_record(
 async def delete_table_record(
     table_name: str = Path(..., description="表名"),
     record_id: Union[int, str] = Path(..., description="记录ID"),
-    # current_user: User = Depends(manage_database)
+    current_user: User = Depends(delete_table)
 ):
     """
     删除表中特定记录
@@ -403,7 +400,7 @@ async def delete_table_record(
 async def execute_custom_query(
     table_name: str = Path(..., description="表名"),
     query: Dict[str, Any] = Body(..., description="自定义查询条件"),
-    # current_user: User = Depends(view_database)
+    current_user: User = Depends(view_table)
 ):
     """
     执行自定义查询，支持复杂条件和聚合操作
@@ -428,7 +425,7 @@ async def execute_custom_query(
 async def bulk_insert_data(
     table_name: str = Path(..., description="表名"),
     data: List[Dict[str, Any]] = Body(..., description="批量插入的数据列表"),
-    # current_user: User = Depends(manage_database)
+    current_user: User = Depends(update_table)
 ):
     """
     批量插入数据到指定表
@@ -484,7 +481,7 @@ async def bulk_insert_data(
 async def import_table_data(
     table_name: str = Path(..., description="表名"),
     file: UploadFile = File(..., description="要导入的CSV或JSON文件"),
-    # current_user: User = Depends(manage_database)
+    current_user: User = Depends(update_table)
 ):
     """
     从CSV或JSON文件导入数据到表
@@ -565,7 +562,7 @@ async def import_table_data(
 async def export_table_data(
     table_name: str = Path(..., description="表名"),
     format: str = Query("json", description="导出格式，支持json或csv"),
-    # current_user: User = Depends(view_database)
+    current_user: User = Depends(view_table)
 ):
     """
     导出表数据为JSON或CSV格式

@@ -11,7 +11,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 
 from core.help import get_file_list
 from core.logger import get_logger
-from core.auth import get_current_user, has_permission
+from core.auth import get_current_user
 from schemas.user import User
 from config import settings
 logger = get_logger("help")

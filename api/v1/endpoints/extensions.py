@@ -67,7 +67,7 @@ async def create_extension(
         render_type: str = Form(...),
         show_in_home: Optional[bool] = Form(None),
         file: UploadFile = File(...),
-        current_user: User = Depends(auth.get_current_active_user),
+        current_user: User = Depends(auth.upload_extensions),
 ) -> Any:
     """
     创建新扩展
@@ -125,7 +125,7 @@ async def get_extension(
         extension_id: str,
         # *,
         db: AsyncSession = Depends(get_db),
-        current_user: User = Depends(auth.get_current_active_user),
+        current_user: User = Depends(auth.view_extensions),
 ) -> Any:
     """
     获取扩展信息
@@ -147,7 +147,7 @@ async def update_extension(
         db: AsyncSession = Depends(get_db),
         extension_id: str,
         extension_in: ExtensionUpdate,
-        current_user: User = Depends(auth.get_current_active_user),
+        current_user: User = Depends(auth.update_extensions),
 ) -> Any:
     """
     更新扩展信息
@@ -178,7 +178,7 @@ async def delete_extension(
         *,
         db: AsyncSession = Depends(get_db),
         extension_id: str,
-        current_user: User = Depends(auth.get_current_active_user),
+        current_user: User = Depends(auth.delete_extensions),
 ) -> Any:
     """
     删除扩展
@@ -210,7 +210,7 @@ async def get_extension_config(
         *,
         db: AsyncSession = Depends(get_db),
         extension_id: str,
-        current_user: User = Depends(auth.get_current_active_user),
+        current_user: User = Depends(auth.view_extensions),
 ) -> Any:
     """
     获取扩展配置
@@ -231,7 +231,7 @@ async def get_extension_config(
         *,
         db: AsyncSession = Depends(get_db),
         extension_id: str,
-        current_user: User = Depends(auth.get_current_active_user),
+        current_user: User = Depends(auth.query_extensions),
 ) -> Any:
     """
     获取扩展配置

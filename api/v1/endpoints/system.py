@@ -10,10 +10,11 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 
 from core.config_manager import config_manager
-from core.auth import manage_system
+from core.auth import manage_system,view_settings,update_settings
 from core.logger import get_logger
 from db.session import get_db
 from models.user import User as DBUser
+from schemas.user import User
 
 router = APIRouter()
 logger = get_logger("settings")
@@ -77,7 +78,8 @@ class ExpiryInfo(BaseModel):
 @router.get("/settings", response_model=SystemSettings)
 async def get_system_settings(
     current_user: DBUser = Depends(manage_system),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    user:User=Depends(view_settings)
 ):
     """获取系统设置"""
     try:
@@ -95,7 +97,8 @@ async def get_system_settings(
 async def update_system_settings(
     settings: SystemSettings,
     current_user: DBUser = Depends(manage_system),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    user:User=Depends(update_settings)
 ):
     """更新系统设置"""
     try:
@@ -126,7 +129,8 @@ async def update_system_settings(
 async def update_secret_key(
     key_update: SecretKeyUpdate,
     current_user: DBUser = Depends(manage_system),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    user:User=Depends(update_settings)
 ):
     """更新系统密钥"""
     try:
@@ -164,7 +168,8 @@ async def get_expiry_info():
 @router.get("/config-status", response_model=Dict[str, Any])
 async def get_config_status(
     current_user: DBUser = Depends(manage_system),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    user:User=Depends(view_settings)
 ):
     """获取配置状态信息"""
     try:

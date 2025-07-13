@@ -11,7 +11,7 @@ from fastapi.security import SecurityScopes
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core import auth
-from core.auth import upload_files, download_files, view_files, delete_files, manage_files
+from core.auth import upload_files, download_files, view_files, delete_files, manage_files, create_dir, delete_dir
 from core.file_manager import FileManager
 from db.session import get_db
 from schemas.file import File as FileSchema
@@ -166,7 +166,7 @@ async def get_files_by_path(
 async def create_directory(
     *,
     db: AsyncSession = Depends(get_db),
-    current_user: UserModel = Depends(auth.get_current_user),
+    current_user: UserModel = Depends(create_dir),
     request: Request,
     name: str = Path(..., description="目录名称")
 ):
@@ -188,7 +188,7 @@ async def create_directory(
 async def delete_dir(
     *,
     db: AsyncSession = Depends(get_db),
-    current_user: UserModel = Depends(auth.get_current_user),
+    current_user: UserModel = Depends(delete_dir),
     request: Request,
     # security_scopes: SecurityScopes = Security(auth.has_permission,scopes = ["file:manager"]),
 ) -> Any:

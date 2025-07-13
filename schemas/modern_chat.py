@@ -18,6 +18,40 @@ class MessageType(str, Enum):
     video = "video"
     emoji = "emoji"
 
+class SystemMessageType(str, Enum):
+    """系统消息类型"""
+    # 加入申请相关
+    join_request = "join_request"                    # 申请加入
+    join_request_approved = "join_request_approved"  # 申请通过
+    join_request_rejected = "join_request_rejected"  # 申请拒绝
+
+    # 成员管理
+    member_joined = "member_joined"                  # 成员加入
+    member_left = "member_left"                      # 成员离开
+    member_kicked = "member_kicked"                  # 成员被踢出
+    member_invited = "member_invited"                # 成员被邀请
+
+    # 权限变更
+    role_changed = "role_changed"                    # 角色变更
+    admin_promoted = "admin_promoted"                # 提升为管理员
+    admin_demoted = "admin_demoted"                  # 取消管理员
+    owner_transferred = "owner_transferred"          # 转让群主
+
+    # 聊天室设置
+    room_name_changed = "room_name_changed"          # 聊天室名称修改
+    room_description_changed = "room_description_changed"  # 描述修改
+    room_rules_changed = "room_rules_changed"        # 规则修改
+    room_settings_changed = "room_settings_changed"  # 其他设置修改
+
+    # 消息管理
+    message_pinned = "message_pinned"                # 消息置顶
+    message_unpinned = "message_unpinned"            # 取消置顶
+    message_deleted_by_admin = "message_deleted_by_admin"  # 管理员删除消息
+
+    # 文件分享
+    file_uploaded = "file_uploaded"                  # 文件上传
+    file_shared = "file_shared"                      # 文件分享
+
 class RoomType(str, Enum):
     """聊天室类型"""
     public = "public"      # 公开聊天室
@@ -88,6 +122,19 @@ class ChatRoomUpdate(BaseModel):
     allow_member_modify_info: Optional[bool] = None
     message_history_visible: Optional[bool] = None
 
+    # 私密房间设置
+    allow_search: Optional[bool] = None
+    enable_invite_code: Optional[bool] = None
+
+    # 高级设置
+    auto_delete_messages: Optional[bool] = None
+    message_retention_days: Optional[int] = Field(None, ge=1, le=365)
+    allow_file_upload: Optional[bool] = None
+    max_file_size: Optional[int] = Field(None, ge=1, le=100)
+    welcome_message: Optional[str] = Field(None, max_length=1000)
+    rules: Optional[str] = Field(None, max_length=2000)
+    is_active: Optional[bool] = None
+
 # 消息相关模型
 class MessageBase(BaseModel):
     """消息基础模型"""
@@ -135,7 +182,10 @@ class Message(MessageBase):
     # 消息状态
     read_count: int = 0
     reactions: List[MessageReaction] = []
-    
+
+    # 系统消息数据
+    system_data: Optional[Dict[str, Any]] = None
+
     class Config:
         from_attributes = True
 
@@ -182,6 +232,12 @@ class ChatRoomListItem(BaseModel):
     last_message_at: Optional[datetime] = None
     unread_count: int = 0
     is_muted: bool = False
+
+    # 添加缺失的字段
+    allow_search: bool = False
+    enable_invite_code: bool = True
+    max_members: int = 500
+    is_active: bool = True
 
 class MessageList(BaseModel):
     """消息列表"""

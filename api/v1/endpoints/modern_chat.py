@@ -129,7 +129,11 @@ async def get_chat_rooms(
                 last_message=last_message,
                 last_message_at=room.last_message_at,
                 unread_count=unread_count,
-                is_muted=False  # TODO: 实现静音状态
+                is_muted=False,  # TODO: 实现静音状态
+                allow_search=room.allow_search,
+                enable_invite_code=room.enable_invite_code,
+                max_members=room.max_members,
+                is_active=room.is_active
             )
             room_list.append(room_item)
         
@@ -160,8 +164,14 @@ async def create_chat_room(
             allow_member_invite=room_data.allow_member_invite,
             allow_member_modify_info=room_data.allow_member_modify_info,
             message_history_visible=room_data.message_history_visible,
-            allow_search=getattr(room_data, 'allow_search', False),  # 新增字段
-            enable_invite_code=getattr(room_data, 'enable_invite_code', True)  # 新增字段
+            allow_search=room_data.allow_search,  # 直接使用Schema字段
+            enable_invite_code=room_data.enable_invite_code,  # 直接使用Schema字段
+            auto_delete_messages=room_data.auto_delete_messages,
+            message_retention_days=room_data.message_retention_days,
+            allow_file_upload=room_data.allow_file_upload,
+            max_file_size=room_data.max_file_size,
+            welcome_message=room_data.welcome_message,
+            rules=room_data.rules
         )
         
         db.add(db_room)
@@ -226,6 +236,14 @@ async def create_chat_room(
             allow_member_invite=room.allow_member_invite,
             allow_member_modify_info=room.allow_member_modify_info,
             message_history_visible=room.message_history_visible,
+            allow_search=room.allow_search,
+            enable_invite_code=room.enable_invite_code,
+            auto_delete_messages=room.auto_delete_messages,
+            message_retention_days=room.message_retention_days,
+            allow_file_upload=room.allow_file_upload,
+            max_file_size=room.max_file_size,
+            welcome_message=room.welcome_message,
+            rules=room.rules,
             creator=UserInfo(
                 id=room.creator.id,
                 username=room.creator.username,
@@ -686,6 +704,15 @@ async def get_room_messages(
                     reactions=[]
                 )
 
+            # 解析system_data
+            system_data = None
+            if msg.system_data:
+                try:
+                    import json
+                    system_data = json.loads(msg.system_data) if isinstance(msg.system_data, str) else msg.system_data
+                except (json.JSONDecodeError, TypeError):
+                    system_data = None
+
             message = Message(
                 id=msg.id,
                 room_id=msg.room_id,
@@ -708,8 +735,11 @@ async def get_room_messages(
                 is_deleted=msg.is_deleted,
                 is_pinned=msg.is_pinned,
                 edit_count=msg.edit_count,
+                pinned_by=msg.pinned_by,
+                pinned_at=msg.pinned_at,
                 read_count=0,  # 暂时设为0，避免懒加载问题
-                reactions=[]  # TODO: 实现表情反应
+                reactions=[],  # TODO: 实现表情反应
+                system_data=system_data
             )
             message_list.append(message)
 
@@ -1184,16 +1214,25 @@ async def request_join_room(
 
         await db.commit()
 
-        # 通知聊天室成员有新的加入申请
-        await notify_room_members(
-            room_id,
-            MessageType.SYSTEM_NOTIFICATION,
-            {
-                "message": f"用户 {current_user.username} 申请加入聊天室",
-                "type": "join_request",
-                "user_id": current_user.id,
-                "room_id": room_id
-            }
+        # 创建系统消息记录
+        from utils.system_messages import create_system_message
+        from schemas.modern_chat import SystemMessageType
+
+        system_data = {
+            "user_id": current_user.id,
+            "username": current_user.username,
+            "nickname": current_user.nickname,
+            "request_id": new_request.id if 'new_request' in locals() else existing_request.id,
+            "message": request_data.message
+        }
+
+        await create_system_message(
+            db=db,
+            room_id=room_id,
+            sender_id=current_user.id,
+            message_type=SystemMessageType.join_request,
+            content=f"用户 {current_user.nickname or current_user.username} 申请加入聊天室",
+            system_data=system_data
         )
 
         return {"message": "申请已发送，等待管理员审核"}
@@ -1490,6 +1529,43 @@ async def process_join_request(
 
         await db.commit()
 
+        # 创建系统消息记录
+        system_message = DBChatMessage(
+            room_id=room_id,
+            sender_id=current_user.id,
+            content=message,
+            message_type="system",
+            system_data={
+                "type": "join_request_result",
+                "user_id": user_id,
+                "room_id": room_id,
+                "action": request_data.action,
+                "processed_by": current_user.id
+            }
+        )
+        db.add(system_message)
+        await db.commit()
+        await db.refresh(system_message)
+
+        # 通知聊天室成员
+        await notify_room_members(
+            room_id,
+            MessageType.NEW_MESSAGE,
+            {
+                "id": system_message.id,
+                "content": system_message.content,
+                "message_type": "system",
+                "system_data": system_message.system_data,
+                "sender": {
+                    "id": current_user.id,
+                    "username": current_user.username,
+                    "nickname": current_user.nickname
+                },
+                "created_at": system_message.created_at.isoformat(),
+                "room_id": room_id
+            }
+        )
+
         # 通知申请人结果
         await global_ws_manager.send_to_user(
             user_id,
@@ -1524,12 +1600,17 @@ async def search_rooms(
         if not q.strip():
             return []
 
-        # 搜索聊天室名称 - 只搜索允许被搜索的私密聊天室
+        # 搜索聊天室名称 - 搜索公开聊天室和允许被搜索的私密聊天室
         search_query = select(DBChatRoom).where(
             and_(
                 DBChatRoom.name.contains(q.strip()),
-                DBChatRoom.room_type == RoomType.group,  # 只搜索私密聊天室
-                DBChatRoom.allow_search == True  # 允许被搜索
+                or_(
+                    DBChatRoom.room_type == RoomType.public,  # 所有公开聊天室
+                    and_(
+                        DBChatRoom.room_type == RoomType.group,  # 私密聊天室
+                        DBChatRoom.allow_search == True  # 且允许被搜索
+                    )
+                )
             )
         ).limit(20)
 
@@ -1567,7 +1648,11 @@ async def search_rooms(
                 created_at=room.created_at,
                 last_message=None,
                 last_message_at=None,
-                unread_count=0
+                unread_count=0,
+                allow_search=room.allow_search,
+                enable_invite_code=room.enable_invite_code,
+                max_members=room.max_members,
+                is_active=room.is_active
             )
             room_list.append(room_data)
 
@@ -2468,6 +2553,152 @@ async def get_message_reactions(
         raise HTTPException(status_code=500, detail="获取表情反应失败")
 
 
+# ==================== 消息删除和修改功能 ====================
+
+@router.put("/rooms/{room_id}/messages/{message_id}")
+async def update_message(
+    room_id: int,
+    message_id: int,
+    message_data: dict,
+    current_user: DBUser = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+    _: None = Depends(update_chats)  # 使用更新聊天权限
+):
+    """修改消息"""
+    try:
+        # 检查消息是否存在
+        message_query = select(DBChatMessage).where(
+            and_(
+                DBChatMessage.id == message_id,
+                DBChatMessage.room_id == room_id
+            )
+        )
+        message_result = await db.execute(message_query)
+        message = message_result.scalar_one_or_none()
+
+        if not message:
+            raise HTTPException(status_code=404, detail="消息不存在")
+
+        # 检查权限（只有消息发送者可以修改）
+        if message.sender_id != current_user.id:
+            raise HTTPException(status_code=403, detail="只能修改自己的消息")
+
+        # 检查消息是否已被删除
+        if message.is_deleted:
+            raise HTTPException(status_code=400, detail="已删除的消息无法修改")
+
+        # 更新消息内容
+        new_content = message_data.get('content', '').strip()
+        if not new_content:
+            raise HTTPException(status_code=400, detail="消息内容不能为空")
+
+        message.content = new_content
+        message.is_edited = True
+        message.edit_count = (message.edit_count or 0) + 1
+        message.updated_at = datetime.utcnow()
+
+        await db.commit()
+        await db.refresh(message)
+
+        # 通知聊天室成员
+        await notify_room_members(
+            room_id,
+            MessageType.MESSAGE_UPDATED,
+            {
+                "message_id": message_id,
+                "content": new_content,
+                "is_edited": True,
+                "edit_count": message.edit_count,
+                "updated_at": message.updated_at.isoformat()
+            }
+        )
+
+        logger.info(f"用户 {current_user.username} 修改了消息 {message_id}")
+        return {"message": "消息修改成功"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"修改消息失败: {e}")
+        raise HTTPException(status_code=500, detail="修改消息失败")
+
+
+@router.delete("/rooms/{room_id}/messages/{message_id}")
+async def delete_message(
+    room_id: int,
+    message_id: int,
+    current_user: DBUser = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+    _: None = Depends(delete_chats)  # 使用删除聊天权限
+):
+    """删除消息"""
+    try:
+        # 检查消息是否存在
+        message_query = select(DBChatMessage).where(
+            and_(
+                DBChatMessage.id == message_id,
+                DBChatMessage.room_id == room_id
+            )
+        )
+        message_result = await db.execute(message_query)
+        message = message_result.scalar_one_or_none()
+
+        if not message:
+            raise HTTPException(status_code=404, detail="消息不存在")
+
+        # 检查权限（消息发送者或聊天室管理员可以删除）
+        can_delete = False
+
+        # 1. 消息发送者可以删除自己的消息
+        if message.sender_id == current_user.id:
+            can_delete = True
+        else:
+            # 2. 聊天室管理员可以删除任何消息
+            member_query = select(chat_room_members).where(
+                and_(
+                    chat_room_members.c.room_id == room_id,
+                    chat_room_members.c.user_id == current_user.id,
+                    or_(
+                        chat_room_members.c.role == "admin",
+                        chat_room_members.c.role == "creator"
+                    )
+                )
+            )
+            member_result = await db.execute(member_query)
+            if member_result.first():
+                can_delete = True
+
+        if not can_delete:
+            raise HTTPException(status_code=403, detail="无权删除此消息")
+
+        # 软删除消息
+        message.is_deleted = True
+        message.content = "[此消息已被删除]"
+        message.updated_at = datetime.utcnow()
+
+        await db.commit()
+
+        # 通知聊天室成员
+        await notify_room_members(
+            room_id,
+            MessageType.MESSAGE_DELETED,
+            {
+                "message_id": message_id,
+                "deleted_by": current_user.id,
+                "deleted_by_username": current_user.username
+            }
+        )
+
+        logger.info(f"用户 {current_user.username} 删除了消息 {message_id}")
+        return {"message": "消息删除成功"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"删除消息失败: {e}")
+        raise HTTPException(status_code=500, detail="删除消息失败")
+
+
 # ==================== 聊天室统计信息 ====================
 
 @router.get("/rooms/{room_id}/statistics")
@@ -2657,17 +2888,15 @@ async def pin_message(
 
         await db.commit()
 
-        # 通知聊天室成员
-        await notify_room_members(
-            room_id,
-            MessageType.SYSTEM_NOTIFICATION,
-            {
-                "message": f"管理员 {current_user.username} 置顶了一条消息",
-                "type": "message_pinned",
-                "message_id": message_id,
-                "room_id": room_id,
-                "pinned_by": current_user.username
-            }
+        # 创建置顶系统消息
+        from utils.system_messages import create_message_pinned_message
+        await create_message_pinned_message(
+            db=db,
+            room_id=room_id,
+            message_id=message_id,
+            message_content=message.content,
+            pinned_by=current_user.id,
+            pinned_by_username=current_user.nickname or current_user.username
         )
 
         logger.info(f"用户 {current_user.username} 置顶了消息 {message_id}")
@@ -2738,17 +2967,14 @@ async def unpin_message(
 
         await db.commit()
 
-        # 通知聊天室成员
-        await notify_room_members(
-            room_id,
-            MessageType.SYSTEM_NOTIFICATION,
-            {
-                "message": f"管理员 {current_user.username} 取消置顶了一条消息",
-                "type": "message_unpinned",
-                "message_id": message_id,
-                "room_id": room_id,
-                "unpinned_by": current_user.username
-            }
+        # 创建取消置顶系统消息
+        from utils.system_messages import create_message_unpinned_message
+        await create_message_unpinned_message(
+            db=db,
+            room_id=room_id,
+            message_id=message_id,
+            unpinned_by=current_user.id,
+            unpinned_by_username=current_user.nickname or current_user.username
         )
 
         logger.info(f"用户 {current_user.username} 取消置顶了消息 {message_id}")

@@ -13,7 +13,7 @@ import pytz
 import importlib
 import importlib.util
 from api.v1.endpoints.extensions import get_extensions,get_extension
-from core.auth import get_current_user
+from core.auth import get_current_user,manage_scheduler,create_scheduler,view_scheduler,update_scheduler,delete_scheduler,execute_scheduler,view_extension,resume_scheduler,pause_scheduler
 from core.logger import get_logger
 # from core.app_scheduler import AppScheduler
 from pydantic import BaseModel
@@ -46,7 +46,7 @@ example_tasks = {
 # API路由
 
 @router.get("/extensions",)
-async def add_job_page(request: Request, user=Depends(get_current_user),db=Depends(get_db)):
+async def add_job_page(request: Request, user=Depends(view_extension),db=Depends(get_db)):
     """添加任务页面"""
     # 获取所有扩展中的扩展名及execute_query方法，以便添加定时任务
     extensions = await get_extensions(db)
@@ -68,7 +68,7 @@ async def add_job_page(request: Request, user=Depends(get_current_user),db=Depen
 
 
 @router.get("/jobs", response_model=List[Dict[str, Any]])
-async def list_jobs(request: Request, user=Depends(get_current_user)):
+async def list_jobs(request: Request, user=Depends(view_scheduler)):
     """获取所有任务"""
     try:
         scheduler = request.app.state.scheduler
@@ -79,7 +79,7 @@ async def list_jobs(request: Request, user=Depends(get_current_user)):
         raise HTTPException(status_code=500, detail=f"获取任务列表失败: {str(e)}")
 
 @router.get("/job/{job_id}", response_model=Dict[str, Any])
-async def get_job(request: Request, job_id: str, user=Depends(get_current_user)):
+async def get_job(request: Request, job_id: str, user=Depends(view_scheduler)):
     """获取任务详情"""
     try:
         scheduler = request.app.state.scheduler
@@ -94,7 +94,7 @@ async def get_job(request: Request, job_id: str, user=Depends(get_current_user))
         raise HTTPException(status_code=500, detail=f"获取任务详情失败: {str(e)}")
 
 @router.post("/job/{job_id}/pause")
-async def pause_job(request: Request, job_id: str, user=Depends(get_current_user)):
+async def pause_job(request: Request, job_id: str, user=Depends(update_scheduler)):
     """暂停任务"""
     try:
         scheduler = request.app.state.scheduler
@@ -111,7 +111,7 @@ async def pause_job(request: Request, job_id: str, user=Depends(get_current_user
         raise HTTPException(status_code=500, detail=f"暂停任务失败: {str(e)}")
 
 @router.post("/job/{job_id}/resume")
-async def resume_job(request: Request, job_id: str, user=Depends(get_current_user)):
+async def resume_job(request: Request, job_id: str, user=Depends(resume_scheduler)):
     """恢复任务"""
     try:
         scheduler = request.app.state.scheduler
@@ -128,7 +128,7 @@ async def resume_job(request: Request, job_id: str, user=Depends(get_current_use
         raise HTTPException(status_code=500, detail=f"恢复任务失败: {str(e)}")
 
 @router.post("/job/{job_id}/run")
-async def run_job(request: Request, job_id: str, user=Depends(get_current_user)):
+async def run_job(request: Request, job_id: str, user=Depends(execute_scheduler)):
     """立即执行任务"""
     try:
         scheduler = request.app.state.scheduler
@@ -145,7 +145,7 @@ async def run_job(request: Request, job_id: str, user=Depends(get_current_user))
         raise HTTPException(status_code=500, detail=f"执行任务失败: {str(e)}")
 
 @router.delete("/job/{job_id}")
-async def remove_job(request: Request, job_id: str, user=Depends(get_current_user)):
+async def remove_job(request: Request, job_id: str, user=Depends(delete_scheduler)):
     """删除任务"""
     try:
         scheduler = request.app.state.scheduler
@@ -212,7 +212,7 @@ async def add_cron_job(
     month: str = Form("*"),
     day_of_week: str = Form("*"),
     second: str = Form("0"),
-    user:User=Depends(get_current_user),db=Depends(get_db)
+    user:User=Depends(create_scheduler),db=Depends(get_db)
 ):
     """添加Cron任务"""
     try:
@@ -269,7 +269,7 @@ async def add_interval_job(
     minutes: int = Form(0),
     hours: int = Form(0),
     days: int = Form(0),
-    user=Depends(get_current_user),db=Depends(get_db)
+    user=Depends(create_scheduler),db=Depends(get_db)
 ):
     """添加间隔任务"""
     try:
@@ -323,7 +323,7 @@ async def add_date_job(
     task_func: str = Form(...),
     job_id: Optional[str] = Form(None),
     run_date: str = Form(...),  # 格式: YYYY-MM-DD HH:MM:SS
-    user=Depends(get_current_user),db=Depends(get_db)
+    user=Depends(create_scheduler),db=Depends(get_db)
 ):
     """添加一次性任务"""
     try:
@@ -389,14 +389,14 @@ class JobResponse(BaseModel):
 
 
 @router.get("/api/jobs", response_class=JSONResponse)
-async def get_all_jobs(request: Request):
+async def get_all_jobs(request: Request,user=Depends(view_scheduler)):
     """获取所有任务"""
     scheduler = request.app.state.scheduler
     jobs = await scheduler.get_jobs()
     return {"success": True, "jobs": jobs}
 
 @router.get("/api/jobs/{job_id}", response_class=JSONResponse)
-async def get_job(request: Request, job_id: str):
+async def get_job(request: Request, job_id: str,user=Depends(view_scheduler)):
     """获取指定任务详情"""
     scheduler = request.app.state.scheduler
     job = await scheduler.get_job(job_id)

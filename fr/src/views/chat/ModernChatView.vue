@@ -174,18 +174,117 @@
           </div>
         </div>
 
+        <!-- 固定置顶消息条 -->
+        <div
+          v-if="currentPinnedMessage"
+          class="fixed-pinned-message"
+          @click="scrollToMessage(currentPinnedMessage.id)"
+        >
+          <div class="pinned-message-indicator">
+            <el-icon class="pin-icon"><Star /></el-icon>
+            <span class="pinned-label">置顶消息</span>
+          </div>
+          <div class="pinned-message-preview">
+            <span class="pinned-sender">{{ currentPinnedMessage.sender.nickname || currentPinnedMessage.sender.username }}:</span>
+            <span class="pinned-content">{{ truncateText(currentPinnedMessage.content, 50) }}</span>
+          </div>
+          <div class="pinned-message-actions">
+            <el-button
+              text
+              size="small"
+              @click.stop="scrollToMessage(currentPinnedMessage.id)"
+            >
+              <el-icon><Search /></el-icon>
+            </el-button>
+            <el-button
+              v-if="canManageRoom(currentRoom)"
+              text
+              size="small"
+              type="danger"
+              @click.stop="togglePinMessage(currentPinnedMessage)"
+            >
+              <el-icon><Close /></el-icon>
+            </el-button>
+          </div>
+        </div>
+
         <div class="messages-list">
-          <div
-            v-for="message in messages"
-            :key="message.id"
-            :data-message-id="message.id"
-            class="message-item"
-            :class="{
-              'own-message': message.sender.id === userStore.user?.id,
-              'pinned-message': message.is_pinned
-            }"
-            @contextmenu.prevent="showMessageContextMenu($event, message)"
-          >
+          <template v-for="message in messages" :key="message.id">
+            <!-- 系统消息 -->
+            <div
+              v-if="message.message_type === 'system'"
+              :data-message-id="message.id"
+              class="system-message-container"
+            >
+              <div class="message-system" :class="getSystemMessageClass(message.system_data?.type)">
+                <el-icon>
+                  <component :is="getSystemMessageIcon(message.system_data?.type)" />
+                </el-icon>
+                <span class="system-text">{{ message.content }}</span>
+
+                <!-- 加入申请系统消息的操作按钮 -->
+                <div
+                  v-if="message.system_data?.type === 'join_request' && canManageRoom(currentRoom)"
+                  class="system-actions"
+                >
+                  <el-button
+                    type="success"
+                    size="small"
+                    @click="approveJoinRequest(message.system_data)"
+                    :loading="processingRequest"
+                  >
+                    同意
+                  </el-button>
+                  <el-button
+                    type="danger"
+                    size="small"
+                    @click="rejectJoinRequest(message.system_data)"
+                    :loading="processingRequest"
+                  >
+                    拒绝
+                  </el-button>
+                </div>
+
+                <!-- 置顶消息的操作按钮 -->
+                <div
+                  v-if="message.system_data?.type === 'message_pinned' && message.system_data?.pinned_message_id"
+                  class="system-actions"
+                >
+                  <el-button
+                    type="primary"
+                    size="small"
+                    @click="scrollToMessage(message.system_data.pinned_message_id)"
+                  >
+                    查看消息
+                  </el-button>
+                </div>
+
+                <!-- 角色变更消息的用户信息 -->
+                <div
+                  v-if="['admin_promoted', 'admin_demoted', 'owner_transferred'].includes(message.system_data?.type)"
+                  class="system-user-info"
+                >
+                  <el-tag
+                    :type="getTagType(message.system_data?.new_role)"
+                    size="small"
+                  >
+                    {{ getRoleDisplayName(message.system_data?.new_role) }}
+                  </el-tag>
+                </div>
+              </div>
+            </div>
+
+            <!-- 普通消息 -->
+            <div
+              v-else
+              :data-message-id="message.id"
+              class="message-item"
+              :class="{
+                'own-message': message.sender.id === userStore.user?.id,
+                'pinned-message': message.is_pinned
+              }"
+              @contextmenu.prevent.stop="showMessageContextMenu($event, message)"
+            >
             <div class="message-avatar">
               <img v-if="message.sender.avatar" :src="message.sender.avatar" :alt="message.sender.username" />
               <div v-else class="default-avatar">
@@ -247,34 +346,7 @@
                   </el-button>
                 </div>
 
-                <!-- 系统消息 -->
-                <div v-else-if="message.message_type === 'system'" class="message-system">
-                  <el-icon><InfoFilled /></el-icon>
-                  <span class="system-text">{{ message.content }}</span>
 
-                  <!-- 加入申请系统消息的操作按钮 -->
-                  <div
-                    v-if="message.system_data?.type === 'join_request' && canManageRoom(currentRoom)"
-                    class="system-actions"
-                  >
-                    <el-button
-                      type="success"
-                      size="small"
-                      @click="approveJoinRequest(message.system_data)"
-                      :loading="processingRequest"
-                    >
-                      同意
-                    </el-button>
-                    <el-button
-                      type="danger"
-                      size="small"
-                      @click="rejectJoinRequest(message.system_data)"
-                      :loading="processingRequest"
-                    >
-                      拒绝
-                    </el-button>
-                  </div>
-                </div>
 
                 <!-- 其他类型消息 -->
                 <div v-else class="message-text">
@@ -334,6 +406,7 @@
               </div>
             </div>
           </div>
+          </template>
         </div>
         
         <!-- 正在输入提示 -->
@@ -911,6 +984,7 @@
     class="context-menu"
     :style="{ left: roomContextMenu.x + 'px', top: roomContextMenu.y + 'px' }"
     @click.stop
+    @contextmenu.prevent
   >
     <div class="context-menu-item" @click="selectRoom(roomContextMenu.room)">
       <el-icon><ChatDotRound /></el-icon>
@@ -997,6 +1071,7 @@
     class="context-menu"
     :style="{ left: messageContextMenu.x + 'px', top: messageContextMenu.y + 'px' }"
     @click.stop
+    @contextmenu.prevent
   >
     <div class="context-menu-item" @click="replyToMessage(messageContextMenu.message)">
       <el-icon><ChatLineRound /></el-icon>
@@ -1506,8 +1581,9 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Plus, Search, Menu, InfoFilled, User, Delete, Document, ChatDotRound,
   Star, Edit, Close, Paperclip, Promotion, DocumentCopy, More, Bell,
-  Picture, Check, ChatLineRound, CopyDocument, Lock, Message, Setting
-} from '@element-plus/icons-vue'
+  Picture, Check, ChatLineRound, CopyDocument, Lock, Message, Setting,
+   WarningFilled
+} from '@element-plus/icons-vue' //Crown,
 import { useUserStore } from '@/stores/user'
 import axios from '@/utils/axios'
 
@@ -1561,6 +1637,21 @@ const isCurrentRoomMember = computed(() => {
 const pinnedRooms = ref(new Set())
 const pinnedMessagesInRoom = ref([])
 const showPinnedMessages = ref(true)
+
+// 当前聊天室的置顶消息（最新的一条）
+const currentPinnedMessage = computed(() => {
+  if (!currentRoom.value) return null
+
+  // 从当前消息列表中找到置顶的消息
+  const pinnedMessages = messages.value.filter(msg => msg.is_pinned)
+
+  // 返回最新置顶的消息
+  if (pinnedMessages.length > 0) {
+    return pinnedMessages.sort((a, b) => new Date(b.pinned_at || b.created_at) - new Date(a.pinned_at || a.created_at))[0]
+  }
+
+  return null
+})
 
 // 成员管理
 const showMemberManagementDialog = ref(false)
@@ -1863,6 +1954,10 @@ const handleGlobalWebSocketMessage = (message) => {
 
     case 'new_message':
       handleNewMessage(message.data)
+      break
+
+    case 'message_reaction':
+      handleMessageReaction(message.data)
       break
 
     case 'system_notification':
@@ -2258,6 +2353,20 @@ const handleNewMessage = (data) => {
   }
 }
 
+// 处理消息表情反应
+const handleMessageReaction1 = (data) => {
+  console.log('收到表情反应:', data)
+
+  // 如果是当前聊天室的消息，更新表情反应
+  if (currentRoom.value && data.room_id === currentRoom.value.id) {
+    const messageIndex = messages.value.findIndex(m => m.id === data.message_id)
+    if (messageIndex !== -1) {
+      // 重新加载消息的表情反应
+      loadMessageReactions(data.message_id)
+    }
+  }
+}
+
 // 处理系统通知
 const handleSystemNotification = (data) => {
   console.log('收到系统通知:', data)
@@ -2340,10 +2449,27 @@ const hideRoomContextMenu = () => {
 
 // 消息右键菜单相关方法
 const showMessageContextMenu = (event, message) => {
+  console.log('显示消息右键菜单:', message.content.substring(0, 20), event.clientX, event.clientY)
+
+  // 确保隐藏其他菜单
+  hideRoomContextMenu()
+
   messageContextMenu.show = true
   messageContextMenu.x = event.clientX
   messageContextMenu.y = event.clientY
   messageContextMenu.message = message
+
+  console.log('消息右键菜单状态:', messageContextMenu)
+
+  // 添加一个延迟来确保DOM更新
+  nextTick(() => {
+    const menu = document.querySelector('.context-menu')
+    if (menu) {
+      console.log('消息右键菜单DOM元素:', menu)
+    } else {
+      console.error('消息右键菜单DOM元素未找到')
+    }
+  })
 }
 
 const hideMessageContextMenu = () => {
@@ -2664,6 +2790,137 @@ const toggleReaction = async (message, emoji) => {
   }
 }
 
+// 加载消息的表情反应
+const loadMessageReactions = async (messageId) => {
+  try {
+    const response = await axios.get(`/api/modern-chat/messages/${messageId}/reactions`)
+    const reactions = response.data
+
+    // 更新消息的表情反应
+    const messageIndex = messages.value.findIndex(m => m.id === messageId)
+    if (messageIndex !== -1) {
+      messages.value[messageIndex].reactions = reactions
+    }
+  } catch (error) {
+    console.error('加载表情反应失败:', error)
+  }
+}
+
+// ==================== 系统消息辅助函数 ====================
+
+// 获取系统消息图标
+const getSystemMessageIcon = (type) => {
+  const iconMap = {
+    // 加入申请相关
+    'join_request': 'User',
+    'join_request_approved': 'Check',
+    'join_request_rejected': 'Close',
+
+    // 成员管理
+    'member_joined': 'User',
+    'member_left': 'User',
+    'member_kicked': 'WarningFilled',
+    'member_invited': 'User',
+
+    // 权限变更
+    'role_changed': 'Crown',
+    'admin_promoted': 'Crown',
+    'admin_demoted': 'Crown',
+    'owner_transferred': 'Crown',
+
+    // 聊天室设置
+    'room_name_changed': 'Edit',
+    'room_description_changed': 'Edit',
+    'room_rules_changed': 'Document',
+    'room_settings_changed': 'Setting',
+
+    // 消息管理
+    'message_pinned': 'Star',
+    'message_unpinned': 'Star',
+    'message_deleted_by_admin': 'Delete',
+
+    // 文件分享
+    'file_uploaded': 'Document',
+    'file_shared': 'Document'
+  }
+
+  return iconMap[type] || 'InfoFilled'
+}
+
+// 获取系统消息样式类
+const getSystemMessageClass = (type) => {
+  const classMap = {
+    // 加入申请相关
+    'join_request': 'system-join-request',
+    'join_request_approved': 'system-success',
+    'join_request_rejected': 'system-danger',
+
+    // 成员管理
+    'member_joined': 'system-success',
+    'member_left': 'system-warning',
+    'member_kicked': 'system-danger',
+    'member_invited': 'system-info',
+
+    // 权限变更
+    'role_changed': 'system-crown',
+    'admin_promoted': 'system-crown',
+    'admin_demoted': 'system-crown',
+    'owner_transferred': 'system-crown',
+
+    // 聊天室设置
+    'room_name_changed': 'system-info',
+    'room_description_changed': 'system-info',
+    'room_rules_changed': 'system-info',
+    'room_settings_changed': 'system-info',
+
+    // 消息管理
+    'message_pinned': 'system-pin',
+    'message_unpinned': 'system-pin',
+    'message_deleted_by_admin': 'system-danger',
+
+    // 文件分享
+    'file_uploaded': 'system-file',
+    'file_shared': 'system-file'
+  }
+
+  return classMap[type] || 'system-default'
+}
+
+// 获取角色标签类型
+const getTagType = (role) => {
+  const typeMap = {
+    'creator': 'danger',
+    'admin': 'warning',
+    'member': 'info'
+  }
+  return typeMap[role] || 'info'
+}
+
+// 获取角色显示名称
+const getRoleDisplayName = (role) => {
+  const nameMap = {
+    'creator': '群主',
+    'admin': '管理员',
+    'member': '普通成员'
+  }
+  return nameMap[role] || role
+}
+
+// 滚动到指定消息
+const scrollToMessage1 = (messageId) => {
+  const messageElement = document.querySelector(`[data-message-id="${messageId}"]`)
+  if (messageElement) {
+    messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    // 高亮显示消息
+    messageElement.classList.add('message-highlight')
+    setTimeout(() => {
+      messageElement.classList.remove('message-highlight')
+    }, 2000)
+  } else {
+    ElMessage.warning('消息不在当前页面，请尝试加载更多历史消息')
+  }
+}
+
 const handleFileUpload = async (file) => {
   if (!currentRoom.value) {
     ElMessage.error('请先选择聊天室')
@@ -2819,11 +3076,19 @@ const onRoomTypeChange = (type) => {
     newRoom.allow_member_invite = false
     newRoom.allow_member_modify_info = false
     newRoom.is_public = true
+    newRoom.allow_search = false
   } else if (type === 'group') {
     // 群聊默认设置
     newRoom.allow_member_invite = true
     newRoom.allow_member_modify_info = false
     newRoom.is_public = false
+    newRoom.allow_search = true  // 私密聊天室默认允许搜索
+  } else if (type === 'public') {
+    // 公开聊天室默认设置
+    newRoom.allow_member_invite = true
+    newRoom.allow_member_modify_info = false
+    newRoom.is_public = true
+    newRoom.allow_search = false  // 公开聊天室不需要搜索
   }
 }
 
@@ -3395,6 +3660,13 @@ const loadPinnedMessages = async () => {
     console.error('加载置顶消息失败:', error)
     pinnedMessagesInRoom.value = []
   }
+}
+
+// 文本截断工具函数
+const truncateText = (text, maxLength) => {
+  if (!text) return ''
+  if (text.length <= maxLength) return text
+  return text.substring(0, maxLength) + '...'
 }
 
 // 滚动到指定消息
@@ -4306,6 +4578,7 @@ watch(currentRoom, (newRoom) => {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  position: relative;
 }
 
 .message-item {
@@ -4736,12 +5009,14 @@ watch(currentRoom, (newRoom) => {
   border: 1px solid #e4e7ed;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 999999 !important;
-  min-width: 120px;
+  z-index: 9999999 !important;
+  min-width: 150px;
   padding: 4px 0;
   user-select: none;
   pointer-events: auto !important;
   display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .context-menu-item {
@@ -5205,17 +5480,71 @@ watch(currentRoom, (newRoom) => {
   margin-top: 16px;
 }
 
+/* 系统消息容器样式 */
+.system-message-container {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+  padding: 0 20px;
+}
+
 /* 系统消息样式 */
 .message-system {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
+  padding: 8px 16px;
   background: #f0f9ff;
   border: 1px solid #bae6fd;
-  border-radius: 6px;
+  border-radius: 20px;
   color: #0369a1;
   font-size: 13px;
+  max-width: 80%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+/* 不同类型系统消息的样式 */
+.message-system.system-success {
+  background: #f0f9f0;
+  border-color: #86efac;
+  color: #166534;
+}
+
+.message-system.system-warning {
+  background: #fffbeb;
+  border-color: #fbbf24;
+  color: #92400e;
+}
+
+.message-system.system-danger {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+.message-system.system-crown {
+  background: #fef3c7;
+  border-color: #fbbf24;
+  color: #92400e;
+}
+
+.message-system.system-pin {
+  background: #f3e8ff;
+  border-color: #c4b5fd;
+  color: #7c3aed;
+}
+
+.message-system.system-file {
+  background: #ecfdf5;
+  border-color: #86efac;
+  color: #166534;
+}
+
+.message-system.system-join-request {
+  background: #fff7ed;
+  border-color: #fdba74;
+  color: #ea580c;
 }
 
 .message-system .system-text {
@@ -5226,6 +5555,110 @@ watch(currentRoom, (newRoom) => {
   display: flex;
   gap: 8px;
   margin-left: 12px;
+}
+
+.system-user-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+/* 固定置顶消息条 */
+.fixed-pinned-message {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%);
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  margin: 8px 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+}
+
+.fixed-pinned-message:hover {
+  background: linear-gradient(135deg, #fde68a 0%, #f59e0b 100%);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+  transform: translateY(-1px);
+}
+
+.pinned-message-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #92400e;
+  font-weight: 600;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.pin-icon {
+  color: #f59e0b;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.pinned-message-preview {
+  flex: 1;
+  min-width: 0;
+  color: #92400e;
+  font-size: 14px;
+}
+
+.pinned-sender {
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+.pinned-content {
+  color: #78350f;
+  word-break: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pinned-message-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.pinned-message-actions .el-button {
+  color: #92400e;
+  border: none;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  padding: 4px 8px;
+  height: auto;
+}
+
+.pinned-message-actions .el-button:hover {
+  background: rgba(255, 255, 255, 0.5);
+  color: #78350f;
+}
+
+/* 消息高亮动画 */
+.message-highlight {
+  background: #fef3c7 !important;
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3) !important;
+}
+
+.message-highlight .message-system {
+  background: #fef3c7 !important;
+  border-color: #fbbf24 !important;
 }
 
 .message-system .system-actions .el-button {

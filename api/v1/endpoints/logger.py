@@ -7,7 +7,7 @@ import asyncio
 from datetime import datetime
 import io
 import time
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import List, Optional, AsyncGenerator
@@ -15,7 +15,8 @@ import os
 from pathlib import Path
 from config import settings
 import logging
-
+from schemas.user import User
+from core.auth import view_logs
 router = APIRouter()
 
 # 设置日志
@@ -27,7 +28,7 @@ class LogFile(BaseModel):
     last_modified: datetime
 
 @router.get("/", response_model=List[LogFile])
-async def get_logs():
+async def get_logs(current_user: User = Depends(view_logs)):
     """获取日志文件列表及基本信息"""
     try:
         files = []
@@ -148,7 +149,8 @@ def validate_log_file(file_name: str) -> str:
 @router.get("/{file_name}")
 async def get_log_content(
     file_name: str,
-    lines: Optional[int] = Query(100, gt=0, le=10000, description="获取最后多少行日志")
+    lines: Optional[int] = Query(100, gt=0, le=10000, description="获取最后多少行日志"),
+    current_user: User = Depends(view_logs)
 ):
     """获取日志文件的部分内容"""
 
@@ -216,7 +218,7 @@ async def get_log_content(
 
 
 @router.get("/stream/{file_name}")
-async def stream_logs(file_name: str):
+async def stream_logs(file_name: str,current_user: User = Depends(view_logs)):
     """SSE流式传输日志内容"""
     try:
         file_path = validate_log_file(file_name)

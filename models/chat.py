@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Optional
 import enum
 
-from sqlalchemy import Column, String, Integer, ForeignKey, Text, Boolean, DateTime, Table, Enum
+from sqlalchemy import Column, String, Integer, ForeignKey, Text, Boolean, DateTime, Table, Enum, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .base import BaseModel
@@ -135,6 +135,9 @@ class ChatMessage(BaseModel):
     is_deleted = Column(Boolean, default=False)
     is_pinned = Column(Boolean, default=False)
     edit_count = Column(Integer, default=0)
+
+    # 系统消息数据
+    system_data = Column(JSON, nullable=True)
 
     # 置顶相关
     pinned_by = Column(Integer, ForeignKey("users.id"), nullable=True)

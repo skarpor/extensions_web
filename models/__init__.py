@@ -8,6 +8,6 @@ from .user import User
 from .file import File
 from .extension import Extension
 from .setting import Setting
-from .chat import Chat, Message
+from .chat import Chat, Message, ChatRoom, ChatMessage, MessageReaction, UserTyping, MessageReadReceipt, ChatRoomJoinRequest
 from .log import Log
 from .qrfile import QRFile 
