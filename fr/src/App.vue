@@ -136,12 +136,7 @@ function createDanmu(text, color) {
           </RouterLink>
         </li>
         <li class="nav-item">
-          <RouterLink class="nav-link" to="/example" :class="{ 'active': $route.path === '/example' }">
-            <i class="fas fa-question-circle"></i> 帮助文档
-          </RouterLink>
-        </li>
-        <li class="nav-item">
-          <RouterLink class="nav-link" to="/chat" :class="{ 'active': $route.path === '/chat' }">
+          <RouterLink class="nav-link" to="/modern-chat" :class="{ 'active': $route.path === '/modern-chat' }">
             <i class="fas fa-comments"></i> 聊天
           </RouterLink>
         </li>
@@ -372,8 +367,8 @@ body {
 }
 
 .nav-link.active {
-  color: red;
-  background-color: rgba(201, 207, 4, 0.2);
+  color: rgba(38,38,38,38);
+  background-color: #4bc482;
 }
 
 .partial-content {

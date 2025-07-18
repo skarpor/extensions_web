@@ -80,7 +80,7 @@
             return;
         }
 
-        danmuSocket = new WebSocket(`ws://localhost:8000/api/danmu/ws`);
+        danmuSocket = new WebSocket(`ws://192.168.200.9:8000/api/danmu/ws`);
 
         danmuSocket.onopen = () => {
             console.log("弹幕WebSocket连接已建立");
@@ -134,7 +134,7 @@
         const color = "#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
 
         try {
-            const response = await fetch('/api/danmu/send_danmu', {
+            const response = await fetch('http://192.168.200.9:8000/api/danmu/send_danmu', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

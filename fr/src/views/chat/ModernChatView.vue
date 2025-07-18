@@ -3423,6 +3423,7 @@ const getRoomTypeName = (type) => {
   switch (type) {
     case 'private': return '私聊'
     case 'group': return '群聊'
+    case 'public': return '群聊'
     case 'channel': return '频道'
     default: return '未知'
   }
@@ -3492,8 +3493,20 @@ const copyInviteCode = async () => {
   if (!roomInviteCode.value?.invite_code) return
 
   try {
+    if (navigator.clipboard) {
     await navigator.clipboard.writeText(roomInviteCode.value.invite_code)
     ElMessage.success('邀请码已复制到剪贴板')
+  } else {
+    // 兼容旧浏览器
+    const textArea = document.createElement('textarea')
+    textArea.value = roomInviteCode.value.invite_code
+    document.body.appendChild(textArea)
+    textArea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textArea)
+    ElMessage.success('消息已复制到剪贴板')
+  }
+
   } catch (error) {
     console.error('复制失败:', error)
     ElMessage.error('复制失败')
@@ -4652,6 +4665,8 @@ watch(currentRoom, (newRoom) => {
 .message-text {
   line-height: 1.5;
   word-wrap: break-word;
+  font-size: 30px;
+  font-family: monospace, monospace;
 }
 
 .message-deleted {

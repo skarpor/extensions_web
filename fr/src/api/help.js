@@ -8,7 +8,7 @@ export const viewFile = async (filename) => {
     return await axios.get(`/api/help/view/${filename}`);
 };
 
-export const uploadFile = async (file) => {
+export const uploadFileAPI = async (file) => {
     return await axios.post('/api/help/upload', file);
 };
 

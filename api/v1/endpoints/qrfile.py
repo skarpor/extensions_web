@@ -2,6 +2,7 @@
 二维码文件处理API端点
 支持Excel区域序列化、文件序列化、QR码生成和扫描恢复功能
 """
+import binascii
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form, Body, Query
 from fastapi.responses import JSONResponse, FileResponse
@@ -26,7 +27,7 @@ import asyncio
 import numpy as np
 
 from schemas.user import User
-from core.auth import delete_qrfile,download_qrfile,get_current_user
+from core.auth import serialize_qrfile,create_qrfile,restore_qrfile,download_qrfile,get_current_user
 from db.session import get_db
 from config import settings
 from core.logger import get_logger
@@ -78,6 +79,7 @@ class VideoQRScanner:
     def process_video(self):
         """处理视频帧"""
         try:
+            # 清空debug_frames目录下的文件，占用磁盘空间
             frame_index = 0
             while self.cap.isOpened():
                 ret, frame = self.cap.read()
@@ -776,8 +778,8 @@ async def serialize_file(
 
 @router.post("/generate-qrcodes")
 async def generate_qrcodes(
-    session_id: str = Form(...),
-    chunk_size: int = Form(1800),
+    session_id: str = Body(...),
+    chunk_size: int = Body(1800),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -1050,7 +1052,7 @@ async def scan_video(
 @router.get("/download/{filename}")
 async def download_restored_file(
     filename: str,
-    current_user: User = Depends(download_qrfile),
+    # current_user: User = Depends(download_qrfile),
 ):
     """
     下载恢复的文件
@@ -1275,6 +1277,10 @@ async def delete_qr_file(
             qr_dir = os.path.join(QR_DIR, qr_file.session_id)
             if os.path.exists(qr_dir):
                 shutil.rmtree(qr_dir)
+            # 删除可能存在的restore文件
+            for file in os.listdir(QR_DIR):
+                if file.startswith('restored_'):
+                    os.remove(os.path.join(QR_DIR, file))
         except Exception as e:
             logger.warning(f"删除物理文件失败: {str(e)}")
         

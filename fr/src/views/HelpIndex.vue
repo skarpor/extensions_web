@@ -99,7 +99,7 @@
 </template>
 
 <script>
-import { getFileList, uploadFile, deleteFile, downloadFileApi } from '@/api/help';
+import { getFileList, uploadFileAPI, deleteFile, downloadFileApi } from '@/api/help';
 import Toast from '@/utils/toast';
 export default {
   name: 'ExampleList',
@@ -143,15 +143,16 @@ export default {
       const formData = new FormData();
       
       for (let i = 0; i < files.length; i++) {
-        formData.append('files', files[i]);
+        formData.append(`files[${i}]`, files[i]);
       }
-      
+        console.log([...formData.entries()]);
+
       if (files.length === 0) {
         Toast.error("请选择文件");
         return;
       }
       
-      uploadFile(formData)
+      uploadFileAPI(formData)
         .then(response => {
           Toast.success(response.data.detail);
           this.uploadModal.hide();

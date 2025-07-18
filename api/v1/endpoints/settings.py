@@ -63,7 +63,7 @@ async def read_setting(
     *,
     db: AsyncSession = Depends(get_db),
     setting_id: int,
-    current_user: User = Depends(view_setting),
+    current_user: User = Depends(view_settings),
 ) -> Any:
     """
     获取设置信息

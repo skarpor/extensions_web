@@ -62,7 +62,7 @@ class Settings(BaseSettings):
     # Extension settings
     EXTENSIONS_DIR: str =os.path.join(DATA_DIR,"extensions")
     EXTENSIONS_ENTRY_POINT_PREFIX: str = "/query/"
-
+    ALLOW_EXTENSION_UPLOAD: bool = True
     # 数据库目录，非系统数据库
     EXT_DB_DIR:str = os.path.join(DATA_DIR,"db")
     # 帮助文档目录
@@ -98,7 +98,8 @@ class Settings(BaseSettings):
         case_sensitive = True
         env_file = ".env"
 
-
+# 获取配置信息，若存在默认配置文件，则直接读取，
+# 否则，删除数据库，重新创建默认配置，参考系统设置接口
 # 创建设置实例
 settings = Settings()
 

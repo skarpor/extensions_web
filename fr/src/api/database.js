@@ -76,9 +76,7 @@ export const getTableData = async (tableName, params = {}) => {
 //创建表记录
 export const createRecord = async (tableName, recordData) => {
     try {
-        const response = await axios.post(`/api/db/tables/${tableName}/data`, {
-            data: recordData
-        })
+        const response = await axios.post(`/api/db/tables/${tableName}/data`, recordData)
         return response
     } catch (error) {
         console.error('创建记录失败:', error)
@@ -100,9 +98,7 @@ export const getRecord = async (tableName, recordId) => {
 //更新表记录
 export const updateRecord = async (tableName, recordId, recordData) => {
     try {
-        const response = await axios.put(`/api/db/tables/${tableName}/data/${recordId}`, {
-            data: recordData
-        })
+        const response = await axios.put(`/api/db/tables/${tableName}/data/${recordId}`, recordData)
         return response
     } catch (error) {
         console.error('更新记录失败:', error)

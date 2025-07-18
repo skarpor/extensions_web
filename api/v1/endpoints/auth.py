@@ -17,11 +17,11 @@ from db.session import get_db
 from schemas.token import Token
 from schemas.user import UserCreate, User, LoginResponse, UserUpdate, Role, RoleCreate, RoleUpdate, Permission, PermissionCreate, PermissionUpdate, UserWithRoles, AssignRoleRequest, PermissionGroup, PermissionGroupCreate, PermissionGroupUpdate, PermissionGroupWithPermissions
 from core import auth
-from core.logger import auth_logger
+from core.auth import logger
 from core.auth import PermissionChecker, get_password_hash, has_permission
 
 router = APIRouter()
-logger = auth_logger
+
 
 # 定义权限检查器
 view_users = PermissionChecker(["user:read"])

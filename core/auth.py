@@ -12,13 +12,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from config import settings
-from core.logger import get_logger
+from core.logger import auth_logger
 from db.session import get_db
 from models.user import User, Permission, PermissionGroup
 from schemas.user import UserCreate
 
 
-logger = get_logger("auth")
+logger = auth_logger
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
@@ -240,6 +240,7 @@ def require_any_permission(*permissions: str):
 
 # 系统管理权限
 manage_system = require_permissions("system:manage")
+manage_logs = require_permissions("system:logs")
 view_settings = require_permissions("settings:view")
 update_settings = require_permissions("settings:update")
 
@@ -251,20 +252,20 @@ update_users = require_permissions("user:update")
 delete_users = require_permissions("user:delete")
 
 # 角色权限管理
-manage_roles = require_permissions("role:manage")
+manage_roles = require_permissions("role:create","role:read","role:update","role:delete")
 create_roles = require_permissions("role:create")
 view_roles = require_permissions("role:read")
 update_roles = require_permissions("role:update")
 delete_roles = require_permissions("role:delete")
-
+assign_roles = require_permissions("role:assign")
 # 数据库、表管理权限
 manage_database = require_permissions("database:manage")
 view_database = require_permissions("database:view")
 update_database = require_permissions("database:update")
 delete_database = require_permissions("database:delete")
-view_table = require_permissions("table:view")
-update_table = require_permissions("table:update")
-delete_table = require_permissions("table:delete")
+view_table_p = require_permissions("table:view")
+update_table_p = require_permissions("table:update")
+delete_table_p = require_permissions("table:delete")
 
 # 文件管理权限
 manage_files = require_permissions("file:manage")
@@ -277,15 +278,28 @@ create_dir = require_permissions("file:createdir")
 delete_dir = require_permissions("file:deletedir")
 
 # 扩展管理权限
-manage_extensions = require_permissions("extension:manage")
+manage_extensions = require_permissions(
+    "extension:view",
+    "extension:upload",
+    "extension:update",
+    "extension:delete",
+    "extension:execute",
+    "extension:config",
+)
 upload_extensions = require_permissions("extension:upload")
 view_extensions = require_permissions("extension:view")
 update_extensions = require_permissions("extension:update")
 delete_extensions = require_permissions("extension:delete")
 query_extensions = require_permissions("extension:execute")
+config_extensions = require_permissions("extension:config")
 
 # 聊天管理权限
-manage_chats = require_permissions("chat:create", "chat:update", "chat:delete")
+manage_chats = require_permissions(
+    "chat:create",
+    "chat:delete"
+    "chat:update"
+    "chat:read"
+)
 create_chats = require_permissions("chat:create")
 view_chats = require_permissions("chat:read")
 update_chats = require_permissions("chat:update")
@@ -309,20 +323,38 @@ update_messages = require_permissions("message:update")
 delete_messages = require_permissions("message:delete")
 
 # 日志权限
-view_logs = require_permissions("log:read")
+# view_logs = require_permissions("log:read")
 
 # 帮助文档权限
-view_help = require_permissions("help:read")
+view_help = require_permissions("help:view")
 delete_help = require_permissions("help:delete")
 upload_help = require_permissions("help:upload")
+download_help = require_permissions("help:download")
+list_help = require_permissions("help:list")
 
 # 二维码文件权限
+manage_qrfile = require_permissions(
+    "qrfile:create",
+    "qrfile:serialize",
+    "qrfile:restore",
+    "qrfile:download",
+    "qrfile:download",
+)
 create_qrfile = require_permissions("qrfile:create")
-view_qrfile = require_permissions("qrfile:read")
-delete_qrfile = require_permissions("qrfile:delete")
+serialize_qrfile = require_permissions("qrfile:read")
+restore_qrfile = require_permissions("qrfile:delete")
 download_qrfile = require_permissions("qrfile:download")
+
 # 调度器权限
-manage_scheduler = require_permissions("scheduler:manage")
+manage_scheduler = require_permissions(
+    "scheduler:create",
+    "scheduler:read",
+    "scheduler:update",
+    "scheduler:delete",
+    "scheduler:execute",
+    "scheduler:resume",
+    "scheduler:pause",
+)
 create_scheduler = require_permissions("scheduler:create")
 view_scheduler = require_permissions("scheduler:read")
 update_scheduler = require_permissions("scheduler:update")

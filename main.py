@@ -56,8 +56,8 @@ def create_app() -> FastAPI:
     )
 
     # 添加自定义中间件
-    app.add_middleware(RequestLoggingMiddleware)
-    app.add_middleware(SecurityHeadersMiddleware)
+    # app.add_middleware(RequestLoggingMiddleware)
+    # app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(ExpiryCheckMiddleware)
 
     # 挂载静态文件
@@ -186,12 +186,6 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 if __name__ == "__main__":
     # 删除数据库
-    import os
-    try:
-        os.remove("database.sqlite")
-        print('删除')
-    except:
-        pass
     uvicorn.run(
         app,
         host=settings.HOST,

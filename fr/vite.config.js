@@ -25,7 +25,17 @@ export default defineConfig({
         target: 'http://localhost:8000', // 后端地址
         changeOrigin: true,
         //rewrite: (path) => path.replace(/^\/api/, '') // 可选：去掉 /api 前缀
-      }
+      },
+      '/static/backend/': {
+        target: 'http://localhost:8000', // 后端地址
+        changeOrigin: true,
+        //rewrite: (path) => path.replace(/^\/api/, '') // 可选：去掉 /api 前缀
+      },
+      '/api/': {
+        target: 'http://localhost:8000', // 后端地址
+        changeOrigin: true,secure: false
+        //rewrite: (path) => path.replace(/^\/api/, '') // 可选：去掉 /api 前缀
+      },
     }
   }
 

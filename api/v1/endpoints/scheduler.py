@@ -3,27 +3,22 @@
 
 提供Web界面和API接口，用于管理定时任务的创建、查看、启停等操作。
 """
-from fastapi import APIRouter, Request, Depends, HTTPException, Form, Query
-from fastapi.responses import HTMLResponse, JSONResponse
-from typing import Dict, Any, List, Optional, Union
 import datetime
-import json
-import os
-import pytz
-import importlib
-import importlib.util
-from api.v1.endpoints.extensions import get_extensions,get_extension
-from core.auth import get_current_user,manage_scheduler,create_scheduler,view_scheduler,update_scheduler,delete_scheduler,execute_scheduler,view_extension,resume_scheduler,pause_scheduler
-from core.logger import get_logger
-# from core.app_scheduler import AppScheduler
+from typing import Dict, Any, List, Optional
+
+from fastapi import APIRouter, Request, Depends, HTTPException, Form
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from core.sandbox import load_module_in_sandbox,execute_query_in_sandbox
+from api.v1.endpoints.extensions import get_extensions, get_extension
+from core.auth import create_scheduler, view_scheduler, update_scheduler, delete_scheduler, execute_scheduler, \
+    view_extensions, resume_scheduler
+from core.sandbox import execute_query_in_sandbox
 from db.session import get_db
 from models.user import User
-logger = get_logger("scheduler")
+from core.scheduler import logger
+
 router = APIRouter()
-from config import settings
 
 # 任务类型定义
 TASK_TYPES = {
@@ -46,14 +41,14 @@ example_tasks = {
 # API路由
 
 @router.get("/extensions",)
-async def add_job_page(request: Request, user=Depends(view_extension),db=Depends(get_db)):
+async def add_job_page(request: Request, user=Depends(view_extensions),db=Depends(get_db)):
     """添加任务页面"""
     # 获取所有扩展中的扩展名及execute_query方法，以便添加定时任务
     extensions = await get_extensions(db)
     extension_methods = [
         {
             "extension_name": extension.name,
-            "method_name": "execute_query",
+            "method_name": extension.name,
             "extension_id": extension.id
         }
         for extension in extensions
@@ -152,7 +147,7 @@ async def remove_job(request: Request, job_id: str, user=Depends(delete_schedule
         job = await scheduler.get_job(job_id)
         if not job:
             raise HTTPException(status_code=404, detail=f"任务 {job_id} 不存在")
-            
+
         result = await scheduler.remove_job(job_id)
         if result:
             logger.info(f"用户 {user.username} 删除了任务 {job_id}")
@@ -222,7 +217,7 @@ async def add_cron_job(
         # 生成任务ID（如果未提供）
         if not job_id:
             job_id = f"cron_{task_func}_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
-        
+
         scheduler = request.app.state.scheduler
         # func = TASK_FUNCTIONS[task_func]
 
@@ -246,7 +241,7 @@ async def add_cron_job(
             day_of_week=day_of_week,
             second=second
         )
-        
+
         logger.info(f"用户 {user.username} 添加了Cron任务: {job_id}")
         return {
             "success": True,
@@ -275,15 +270,15 @@ async def add_interval_job(
     try:
         # if task_func not in TASK_FUNCTIONS:
         #     raise HTTPException(status_code=400, detail=f"无效的任务函数: {task_func}")
-        
+
         # 至少要指定一个时间间隔
         if seconds == 0 and minutes == 0 and hours == 0 and days == 0:
             raise HTTPException(status_code=400, detail="必须指定至少一个时间间隔")
-        
+
         # 生成任务ID（如果未提供）
         if not job_id:
             job_id = f"interval_{task_func}_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
-        
+
         scheduler = request.app.state.scheduler
         # 动态导入模块
         # py_path = os.path.join(settings.EXTENSIONS_DIR,f"{task_func}.py")
@@ -304,7 +299,7 @@ async def add_interval_job(
             hours=hours,
             days=days
         )
-        
+
         logger.info(f"用户 {user.username} 添加了间隔任务: {job_id}")
         return {
             "success": True,
@@ -329,21 +324,21 @@ async def add_date_job(
     try:
         # if task_func not in TASK_FUNCTIONS:
         #     raise HTTPException(status_code=400, detail=f"无效的任务函数: {task_func}")
-        
+
         # 解析日期时间
         try:
             run_datetime = datetime.datetime.strptime(run_date, "%Y-%m-%d %H:%M:%S")
         except ValueError:
             raise HTTPException(status_code=400, detail="无效的日期时间格式，应为: YYYY-MM-DD HH:MM:SS")
-        
+
         # 检查日期是否在未来
         if run_datetime <= datetime.datetime.now():
             raise HTTPException(status_code=400, detail="执行时间必须在未来")
-        
+
         # 生成任务ID（如果未提供）
         if not job_id:
             job_id = f"date_{task_func}_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
-        
+
         scheduler = request.app.state.scheduler
 
         # 动态导入模块
@@ -361,7 +356,7 @@ async def add_date_job(
             job_id=job_id,
             run_date=run_datetime
         )
-        
+
         logger.info(f"用户 {user.username} 添加了一次性任务: {job_id}, 执行时间: {run_date}")
         return {
             "success": True,
@@ -400,10 +395,10 @@ async def get_job(request: Request, job_id: str,user=Depends(view_scheduler)):
     """获取指定任务详情"""
     scheduler = request.app.state.scheduler
     job = await scheduler.get_job(job_id)
-    
+
     if not job:
         raise HTTPException(status_code=404, detail="任务不存在")
-    
+
     return {"success": True, "job": job}
 
 @router.post("/api/jobs/cron", response_class=JSONResponse)
@@ -421,17 +416,17 @@ async def add_cron_job(
     """添加Cron定时任务"""
     try:
         scheduler = request.app.state.scheduler
-        
+
         # 构建cron表达式
         cron_expression = f"{second} {minute} {hour} {day} {month} {day_of_week}"
-        
+
         # 添加任务
         job = await scheduler.add_cron_job(
             func=task_func,
             cron_expression=cron_expression,
             job_id=job_id
         )
-        
+
         return JobResponse(
             success=True,
             message="Cron定时任务添加成功",
@@ -463,9 +458,9 @@ async def add_interval_job(
                 message="添加间隔任务失败",
                 detail="时间间隔必须大于0"
             )
-        
+
         scheduler = request.app.state.scheduler
-        
+
         # 构建间隔参数
         interval_kwargs = {}
         if seconds > 0:
@@ -476,14 +471,14 @@ async def add_interval_job(
             interval_kwargs["hours"] = hours
         if days > 0:
             interval_kwargs["days"] = days
-        
+
         # 添加任务
         job = await scheduler.add_interval_job(
             func=task_func,
             job_id=job_id,
             **interval_kwargs
         )
-        
+
         return JobResponse(
             success=True,
             message="间隔任务添加成功",
@@ -511,7 +506,7 @@ async def add_date_job(
         except ValueError:
             # 尝试其他常见格式
             run_date_obj = datetime.strptime(run_date, "%Y-%m-%d %H:%M:%S")
-        
+
         # 检查日期是否在未来
         if run_date_obj <= datetime.now():
             return JobResponse(
@@ -519,16 +514,16 @@ async def add_date_job(
                 message="添加一次性任务失败",
                 detail="执行时间必须在未来"
             )
-        
+
         scheduler = request.app.state.scheduler
-        
+
         # 添加任务
         job = await scheduler.add_date_job(
             func=task_func,
             run_date=run_date_obj,
             job_id=job_id
         )
-        
+
         return JobResponse(
             success=True,
             message="一次性任务添加成功",

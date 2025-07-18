@@ -326,7 +326,7 @@ export class AuthenticatedWebSocket {
  * @param {object} callbacks - 回调函数
  */
 export function createChatWebSocket(roomId, token, callbacks = {}) {
-  const wsUrl = `ws://localhost:8000/api/modern-chat/ws/${roomId}`
+  const wsUrl = `ws://${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/api/modern-chat/ws/${roomId}`
   
   const ws = new AuthenticatedWebSocket(wsUrl, {
     reconnectInterval: 3000,
@@ -357,7 +357,7 @@ export function createChatWebSocket(roomId, token, callbacks = {}) {
  * @param {object} callbacks - 回调函数
  */
 export function createPrivateChatWebSocket(targetUserId, token, callbacks = {}) {
-  const wsUrl = `ws://localhost:8000/api/modern-chat/ws/private/${targetUserId}`
+  const wsUrl = `ws://${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/api/modern-chat/ws/private/${targetUserId}`
   
   const ws = new AuthenticatedWebSocket(wsUrl, {
     reconnectInterval: 3000,

@@ -1298,6 +1298,7 @@ export default {
           await databaseApi.updateRecord(currentTable.value.name, id, recordForm);
           toast.success('记录已更新');
         } else {
+          console.log(recordForm)
           await databaseApi.createRecord(currentTable.value.name, recordForm);
           toast.success('记录已添加');
         }

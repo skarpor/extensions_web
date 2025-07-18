@@ -311,6 +311,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { serializeExcel, serializeFile, generateQRCodes, scanRestore, scanVideo as scanVideoApi, getQRCodeUrl, getExcelSheets, restoreFromText, getQRFilesBySessionIdApi } from '@/api/qrfile'
 import Toast from '@/utils/toast'
 
+
 export default {
   name: 'QRFileView',
   setup() {
@@ -327,17 +328,17 @@ export default {
     const regionInput = ref('A1:D10')
     const selectedSheet = ref('')
     const sheetList = ref([])
-    
+
     // 二维码设置
     const chunkSize = ref(1800)
-    
+
     // 序列化数据
     const serializedData = ref(null)
-    
+
     // 二维码图片
     const qrImages = ref([])
     const currentQRIndex = ref(0)
-    
+
     // 扫描恢复相关
     const showScanModal = ref(false)
     const scanMode = ref('image')
@@ -350,27 +351,27 @@ export default {
     const scanProgressText = ref('')
     const restoreResult = ref(null)
     const qrTextContent = ref('')
-    
+
     // 计算属性
     const computedProgressStatus = computed(() => {
       if (progress.value === 100) return 'success'
       if (progress.value === 0) return ''
       return 'exception'
     })
-    
+
     // 方法
-    
+
     // 更新进度
     const updateProgress =async (value, message = '') => {
       progress.value = value
       if (message) progressText.value = message
     }
-    
+
     // 文件变更处理
     const handleFileChange = async (file) => {
       fileList.value = [file]
       selectedFile.value = file.raw
-      
+
       // 如果是Excel文件，加载sheet列表
       if (mode.value === 'region' && selectedFile.value) {
         loadSheetList(selectedFile.value)
@@ -455,7 +456,7 @@ export default {
         updateProgress(10, '开始生成二维码...')
         
         const response = await generateQRCodes(serializedData.value.session_id, chunkSize.value)
-        
+        console.log(response.data)
         qrImages.value = response.data.qr_images.map(img => ({
           name: img.name,
           path: img.path,
@@ -655,7 +656,6 @@ export default {
     // 下载恢复的文件
     const downloadRestoredFile = () => {
       if (!restoreResult.value || !restoreResult.value.success) return
-      
       window.open(restoreResult.value.downloadPath, '_blank')
     }
     

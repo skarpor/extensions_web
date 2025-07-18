@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy import select, and_, or_, desc, func, update, delete
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta,timezone
 import os
 import uuid
 
@@ -1190,7 +1190,7 @@ async def request_join_room(
 
         if existing_request:
             # 检查是否在1分钟内
-            time_diff = datetime.utcnow() - existing_request.created_at
+            time_diff = datetime.now() - existing_request.created_at
             if time_diff.total_seconds() < 60:
                 remaining_seconds = 60 - int(time_diff.total_seconds())
                 raise HTTPException(
@@ -1200,15 +1200,15 @@ async def request_join_room(
             else:
                 # 更新现有申请
                 existing_request.message = request_data.message
-                existing_request.expires_at = datetime.utcnow() + timedelta(days=7)
-                existing_request.created_at = datetime.utcnow()
+                existing_request.expires_at = datetime.now() + timedelta(days=7)
+                existing_request.created_at = datetime.now()
         else:
             # 创建新申请
             new_request = DBChatRoomJoinRequest(
                 room_id=room_id,
                 user_id=current_user.id,
                 message=request_data.message,
-                expires_at=datetime.utcnow() + timedelta(days=7)
+                expires_at=datetime.now() + timedelta(days=7)
             )
             db.add(new_request)
 
@@ -2674,7 +2674,7 @@ async def delete_message(
         # 软删除消息
         message.is_deleted = True
         message.content = "[此消息已被删除]"
-        message.updated_at = datetime.utcnow()
+        message.updated_at = datetime.now(timezone.utc)
 
         await db.commit()
 

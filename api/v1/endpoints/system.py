@@ -35,7 +35,14 @@ class SystemSettings(BaseModel):
     # 数据库配置
     DATABASE_URL: str = Field(..., description="数据库连接URL")
     DATABASE_TYPE: str = Field("sqlite", description="数据库类型")
-    
+
+    # 应用配置
+    FILE_ENABLE: bool= Field(False, description="是否启用文件管理")
+    CHAT_ENABLE: bool= Field(False, description="是否启用聊天")
+    QR_ENABLE: bool= Field(False, description="是否启用二维码文件传输")
+    SCHEDULER_ENABLE: bool= Field(False, description="是否启用定时器")
+    LOG_ENABLE: bool = Field(False, description="是否启用日志功能")
+
     # 文件配置
     UPLOAD_DIR: str = Field("data/uploads", description="上传目录")
     MAX_FILE_SIZE: int = Field(104857600, description="最大文件大小(字节)")

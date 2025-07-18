@@ -143,12 +143,6 @@ const router = createRouter({
       meta: { title: '帮助详情' }
     },
     {
-      path: '/example',
-      name: 'example',
-      component: () => import('../views/ExampleView.vue'),
-      meta: { title: '示例' }
-    },
-    {
       path: '/profile',
       name: 'profile',
       component: () => import('../views/UserProfile.vue'),

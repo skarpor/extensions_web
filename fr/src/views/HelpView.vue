@@ -34,14 +34,14 @@ import 'prismjs/components/prism-c';
 import 'prismjs/components/prism-cpp';
 import 'prismjs/components/prism-java';
 import 'prismjs/components/prism-kotlin';
-import 'prismjs/components/prism-php';
 import 'prismjs/components/prism-ruby';
 import 'prismjs/components/prism-rust';
 import 'prismjs/components/prism-sql';
 import 'prismjs/components/prism-swift';
 import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-yaml';
-import 'prismjs/themes/prism-okaidia.css';
+//import 'prismjs/themes/prism-okaidia.css';
+import 'prismjs/themes/prism-tomorrow.css';
 
 export default {
   setup() {
@@ -57,7 +57,7 @@ export default {
     const loadContent = async () => {
       try {
         const response = await viewFile(filename);
-        console.log('Received content type:', response.data.content_type);
+        //console.log('Received content type:', response.data.content_type);
 
         content.value = response.data.content;
         contentType.value = response.data.content_type;
@@ -89,13 +89,12 @@ export default {
         'text/x-c++': 'language-cpp',
         'text/x-java': 'language-java',
         'text/x-kotlin': 'language-kotlin',
-        'text/x-php': 'language-php',
         'text/x-ruby': 'language-ruby',
         'text/x-rust': 'language-rust',
         'text/x-sql': 'language-sql',
         'text/x-swift': 'language-swift',
         'text/x-typescript': 'language-typescript',
-        'text/x-yaml': 'language-yaml',//
+        'text/x-yaml': 'language-yaml',
       };
       return typeMap[contentType.value] || '';
     });
@@ -103,22 +102,8 @@ export default {
     // 添加内容变化监听，触发高亮
     watch([content, codeClass], () => {
       nextTick(() => {
-    const codeElements = document.querySelectorAll('code');
-    codeElements.forEach(el => {
-      el.className = `language-python ${el.className}`;
-    });
     Prism.highlightAll();
   });
-  //     console.log('当前contentType:', contentType.value);
-  //     console.log('计算出的codeClass:', codeClass.value);
-  //     nextTick(() => {
-  //       console.log('实际DOM类名:', codeBlock.value?.className);
-  //   Prism.highlightElement(codeBlock.value);
-  //   console.log('已执行高亮');
-  // });
-  //     if (codeBlock.value) {
-  //       Prism.highlightElement(codeBlock.value);
-  //     }
     });
 
     onMounted(() => {
@@ -194,8 +179,6 @@ export default {
 }
 
 .doc-content pre {
-  background-color: #1e1e1e;
-  color: #d4d4d4;
   padding: 15px;
   border-radius: 8px;
   overflow-x: auto;
@@ -205,7 +188,6 @@ export default {
 .doc-content pre code {
   background-color: transparent;
   padding: 0;
-  color: inherit;
 }
 
 .doc-content blockquote {

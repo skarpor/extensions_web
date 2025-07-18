@@ -136,7 +136,7 @@ async def view_example(
     
 # 添加一个路由，用于上传示例文件
 @router.post("/upload", response_class=JSONResponse)
-async def upload_example(files: List[UploadFile] = File(...), current_user: User = Depends(get_current_user)):
+async def upload_example(files: List[UploadFile] = File(..., alias="files[]"), current_user: User = Depends(get_current_user)):
     """
     上传示例文件
     

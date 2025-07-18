@@ -19,26 +19,26 @@ from .logger import get_logger
 
 logger = get_logger("app_scheduler")
 
-def init_scheduler(app: FastAPI):
-    """
-    初始化应用的调度器，并添加到app.state
-    
-    Args:
-        app: FastAPI应用实例
-    """
-    # 在应用启动时启动调度器
-    @app.on_event("startup")
-    async def start_app_scheduler():
-        await start_scheduler()
-        # 创建一个简化的接口供应用使用
-        app.state.scheduler = AppScheduler()
-        logger.info("应用调度器已初始化")
-    
-    # 在应用关闭时停止调度器
-    @app.on_event("shutdown")
-    async def stop_app_scheduler():
-        await stop_scheduler()
-        logger.info("应用调度器已关闭")
+# def init_scheduler(app: FastAPI):
+#     """
+#     初始化应用的调度器，并添加到app.state
+#
+#     Args:
+#         app: FastAPI应用实例
+#     """
+#     # 在应用启动时启动调度器
+#     @app.on_event("startup")
+#     async def start_app_scheduler():
+#         await start_scheduler()
+#         # 创建一个简化的接口供应用使用
+#         app.state.scheduler = AppScheduler()
+#         logger.info("应用调度器已初始化")
+#
+#     # 在应用关闭时停止调度器
+#     @app.on_event("shutdown")
+#     async def stop_app_scheduler():
+#         await stop_scheduler()
+#         logger.info("应用调度器已关闭")
 
 class AppScheduler:
     """应用调度器接口类"""

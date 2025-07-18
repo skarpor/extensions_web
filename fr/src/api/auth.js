@@ -1,5 +1,5 @@
 import axios from '@/utils/axios' // 或其他 HTTP 客户端
-
+import toast from '@/utils/toast'
 
 // 登录接口
 export const loginApi = async (credentials) => {
@@ -23,7 +23,7 @@ export const logoutApi = async () => {
     localStorage.removeItem('token')
   } catch (error) {
     // 即使登出失败也继续执行，确保前端状态清除
-    console.error('登出时发生错误:', error)
+    toast.error('登出时发生错误:', error)
     // 删除token
     localStorage.removeItem('token')
   }
@@ -47,7 +47,7 @@ export const fetchUserInfo = async () => {
     const response = await axios.get('/api/auth/me')
     return response.data
   } catch (error) {
-    console.error('获取用户信息失败:', error.response?.data || error.message)
+    toast.error('获取用户信息失败:', error.response?.data || error.message)
     throw new Error('获取用户信息失败')
   }
 }
@@ -55,10 +55,9 @@ export const fetchUserInfo = async () => {
 // 注册接口
 export const registerApi = async (data) => {
   try {
-    const response = await axios.post('/api/auth/register', data)
-    return response.data
+     return await axios.post('/api/auth/register', data)
   } catch (error) {
-    console.error('注册失败:', error.response?.data || error.message)
+    toast.error(error.response?.data || error.detail)
     throw new Error(error.response?.data?.detail || '注册失败')
   }
 }

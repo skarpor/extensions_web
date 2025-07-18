@@ -122,16 +122,13 @@
             email: this.form.email || undefined,
             password: this.form.password
           })
-          console.log(response)
-          if (response && response.user) {
+          if (response && response.data) {
             // 注册成功，跳转到登录页
-            Toast.success(`${response.user.username} ${response.detail}`)
+            Toast.success(`${response.data.username} 注册成功！`)
             this.$router.push({
               name: 'login',
               query: { registered: 'success' }
             })
-          } else {
-            this.error = '注册失败，请稍后再试'
           }
         } catch (error) {
           console.error('注册错误', error)

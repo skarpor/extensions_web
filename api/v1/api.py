@@ -28,7 +28,7 @@ api_router.include_router(users_router, prefix="/users", tags=["用户"])
 api_router.include_router(extensions_router, prefix="/extensions", tags=["扩展"])
 api_router.include_router(files_router, prefix="/files", tags=["文件"])
 # api_router.include_router(chat_router, prefix="/chat", tags=["聊天"])  # 旧版聊天路由已移除
-api_router.include_router(settings_router, prefix="/settings", tags=["设置"])
+# api_router.include_router(settings_router, prefix="/settings", tags=["设置"])
 api_router.include_router(database_router, prefix="/db", tags=["数据库"])
 api_router.include_router(dashboard_router, prefix="/dashboard", tags=["控制面板"])
 # api_router.include_router(ws_router, prefix="/ws", tags=["websocket"])  # 已移除，使用chat_websocket

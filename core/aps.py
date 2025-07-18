@@ -19,7 +19,6 @@ async def start_scheduler():
         scheduler.start()
         logger.info("调度器已启动")
     except Exception as e:
-        raise
         logger.error(f"启动调度器失败: {str(e)}")
 
 # 在应用关闭时关闭调度器
