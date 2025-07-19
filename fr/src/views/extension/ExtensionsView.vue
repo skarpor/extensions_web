@@ -3,7 +3,7 @@
     <h1>扩展管理</h1>
     
     <div class="actions mb-4">
-      <button class="btn btn-primary me-2" @click="showInstallModal = true">
+      <button class="btn btn-primary me-2" @click="openInstallModal">
         <i class="fas fa-plus-circle"></i> 安装扩展
       </button>
       <button class="btn btn-secondary me-2" @click="refreshExtensions">
@@ -91,235 +91,494 @@
     </div>
     
     <!-- 安装扩展模态框 -->
-    <div class="modal" v-if="showInstallModal">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">安装扩展</h5>
-            <button type="button" class="btn-close" @click="showInstallModal = false"></button>
-          </div>
-          <div class="modal-body">
-            <form id="uploadForm" enctype="multipart/form-data">
-              <div class="mb-3">
-                <label for="name" class="form-label">名称</label>
-                <input 
-                  type="text" 
-                  id="name" 
-                  class="form-control" 
-                  v-model="extensionName"
-                  placeholder="输入扩展名称"
-                  required
-                />
-              </div>
-              
-              <div class="mb-3">
-                <label for="description" class="form-label">描述信息</label>
-                <textarea 
-                  id="description" 
-                  class="form-control" 
-                  v-model="extensionDescription"
-                  placeholder="输入扩展描述"
-                  rows="3"
-            
-                ></textarea>
-              </div>
-              
-              <div class="mb-3">
-                <label for="executionMode" class="form-label">执行模式</label>
-                <select id="executionMode" class="form-select" v-model="executionMode">
-                  <option value="manual">手动</option>
-                  <option value="auto">自动</option>
-                </select>
-              </div>
-              
-              <div class="mb-3">
-                <label for="renderType" class="form-label">渲染类型</label>
-                <select id="renderType" class="form-select" v-model="renderType">
-                  <option value="html">HTML</option>
-                  <option value="table">表格</option>
-                  <option value="image">图片</option>
-                  <option value="file">文件</option>
-                  <option value="text">文本</option>
-                </select>
-              </div>
-              
-              <div class="form-check form-switch mb-3">
-                <input 
-                  type="checkbox" 
-                  id="showinindex" 
-                  class="form-check-input" 
-                  v-model="showInHome"
-                  checked
-                />
-                <label class="form-check-label" for="showinindex">首页显示</label>
-              </div>
-              <div class="mb-3">
-                <label for="extensionFile" class="form-label">选择扩展文件 (.py)</label>
-                <input class="form-control" type="file" @change="handleFileSelect" id="extensionFile" name="file" accept=".py" required>
-                <div class="form-text">上传包含 execute_query() 函数的Python文件</div>
-              </div>
+    <el-dialog
+      v-model="showInstallModal"
+      title="安装扩展"
+      width="800px"
+      :close-on-click-modal="false"
+    >
+      <el-form
+        ref="installFormRef"
+        :model="installForm"
+        :rules="installRules"
+        label-width="100px"
+        label-position="left"
+      >
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="名称" prop="name">
+              <el-input
+                v-model="installForm.name"
+                placeholder="输入扩展名称"
+                clearable
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="执行模式" prop="executionMode">
+              <el-select v-model="installForm.executionMode" placeholder="选择执行模式" style="width: 100%">
+                <el-option label="手动" value="manual" />
+                <el-option label="自动" value="auto" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
 
-              <div class="install-progress" v-if="installProgress > 0">
-                <div class="progress">
-                  <div 
-                    class="progress-bar" 
-                    role="progressbar" 
-                    :style="{ width: installProgress + '%' }" 
-                    :aria-valuenow="installProgress" 
-                    aria-valuemin="0" 
-                    aria-valuemax="100"
-                  >
-                    {{ installProgress }}%
-                  </div>
-                </div>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="渲染类型" prop="renderType">
+              <el-select v-model="installForm.renderType" placeholder="选择渲染类型" style="width: 100%">
+                <el-option label="HTML" value="html" />
+                <el-option label="表格" value="table" />
+                <el-option label="图片" value="image" />
+                <el-option label="文件" value="file" />
+                <el-option label="文本" value="text" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="首页显示">
+              <el-switch
+                v-model="installForm.showInHome"
+                active-text="显示"
+                inactive-text="隐藏"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-form-item label="描述信息" prop="description">
+          <el-input
+            v-model="installForm.description"
+            type="textarea"
+            :rows="3"
+            placeholder="输入扩展描述"
+            show-word-limit
+            maxlength="500"
+          />
+        </el-form-item>
+
+        <el-form-item label="扩展文件" prop="file">
+          <el-upload
+            ref="uploadRef"
+            :auto-upload="false"
+            :show-file-list="true"
+            :limit="1"
+            accept=".py"
+            :on-change="handleFileSelect"
+            :on-remove="handleFileRemove"
+          >
+            <template #trigger>
+              <el-button type="primary">
+                <el-icon><Upload /></el-icon>
+                选择文件
+              </el-button>
+            </template>
+            <template #tip>
+              <div class="el-upload__tip">
+                上传包含 execute_query() 函数的Python文件，文件大小不超过10MB
               </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="showInstallModal = false">取消</button>
-            <button 
-              type="button" 
-              class="btn btn-primary" 
-              @click="installExtension"
-              :disabled="!canInstall"
-            >
-              <i class="fas fa-upload me-2"></i>安装扩展
-            </button>
-          </div>
+            </template>
+          </el-upload>
+        </el-form-item>
+
+        <el-form-item v-if="installProgress > 0">
+          <el-progress
+            :percentage="installProgress"
+            :stroke-width="8"
+            :text-inside="true"
+            status="success"
+          />
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="showInstallModal = false">取消</el-button>
+          <el-button
+            type="primary"
+            @click="installExtension"
+            :disabled="!canInstall"
+            :loading="installing"
+          >
+            <el-icon><Upload /></el-icon>
+            安装扩展
+          </el-button>
         </div>
-      </div>
-    </div>
+      </template>
+    </el-dialog>
     
     <!-- 配置扩展模态框 -->
-    <div class="modal" v-if="showConfigModal">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">配置扩展: {{ currentExtension?.name }}</h5>
-            <button type="button" class="btn-close" @click="showConfigModal = false"></button>
-          </div>
-          <div class="modal-body">
-            <div v-if="configLoading" class="text-center">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-              <p class="mt-2">加载配置...</p>
-            </div>
-            <div v-else-if="configError" class="alert alert-danger">
-              {{ configError }}
-            </div>
-            <div v-else>
-              <form id="extensionConfigForm" @submit.prevent="saveConfig">
-                <input type="hidden" name="id" :value="currentExtension?.id">
-                
-                <div class="card mb-3">
-                  <div class="card-header">基本设置</div>
-                  <div class="card-body">
-                    <div class="mb-3">
-                      <label class="form-label">名称</label>
-                      <input type="text" class="form-control" v-model="configValues.name" required>
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label">描述</label>
-                      <textarea class="form-control" v-model="configValues.description"></textarea>
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label">API端点</label>
-                      <input type="text" class="form-control" v-model="configValues.endpoint" disabled required>
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label">返回值类型</label>
-                      <select class="form-select" v-model="configValues.return_type">
-                        <option value="html">HTML</option>
-                        <option value="table">JSON列表</option>
-                      </select>
-                    </div>
-                    <div class="form-check form-switch mb-3">
-                      <input class="form-check-input" type="checkbox" id="showinindex" v-model="configValues.showinindex">
-                      <label class="form-check-label" for="showinindex">首页显示</label>
-                    </div>
-                    
-                    <div class="form-check form-switch mb-3">
-                      <input class="form-check-input" type="checkbox" id="enabled" v-model="configValues.enabled">
-                      <label class="form-check-label" for="enabled">启用扩展</label>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- 扩展文档 -->
-                <div class="card mb-3" v-if="extensionDocumentation">
-                  <div class="card-header">使用说明</div>
-                  <div class="card-body">
-                    <h4>模块说明</h4>
-                    <div class="bg-light p-3 rounded" v-html="parsedModuleDoc"></div>
-                    <div class="docs-container">
-                      <h4>方法说明</h4>
-                      <ul>
-                        <li><strong>execute_query:</strong> <span v-html="parsedExecuteQueryDoc"></span></li>
-                        <li><strong>get_config_form:</strong> <span v-html="parsedGetConfigFormDoc"></span></li>
-                        <li><strong>get_default_config:</strong> <span v-html="parsedGetDefaultConfigDoc"></span></li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- 扩展配置表单 -->
-                <div class="card mb-3" v-if="currentExtension?.has_config_form">
-                  <div class="card-header">扩展设置</div>
-                  <div class="card-body">
-                    <div v-html="configFormHtml"></div>
-                  </div>
-                </div>
-                
-                <div class="d-flex justify-content-end">
-                  <button type="button" class="btn btn-secondary" @click="showConfigModal = false">取消</button>
-                  <button type="submit" class="btn btn-primary ms-2">
-                    <i class="fas fa-save me-2"></i>保存配置
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
+    <el-dialog
+      v-model="showConfigModal"
+      :title="`配置扩展: ${currentExtension?.name}`"
+      width="1000px"
+      :close-on-click-modal="false"
+      top="5vh"
+    >
+      <div v-if="configLoading" class="loading-container">
+        <el-loading-directive v-loading="true" element-loading-text="加载配置中...">
+          <div style="height: 200px;"></div>
+        </el-loading-directive>
       </div>
-    </div>
+
+      <el-alert
+        v-else-if="configError"
+        :title="configError"
+        type="error"
+        show-icon
+        :closable="false"
+      />
+
+      <div v-else>
+        <el-form
+          ref="configFormRef"
+          :model="configValues"
+          :rules="configRules"
+          label-width="120px"
+          label-position="left"
+        >
+          <!-- 基本设置 -->
+          <el-card class="config-card" shadow="never">
+            <template #header>
+              <div class="card-header">
+                <el-icon><Setting /></el-icon>
+                <span>基本设置</span>
+              </div>
+            </template>
+
+            <el-row :gutter="20">
+              <el-col :span="12">
+                <el-form-item label="名称" prop="name">
+                  <el-input v-model="configValues.name" placeholder="扩展名称" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="API端点" prop="endpoint">
+                  <el-input v-model="configValues.endpoint" disabled />
+                </el-form-item>
+              </el-col>
+            </el-row>
+
+            <el-row :gutter="20">
+              <el-col :span="12">
+                <el-form-item label="返回值类型" prop="return_type">
+                  <el-select v-model="configValues.return_type" style="width: 100%">
+                    <el-option label="HTML" value="html" />
+                    <el-option label="JSON列表" value="table" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+            <el-form-item label="执行模式" prop="executionMode">
+              <el-select v-model="installForm.executionMode" placeholder="选择执行模式" style="width: 100%">
+                <el-option label="手动" value="manual" />
+                <el-option label="自动" value="auto" />
+              </el-select>
+            </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="首页显示">
+                  <el-switch
+                    v-model="configValues.showinindex"
+                    active-text="显示"
+                    inactive-text="隐藏"
+                  />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="启用扩展">
+                  <el-switch
+                    v-model="configValues.enabled"
+                    active-text="启用"
+                    inactive-text="禁用"
+                  />
+                </el-form-item>
+              </el-col>
+            </el-row>
+
+            <el-form-item label="描述" prop="description">
+              <el-input
+                v-model="configValues.description"
+                type="textarea"
+                :rows="3"
+                placeholder="扩展描述"
+                show-word-limit
+                maxlength="500"
+              />
+            </el-form-item>
+          </el-card>
+
+          <!-- 扩展文档 -->
+          <el-card v-if="extensionDocumentation" class="config-card" shadow="never">
+            <template #header>
+              <div class="card-header">
+                <el-icon><Document /></el-icon>
+                <span>使用说明</span>
+              </div>
+            </template>
+
+            <el-collapse v-model="activeDocCollapse" accordion>
+              <el-collapse-item title="模块说明" name="module">
+                <div class="doc-content" v-html="parsedModuleDoc"></div>
+              </el-collapse-item>
+              <el-collapse-item title="方法说明" name="methods">
+                <div class="methods-doc">
+                  <el-descriptions :column="1" border>
+                    <el-descriptions-item label="execute_query">
+                      <div v-html="parsedExecuteQueryDoc"></div>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="get_config_form">
+                      <div v-html="parsedGetConfigFormDoc"></div>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="get_default_config">
+                      <div v-html="parsedGetDefaultConfigDoc"></div>
+                    </el-descriptions-item>
+                  </el-descriptions>
+                </div>
+              </el-collapse-item>
+            </el-collapse>
+          </el-card>
+
+          <!-- 扩展配置表单 -->
+          <el-card v-if="currentExtension?.has_config_form" class="config-card" shadow="never">
+            <template #header>
+              <div class="card-header">
+                <el-icon><Tools /></el-icon>
+                <span>扩展设置</span>
+              </div>
+            </template>
+
+            <!-- 动态渲染扩展配置字段 -->
+            <div class="extension-config-form">
+              <template v-if="extensionConfigFields && extensionConfigFields.length > 0">
+                <el-row :gutter="20" v-for="(row, rowIndex) in configFieldRows" :key="rowIndex">
+                  <el-col
+                    v-for="field in row"
+                    :key="field.name"
+                    :span="field.span || 12"
+                  >
+                    <el-form-item
+                      :label="field.label"
+                      :prop="`config.${field.name}`"
+                      :rules="field.rules"
+                    >
+                      <!-- 文本输入 -->
+                      <el-input
+                        v-if="field.type === 'text' || field.type === 'string'"
+                        v-model="configValues.config[field.name]"
+                        :placeholder="field.placeholder"
+                        :disabled="field.disabled"
+                        clearable
+                      />
+
+                      <!-- 数字输入 -->
+                      <el-input-number
+                        v-else-if="field.type === 'number' || field.type === 'integer'"
+                        v-model="configValues.config[field.name]"
+                        :min="field.min"
+                        :max="field.max"
+                        :step="field.step || 1"
+                        :disabled="field.disabled"
+                        style="width: 100%"
+                      />
+
+                      <!-- 密码输入 -->
+                      <el-input
+                        v-else-if="field.type === 'password'"
+                        v-model="configValues.config[field.name]"
+                        type="password"
+                        :placeholder="field.placeholder"
+                        :disabled="field.disabled"
+                        show-password
+                        clearable
+                      />
+
+                      <!-- 多行文本 -->
+                      <el-input
+                        v-else-if="field.type === 'textarea'"
+                        v-model="configValues.config[field.name]"
+                        type="textarea"
+                        :rows="field.rows || 3"
+                        :placeholder="field.placeholder"
+                        :disabled="field.disabled"
+                        show-word-limit
+                        :maxlength="field.maxlength"
+                      />
+
+                      <!-- 选择框 -->
+                      <el-select
+                        v-else-if="field.type === 'select'"
+                        v-model="configValues.config[field.name]"
+                        :placeholder="field.placeholder"
+                        :disabled="field.disabled"
+                        style="width: 100%"
+                        clearable
+                      >
+                        <el-option
+                          v-for="option in field.options"
+                          :key="option.value"
+                          :label="option.label"
+                          :value="option.value"
+                        />
+                      </el-select>
+
+                      <!-- 开关 -->
+                      <el-switch
+                        v-else-if="field.type === 'boolean' || field.type === 'switch'"
+                        v-model="configValues.config[field.name]"
+                        :active-text="field.activeText || '启用'"
+                        :inactive-text="field.inactiveText || '禁用'"
+                        :disabled="field.disabled"
+                      />
+
+                      <!-- 日期选择 -->
+                      <el-date-picker
+                        v-else-if="field.type === 'date'"
+                        v-model="configValues.config[field.name]"
+                        type="date"
+                        :placeholder="field.placeholder"
+                        :disabled="field.disabled"
+                        style="width: 100%"
+                      />
+
+                      <!-- 时间选择 -->
+                      <el-time-picker
+                        v-else-if="field.type === 'time'"
+                        v-model="configValues.config[field.name]"
+                        :placeholder="field.placeholder"
+                        :disabled="field.disabled"
+                        style="width: 100%"
+                      />
+
+                      <!-- 默认文本输入 -->
+                      <el-input
+                        v-else
+                        v-model="configValues.config[field.name]"
+                        :placeholder="field.placeholder"
+                        :disabled="field.disabled"
+                        clearable
+                      />
+
+                      <!-- 字段描述 -->
+                      <div v-if="field.description" class="field-description">
+                        {{ field.description }}
+                      </div>
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+              </template>
+
+              <!-- 如果没有解析到配置字段，显示原始HTML -->
+              <div v-else-if="configFormHtml" v-html="configFormHtml"></div>
+
+              <!-- 没有配置表单 -->
+              <el-empty v-else description="该扩展没有配置项" />
+            </div>
+          </el-card>
+        </el-form>
+      </div>
+
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="showConfigModal = false">取消</el-button>
+          <el-button
+            type="primary"
+            @click="saveConfig"
+            :loading="configSaving"
+          >
+            <el-icon><Check /></el-icon>
+            保存配置
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { 
+import {
   getExtension,
-  getExtensions, 
-  createExtension, 
-  updateExtension, 
-  deleteExtension, 
-  getExtensionConfig, 
-  saveExtensionConfig 
+  getExtensions,
+  createExtension,
+  updateExtension,
+  deleteExtension,
+  getExtensionConfig,
+  saveExtensionConfig
 } from '@/api/extension';
 import Toast from '@/utils/toast'
 import { marked } from 'marked'  // 正确导入marked
+import {
+  Upload,
+  Setting,
+  Document,
+  Tools,
+  Check
+} from '@element-plus/icons-vue'
 
 export default {
   name: 'ExtensionsView',
+  components: {
+    Upload,
+    Setting,
+    Document,
+    Tools,
+    Check
+  },
   data() {
     return {
       extensions: [],
       showInstallModal: false,
       showConfigModal: false,
       extensionFile: null,
-      extensionName: '',
-      extensionDescription: '',
-      executionMode: 'manual',
-      renderType: 'html',
-      showInHome: true,
       installProgress: 0,
+      installing: false,
       currentExtension: null,
       configValues: {},
       configLoading: false,
+      configSaving: false,
       configError: null,
       configFormHtml: null,
       extensionDocumentation: null,
-      config:null
+      config: null,
+      activeDocCollapse: 'module',
+      extensionConfigFields: [], // 解析后的配置字段
+
+      // Element Plus 表单数据
+      installForm: {
+        name: '',
+        description: '',
+        executionMode: 'manual',
+        renderType: 'html',
+        showInHome: true,
+        file: null
+      },
+
+      // 表单验证规则
+      installRules: {
+        name: [
+          { required: true, message: '请输入扩展名称', trigger: 'blur' },
+          { min: 2, max: 50, message: '名称长度在 2 到 50 个字符', trigger: 'blur' }
+        ],
+        executionMode: [
+          { required: true, message: '请选择执行模式', trigger: 'change' }
+        ],
+        renderType: [
+          { required: true, message: '请选择渲染类型', trigger: 'change' }
+        ],
+        file: [
+          { required: true, message: '请选择扩展文件', trigger: 'change' }
+        ]
+      },
+
+      configRules: {
+        name: [
+          { required: true, message: '请输入扩展名称', trigger: 'blur' }
+        ],
+        endpoint: [
+          { required: true, message: 'API端点不能为空', trigger: 'blur' }
+        ]
+      }
     }
   },
   computed: {
@@ -328,7 +587,41 @@ export default {
     },
 
     canInstall() {
-      return this.extensionFile && this.extensionName
+      return this.installForm.file && this.installForm.name
+    },
+
+    // 将配置字段按行分组，实现响应式布局
+    configFieldRows() {
+      if (!this.extensionConfigFields || this.extensionConfigFields.length === 0) {
+        return []
+      }
+
+      const rows = []
+      let currentRow = []
+      let currentRowSpan = 0
+
+      for (const field of this.extensionConfigFields) {
+        const fieldSpan = field.span || 12
+
+        // 如果当前行放不下这个字段，开始新行
+        if (currentRowSpan + fieldSpan > 24) {
+          if (currentRow.length > 0) {
+            rows.push(currentRow)
+          }
+          currentRow = [field]
+          currentRowSpan = fieldSpan
+        } else {
+          currentRow.push(field)
+          currentRowSpan += fieldSpan
+        }
+      }
+
+      // 添加最后一行
+      if (currentRow.length > 0) {
+        rows.push(currentRow)
+      }
+
+      return rows
     },
     parsedModuleDoc() {
       return this.extensionDocumentation?.module ? 
@@ -369,51 +662,80 @@ export default {
       this.fetchExtensions()
     },
     
-    handleFileSelect(event) {
-      this.extensionFile = event.target.files[0]
+    handleFileSelect(file) {
+      this.installForm.file = file.raw
     },
-    
+
+    handleFileRemove() {
+      this.installForm.file = null
+    },
+
     async installExtension() {
-      if (!this.extensionFile) {
-        Toast.error('请选择扩展文件')
-        return
-      }
-      
-      if (!this.extensionName) {
-        Toast.error('请输入扩展名称')
-        return
-      }
-      
+      // 验证表单
+      if (!this.$refs.installFormRef) return
+
       try {
+        await this.$refs.installFormRef.validate()
+      } catch (error) {
+        return
+      }
+
+      if (!this.installForm.file) {
+        this.$message.error('请选择扩展文件')
+        return
+      }
+
+      try {
+        this.installing = true
+        this.installProgress = 10
+
         const formData = new FormData()
-        formData.append('file', this.extensionFile)
-        formData.append('name', this.extensionName)
-        formData.append('description', this.extensionDescription)
-        formData.append('execution_mode', this.executionMode)
-        formData.append('render_type', this.renderType)
-        formData.append('show_in_home', this.showInHome)
-        
+        formData.append('file', this.installForm.file)
+        formData.append('name', this.installForm.name)
+        formData.append('description', this.installForm.description)
+        formData.append('execution_mode', this.installForm.executionMode)
+        formData.append('render_type', this.installForm.renderType)
+        formData.append('show_in_home', this.installForm.showInHome)
+
+        this.installProgress = 50
+
         await createExtension(formData)
-        
-        Toast.success('扩展安装成功')
+
+        this.installProgress = 100
+
+        this.$message.success('扩展安装成功')
         this.showInstallModal = false
-        this.extensionFile = null
-        this.extensionName = ''
-        this.extensionDescription = ''
-        this.executionMode = 'sync'
-        this.renderType = 'html'
-        this.showInHome = true
-        this.installProgress = 0
+        this.resetInstallForm()
         this.fetchExtensions()
       } catch (error) {
         console.error('安装扩展失败', error)
-        Toast.error('安装扩展失败: ' + (error.response?.data?.detail || error.message))
+        this.$message.error('安装扩展失败: ' + (error.response?.data?.detail || error.message))
       } finally {
-        const submitBtn = document.querySelector('#uploadForm + .modal-footer button[type="button"].btn-primary')
-        if (submitBtn) {
-          submitBtn.disabled = false
-          submitBtn.innerHTML = '<i class="fas fa-upload me-2"></i>安装扩展'
-        }
+        this.installing = false
+        this.installProgress = 0
+      }
+    },
+
+    openInstallModal() {
+      this.resetInstallForm()
+      this.showInstallModal = true
+    },
+
+    resetInstallForm() {
+      this.installForm = {
+        name: '',
+        description: '',
+        executionMode: 'manual',
+        renderType: 'html',
+        showInHome: true,
+        file: null
+      }
+      this.installProgress = 0
+      if (this.$refs.uploadRef) {
+        this.$refs.uploadRef.clearFiles()
+      }
+      if (this.$refs.installFormRef) {
+        this.$refs.installFormRef.resetFields()
       }
     },
     
@@ -462,7 +784,8 @@ export default {
           endpoint: extensionData.entry_point,
           return_type: extensionData.render_type || 'html',
           showinindex: extensionData.show_in_home || false,
-          enabled: extensionData.enabled || false
+          enabled: extensionData.enabled || false,
+          config: {} // 初始化config对象
         }
         
         // 获取文档信息
@@ -484,6 +807,9 @@ export default {
             console.log(this.config)
             console.log(configFormHtml)
             this.configFormHtml = configFormHtml
+
+            // 解析配置表单HTML，提取字段信息
+            this.parseConfigFields(configFormHtml, configData)
           } catch (error) {
             console.error('获取配置表单失败', error)
             this.configFormHtml = `
@@ -502,52 +828,267 @@ export default {
       }
     },
     
-    async saveConfig(event) {
+    async saveConfig() {
       if (!this.currentExtension) return
-      
+
+      // 验证表单
+      if (this.$refs.configFormRef) {
+        try {
+          await this.$refs.configFormRef.validate()
+        } catch (error) {
+          return
+        }
+      }
+
       try {
-        const form = event.target
-        const formData = new FormData(form)
-        const data = Object.fromEntries(formData.entries())
-        
-        // 处理布尔值
-        data.showinindex = data.showinindex === 'on'
-        data.enabled = data.enabled === 'on'
-        
-        // 处理嵌套配置
-        const config = {}
-        for (const [key, value] of Object.entries(data)) {
-          if (key.startsWith('config.')) {
-            const parts = key.split('.')
-            let current = config
-            for (let i = 1; i < parts.length - 1; i++) {
-              if (!current[parts[i]]) {
-                current[parts[i]] = {}
-              }
-              current = current[parts[i]]
-            }
-            current[parts[parts.length - 1]] = value
-            delete data[key]
-          }
+        this.configSaving = true
+
+        // 准备保存的数据
+        const data = {
+          id: this.configValues.id,
+          name: this.configValues.name,
+          description: this.configValues.description,
+          endpoint: this.configValues.endpoint,
+          return_type: this.configValues.return_type,
+          showinindex: this.configValues.showinindex,
+          enabled: this.configValues.enabled
         }
-        
-        if (Object.keys(config).length > 0) {
-          data.config = config
+
+        // 添加扩展配置数据
+        if (this.configValues.config && Object.keys(this.configValues.config).length > 0) {
+          data.config = this.configValues.config
         }
-        
+
+        // console.log('保存配置数据:', data)
+
         await updateExtension(this.currentExtension.id, data)
-        
-        Toast.success('配置保存成功')
+
+        this.$message.success('配置保存成功')
         this.showConfigModal = false
-        this.currentExtension = null
-        this.configValues = {}
-        this.configFormHtml = null
-        this.extensionDocumentation = null
+        this.resetConfigModal()
         this.fetchExtensions()
       } catch (error) {
         console.error('保存扩展配置失败', error)
-        Toast.error('保存扩展配置失败: ' + (error.response?.data?.detail || error.message))
+        this.$message.error('保存扩展配置失败: ' + (error.response?.data?.detail || error.message))
+      } finally {
+        this.configSaving = false
       }
+    },
+    resetConfigModal() {
+      this.currentExtension = null
+      this.configValues = {}
+      this.configFormHtml = null
+      this.extensionDocumentation = null
+      this.configError = null
+      this.activeDocCollapse = 'module'
+      this.extensionConfigFields = []
+    },
+
+    // 解析配置表单HTML，提取字段信息
+    parseConfigFields(configFormHtml, configData) {
+      this.extensionConfigFields = []
+
+      if (!configFormHtml) return
+
+      try {
+        // 创建临时DOM元素来解析HTML
+        const tempDiv = document.createElement('div')
+        tempDiv.innerHTML = configFormHtml
+
+        // 查找所有表单字段
+        const inputs = tempDiv.querySelectorAll('input, select, textarea')
+        const fields = []
+
+        inputs.forEach(input => {
+          const field = this.extractFieldInfo(input, configData)
+          if (field) {
+            fields.push(field)
+          }
+        })
+
+        this.extensionConfigFields = fields
+
+        // 初始化配置值
+        if (!this.configValues.config) {
+          this.configValues.config = {}
+        }
+
+        // 设置配置值，优先使用后端返回的配置数据
+        fields.forEach(field => {
+          // 优先使用后端配置数据，其次使用默认值
+          const configValue = configData[field.name] !== undefined ? configData[field.name] : field.defaultValue
+          this.configValues.config[field.name] = configValue || ''
+        })
+
+        console.log('解析到的配置字段:', fields)
+        console.log('设置的配置值:', this.configValues.config)
+      } catch (error) {
+        console.error('解析配置字段失败:', error)
+      }
+    },
+
+    // 从HTML元素提取字段信息
+    extractFieldInfo(element, configData) {
+      const name = element.name || element.id
+      if (!name || !name.startsWith('config.')) return null
+
+      const fieldName = name.replace('config.', '')
+      const label = this.getFieldLabel(element)
+      const type = this.getFieldType(element)
+
+      const field = {
+        name: fieldName,
+        label: label || fieldName,
+        type: type,
+        placeholder: element.placeholder || '',
+        disabled: element.disabled || false,
+        required: element.required || false,
+        defaultValue: configData[fieldName] || element.value || '',
+        span: this.getFieldSpan(type)
+      }
+
+      // 添加特定类型的属性
+      if (type === 'number' || type === 'integer') {
+        field.min = element.min ? parseInt(element.min) : undefined
+        field.max = element.max ? parseInt(element.max) : undefined
+        field.step = element.step ? parseFloat(element.step) : 1
+      }
+
+      if (type === 'textarea') {
+        field.rows = element.rows || 3
+        field.maxlength = element.maxLength || undefined
+      }
+
+      if (type === 'select') {
+        field.options = this.getSelectOptions(element)
+      }
+
+      if (type === 'boolean' || type === 'switch') {
+        field.activeText = element.getAttribute('data-active-text') || '启用'
+        field.inactiveText = element.getAttribute('data-inactive-text') || '禁用'
+      }
+
+      // 添加描述信息
+      const description = this.getFieldDescription(element)
+      if (description) {
+        field.description = description
+      }
+
+      // 添加验证规则
+      field.rules = this.getFieldRules(field)
+
+      return field
+    },
+
+    // 获取字段标签
+    getFieldLabel(element) {
+      // 查找关联的label
+      const id = element.id
+      if (id) {
+        const label = document.querySelector(`label[for="${id}"]`)
+        if (label) return label.textContent.trim()
+      }
+
+      // 查找父级的label
+      const parent = element.closest('.form-group, .field-group, .el-form-item')
+      if (parent) {
+        const label = parent.querySelector('label')
+        if (label) return label.textContent.trim()
+      }
+
+      return element.getAttribute('data-label') || ''
+    },
+
+    // 获取字段类型
+    getFieldType(element) {
+      const tagName = element.tagName.toLowerCase()
+
+      if (tagName === 'select') return 'select'
+      if (tagName === 'textarea') return 'textarea'
+
+      if (tagName === 'input') {
+        const type = element.type.toLowerCase()
+        if (type === 'checkbox') return 'boolean'
+        if (type === 'number') return 'number'
+        if (type === 'password') return 'password'
+        if (type === 'date') return 'date'
+        if (type === 'time') return 'time'
+        return 'text'
+      }
+
+      return 'text'
+    },
+
+    // 获取字段占用的列数
+    getFieldSpan(type) {
+      switch (type) {
+        case 'textarea':
+          return 24 // 全宽
+        case 'boolean':
+        case 'switch':
+          return 8  // 1/3宽
+        default:
+          return 12 // 半宽
+      }
+    },
+
+    // 获取选择框选项
+    getSelectOptions(selectElement) {
+      const options = []
+      const optionElements = selectElement.querySelectorAll('option')
+
+      optionElements.forEach(option => {
+        if (option.value) {
+          options.push({
+            label: option.textContent.trim(),
+            value: option.value
+          })
+        }
+      })
+
+      return options
+    },
+
+    // 获取字段描述
+    getFieldDescription(element) {
+      // 查找help文本
+      const helpText = element.getAttribute('data-help') ||
+                     element.getAttribute('title') ||
+                     element.getAttribute('data-description')
+
+      if (helpText) return helpText
+
+      // 查找相邻的help元素
+      const parent = element.closest('.form-group, .field-group')
+      if (parent) {
+        const help = parent.querySelector('.help-text, .form-text, .field-help')
+        if (help) return help.textContent.trim()
+      }
+
+      return ''
+    },
+
+    // 获取字段验证规则
+    getFieldRules(field) {
+      const rules = []
+
+      if (field.required) {
+        rules.push({
+          required: true,
+          message: `请输入${field.label}`,
+          trigger: field.type === 'select' ? 'change' : 'blur'
+        })
+      }
+
+      if (field.type === 'number' || field.type === 'integer') {
+        rules.push({
+          type: 'number',
+          message: `${field.label}必须是数字`,
+          trigger: 'blur'
+        })
+      }
+
+      return rules
     },
     
     async uninstallExtension(extension) {
@@ -616,6 +1157,59 @@ export default {
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   padding: 2rem;
+}
+
+/* Element Plus 对话框样式优化 */
+.config-card {
+  margin-bottom: 20px;
+}
+
+.config-card .card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #409eff;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.doc-content {
+  background-color: #f5f7fa;
+  padding: 16px;
+  border-radius: 6px;
+  border-left: 4px solid #409eff;
+}
+
+.methods-doc {
+  margin-top: 10px;
+}
+
+.extension-config-form {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 10px;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  background-color: #fafafa;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.field-description {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 4px;
+  line-height: 1.4;
 }
 
 h1 {

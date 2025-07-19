@@ -6,6 +6,8 @@ import json
 import uuid
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+
+from config import settings
 # 存放所有活跃的WebSocket连接
 from core.logger import get_logger
 from core.auth import get_current_user
@@ -70,6 +72,17 @@ async def websocket_endpoint(websocket: WebSocket):
 async def send_danmu(
     data: dict = Body(...)  # 改为接收JSON
 ):
+    # danmu_data = {
+    #     "id": str(uuid.uuid4()),
+    #     "text": data.get("text", ""),
+    #     "color": data.get("color", "#ffffff"),
+    #     "timestamp": int(asyncio.get_event_loop().time() * 1000)
+    # }
+    # await manager.broadcast(json.dumps(danmu_data))
+    await send_data(data)
+    return {"status": "success"}
+
+async def send_data(data):
     danmu_data = {
         "id": str(uuid.uuid4()),
         "text": data.get("text", ""),
@@ -77,8 +90,6 @@ async def send_danmu(
         "timestamp": int(asyncio.get_event_loop().time() * 1000)
     }
     await manager.broadcast(json.dumps(danmu_data))
-    return {"status": "success"}
-
 
 @router.get("/",response_class=HTMLResponse)
 def index(
@@ -89,6 +100,7 @@ def index(
         "danmu.html",
         {
             "request": request,
-            # "user": user
+            "host": settings.HOST,
+            "port": settings.PORT,
         }
     )

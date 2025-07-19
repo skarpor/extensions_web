@@ -64,6 +64,10 @@
                 <h2>现代化聊天室</h2>
                 <p>现代化聊天室功能</p>
             </div>
+            <div class="card" @click="navigateTo('/markdown')">
+                <h2>Markdown</h2>
+                <p>在线MD编辑器</p>
+            </div>
         </div>
     </div>
 </template>

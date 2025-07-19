@@ -9,11 +9,13 @@
     <el-card class="status-card" shadow="hover">
       <template #header>
         <div class="card-header">
-          <el-icon class="header-icon"><Monitor /></el-icon>
+          <el-icon class="header-icon">
+            <Monitor />
+          </el-icon>
           <span>系统状态</span>
         </div>
       </template>
-      
+
       <div class="status-grid">
         <div class="status-item">
           <div class="status-label">系统状态</div>
@@ -23,21 +25,21 @@
             </el-tag>
           </div>
         </div>
-        
+
         <div class="status-item" v-if="!expiryInfo.expired">
           <div class="status-label">剩余天数</div>
           <div class="status-value">
             <span class="days-left">{{ expiryInfo.days_left }}</span> 天
           </div>
         </div>
-        
+
         <div class="status-item" v-if="configStatus.initialized_at">
           <div class="status-label">初始化时间</div>
           <div class="status-value">
             {{ formatDate(configStatus.initialized_at) }}
           </div>
         </div>
-        
+
         <div class="status-item" v-if="configStatus.updated_at">
           <div class="status-label">最后更新</div>
           <div class="status-value">
@@ -51,16 +53,28 @@
     <el-card class="settings-card" shadow="hover" v-loading="loading">
       <template #header>
         <div class="card-header">
-          <el-icon class="header-icon"><Setting /></el-icon>
+          <el-icon class="header-icon">
+            <Setting />
+          </el-icon>
           <span>配置参数</span>
           <div class="header-actions">
             <el-button type="primary" @click="saveSettings" :loading="saving">
-              <el-icon><Check /></el-icon>
+              <el-icon>
+                <Check />
+              </el-icon>
               保存设置
             </el-button>
             <el-button @click="resetSettings">
-              <el-icon><RefreshLeft /></el-icon>
+              <el-icon>
+                <RefreshLeft />
+              </el-icon>
               重置
+            </el-button>
+            <el-button @click="reboot">
+              <el-icon>
+                <Refresh />
+              </el-icon>
+              重启
             </el-button>
           </div>
         </div>
@@ -83,7 +97,22 @@
                 </el-form-item>
               </el-col>
             </el-row>
-            
+
+            <el-row :gutter="20">
+              <el-col :span="12">
+                <el-form-item label="项目名称">
+                  <el-input v-model="settings.PROJECT_NAME" placeholder="项目名称" readonly />
+                  <div class="form-tip">系统内部使用的项目名称，只读</div>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="系统版本">
+                  <el-input v-model="settings.VERSION" placeholder="系统版本" readonly />
+                  <div class="form-tip">当前系统版本号，只读</div>
+                </el-form-item>
+              </el-col>
+            </el-row>
+
             <el-row :gutter="20">
               <el-col :span="12">
                 <el-form-item label="监听地址">
@@ -98,6 +127,42 @@
             </el-row>
           </div>
 
+          
+          <div class="settings-section">
+            <h3>模块配置</h3>
+            <el-row :gutter="20">
+              <el-col :span="6">
+                <el-form-item label="文件模块">
+                  <el-switch v-model="settings.FILE_ENABLE" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="6">
+                <el-form-item label="聊天">
+                  <el-switch v-model="settings.CHAT_ENABLE" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="6">
+                <el-form-item label="二维码文件传输">
+                  <el-switch v-model="settings.QR_ENABLE" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="6">
+                <el-form-item label="定时任务模块">
+                  <el-switch v-model="settings.SCHEDULER_ENABLE" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="6">
+                <el-form-item label="日志模块">
+                  <el-switch v-model="settings.LOG_ENABLE" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="6">
+                <el-form-item label="数据库模块">
+                  <el-switch v-model="settings.DATABASE_ENABLE" />
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </div>
           <div class="settings-section">
             <h3>国际化配置</h3>
             <el-row :gutter="20">
@@ -130,7 +195,11 @@
             <el-row :gutter="20">
               <el-col :span="12">
                 <el-form-item label="令牌过期时间(分钟)">
-                  <el-input-number v-model="settings.ACCESS_TOKEN_EXPIRE_MINUTES" :min="1" :max="10080" />
+                  <el-input-number
+                    v-model="settings.ACCESS_TOKEN_EXPIRE_MINUTES"
+                    :min="1"
+                    :max="10080"
+                  />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
@@ -143,7 +212,7 @@
                 </el-form-item>
               </el-col>
             </el-row>
-            
+
             <el-form-item label="系统密钥">
               <div class="secret-key-section">
                 <el-tag :type="settings.SECRET_KEY_SET ? 'success' : 'warning'">
@@ -183,6 +252,33 @@
         <!-- 文件配置 -->
         <el-tab-pane label="文件配置" name="files">
           <div class="settings-section">
+            <h3>目录配置</h3>
+            <el-row :gutter="20">
+              <el-col :span="12">
+                <el-form-item label="数据库类型">
+                  <el-input v-model="settings.EXT_DB_TYPE" placeholder="数据库类型" />
+                  <!-- 数据库类型选择 -->
+                  <el-select v-model="settings.EXT_DB_TYPE" placeholder="选择数据库类型">
+                    <el-option label="SQLite" value="sqlite" />
+                    <el-option label="MySQL" value="mysql" />
+                    <el-option label="PostgreSQL" value="postgresql" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="数据根目录">
+                  <el-input v-model="settings.EXT_DB_DIR" placeholder="数据根目录" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="数据库配置">
+                  <el-input v-model="settings.DB_URL" placeholder="数据库配置" />
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </div>
+
+          <div class="settings-section">
             <h3>文件上传</h3>
             <el-row :gutter="20">
               <el-col :span="12">
@@ -192,16 +288,16 @@
               </el-col>
               <el-col :span="12">
                 <el-form-item label="最大文件大小(MB)">
-                  <el-input-number 
-                    v-model="maxFileSizeMB" 
-                    :min="1" 
+                  <el-input-number
+                    v-model="maxFileSizeMB"
+                    :min="1"
                     :max="1024"
                     @change="updateMaxFileSize"
                   />
                 </el-form-item>
               </el-col>
             </el-row>
-            
+
             <el-form-item label="允许的文件扩展名">
               <el-tag
                 v-for="(ext, index) in settings.ALLOWED_EXTENSIONS"
@@ -222,7 +318,9 @@
                 class="extension-input"
               />
               <el-button v-else size="small" @click="showInput">
-                <el-icon><Plus /></el-icon>
+                <el-icon>
+                  <Plus />
+                </el-icon>
                 添加扩展名
               </el-button>
             </el-form-item>
@@ -243,6 +341,26 @@
               </el-col>
             </el-row>
           </div>
+
+          <div class="settings-section">
+            <h3>Markdown编辑器</h3>
+            <el-row :gutter="20">
+              <el-col :span="24">
+                <el-form-item label="Markdown文件夹路径">
+                  <el-input
+                    v-model="settings.MARKDOWN_FOLDER_PATH"
+                    placeholder="例如: data/docs"
+                    clearable
+                  >
+                    <template #append>
+                      <el-button @click="testMarkdownPath">测试路径</el-button>
+                    </template>
+                  </el-input>
+                  <div class="form-tip">设置Markdown文件存储的文件夹路径，编辑器将列出此文件夹下所有.md文件</div>
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </div>
         </el-tab-pane>
 
         <!-- 用户配置 -->
@@ -257,7 +375,9 @@
               </el-col>
               <el-col :span="12">
                 <el-form-item label="默认用户角色">
-                  <el-input v-model="settings.DEFAULT_USER_ROLE" placeholder="新用户默认角色" />
+                  <el-select v-model="settings.DEFAULT_USER_ROLE" placeholder="选择默认角色">
+                    <el-option v-for="role in settings.ROLES" :key="role.id" :label="role.name" :value="role.name" />
+                  </el-select>
                 </el-form-item>
               </el-col>
             </el-row>
@@ -280,7 +400,7 @@
                 </el-form-item>
               </el-col>
             </el-row>
-            
+
             <el-row :gutter="20">
               <el-col :span="12">
                 <el-form-item label="用户名">
@@ -289,11 +409,15 @@
               </el-col>
               <el-col :span="12">
                 <el-form-item label="密码">
-                  <el-input v-model="settings.SMTP_PASSWORD" type="password" placeholder="邮箱密码" />
+                  <el-input
+                    v-model="settings.SMTP_PASSWORD"
+                    type="password"
+                    placeholder="邮箱密码"
+                  />
                 </el-form-item>
               </el-col>
             </el-row>
-            
+
             <el-form-item label="启用TLS">
               <el-switch v-model="settings.SMTP_TLS" />
             </el-form-item>
@@ -318,7 +442,7 @@
               </el-col>
               <el-col :span="12">
                 <el-form-item label="日志文件路径">
-                  <el-input v-model="settings.LOG_FILE" placeholder="日志文件存储路径" />
+                  <el-input v-model="settings.LOG_DIR" placeholder="日志文件存储路径" />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -328,11 +452,7 @@
     </el-card>
 
     <!-- 密钥设置对话框 -->
-    <el-dialog
-      v-model="showSecretKeyDialog"
-      title="设置系统密钥"
-      width="500px"
-    >
+    <el-dialog v-model="showSecretKeyDialog" title="设置系统密钥" width="500px">
       <el-form :model="secretKeyForm" label-width="120px">
         <el-form-item label="新密钥" required>
           <el-input
@@ -341,24 +461,22 @@
             placeholder="请输入至少32位的密钥"
             show-password
           />
-          <div class="form-tip">
-            密钥用于JWT令牌签名，请妥善保管。建议使用随机生成的强密钥。
-          </div>
+          <div class="form-tip">密钥用于JWT令牌签名，请妥善保管。建议使用随机生成的强密钥。</div>
         </el-form-item>
-        
+
         <el-form-item>
           <el-button type="primary" @click="generateSecretKey">
-            <el-icon><Refresh /></el-icon>
+            <el-icon>
+              <Refresh />
+            </el-icon>
             生成随机密钥
           </el-button>
         </el-form-item>
       </el-form>
-      
+
       <template #footer>
         <el-button @click="showSecretKeyDialog = false">取消</el-button>
-        <el-button type="primary" @click="updateSecretKey" :loading="updatingKey">
-          确定
-        </el-button>
+        <el-button type="primary" @click="updateSecretKey" :loading="updatingKey"> 确定 </el-button>
       </template>
     </el-dialog>
   </div>
@@ -367,16 +485,9 @@
 <script setup>
 import { ref, reactive, onMounted, computed, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import {
-  Monitor,
-  Setting,
-  Check,
-  RefreshLeft,
-  Plus,
-  Refresh
-} from '@element-plus/icons-vue'
-import axios from 'axios'
-
+import { Monitor, Setting, Check, RefreshLeft, Plus, Refresh } from '@element-plus/icons-vue'
+import { getSettingsApi, updateSettingsApi, rebootApi, getExpiryInfoApi, updateSecretKeyApi, getConfigStatusApi } from '@/api/settings'
+import {getRolesApi} from '@/api/auth'
 // 响应式数据
 const loading = ref(false)
 const saving = ref(false)
@@ -388,7 +499,7 @@ const expiryInfo = ref({
   expired: false,
   days_left: 0,
   expiry_date: null,
-  initialized_at: null
+  initialized_at: null,
 })
 
 const configStatus = ref({
@@ -396,45 +507,81 @@ const configStatus = ref({
   config_dir: '',
   initialized_at: null,
   updated_at: null,
-  total_config_items: 0
+  total_config_items: 0,
 })
 
 // 设置数据
 const settings = reactive({
+  // 基础配置
   APP_NAME: '',
+  PROJECT_NAME: 'Data Query System',
+  VERSION: '2.0.0',
   DEBUG: false,
   HOST: '0.0.0.0',
   PORT: 8000,
+
+  // 安全配置
   ACCESS_TOKEN_EXPIRE_MINUTES: 30,
   ALGORITHM: 'HS256',
   SECRET_KEY_SET: false,
-  DATABASE_URL: '',
-  DATABASE_TYPE: 'sqlite',
+
+  // 数据库配置
+  EXT_DB_DIR: 'data/db',
+  EXT_DB_TYPE: 'sqlite',
+  EXT_DB_CONFIG: {},
+  DB_URL:'',
+  // 目录配置（只读）
+  DATA_DIR: 'data',
+  CONFIG_DIR: '',
+
+  // 文件配置
   UPLOAD_DIR: 'data/uploads',
   MAX_FILE_SIZE: 104857600,
   ALLOWED_EXTENSIONS: [],
+
+  // 扩展配置
   EXTENSIONS_DIR: 'data/extensions',
   ALLOW_EXTENSION_UPLOAD: true,
+
+  // Markdown编辑器配置
+  MARKDOWN_FOLDER_PATH: 'data/docs',
+
+  // 用户配置
   ALLOW_REGISTER: true,
   DEFAULT_USER_ROLE: 'user',
+  
+
+  // 日志配置
   LOG_LEVEL: 'INFO',
   LOG_FILE: 'data/logs/app.log',
+  LOG_PATH: '',
+
+  // 邮件配置
   SMTP_HOST: '',
   SMTP_PORT: 587,
   SMTP_USER: '',
   SMTP_PASSWORD: '',
   SMTP_TLS: true,
-  TIMEZONE: 'Asia/Shanghai',
-  LANGUAGE: 'zh-CN'
-})
 
+  // 国际化配置
+  TIMEZONE: 'Asia/Shanghai',
+  LANGUAGE: 'zh-CN',
+})
+const roles = ref([])
+const dbTypes = ref(['sqlite', 'mysql', 'postgresql', 'mssql'])
+const db_url = computed({
+  get:()=>settings.EXT_DB_CONFIG[settings.EXT_DB_TYPE].db_url,
+  set:(value) => {
+    settings.MAX_FILE_SIZE = value * 1024 * 1024
+  },
+})
 // 原始设置（用于重置）
 const originalSettings = ref({})
 
 // 密钥设置
 const showSecretKeyDialog = ref(false)
 const secretKeyForm = reactive({
-  secret_key: ''
+  secret_key: '',
 })
 
 // 文件扩展名输入
@@ -447,17 +594,19 @@ const maxFileSizeMB = computed({
   get: () => Math.round(settings.MAX_FILE_SIZE / (1024 * 1024)),
   set: (value) => {
     settings.MAX_FILE_SIZE = value * 1024 * 1024
-  }
+  },
 })
 
 // 方法
 const loadSettings = async () => {
   loading.value = true
   try {
-    const response = await axios.get('/api/system/settings')
+    const response = await getSettingsApi()
     Object.assign(settings, response.data)
     originalSettings.value = JSON.parse(JSON.stringify(response.data))
     ElMessage.success('设置加载成功')
+    const roles = await getRolesApi()
+    settings.ROLES = roles
   } catch (error) {
     console.error('加载设置失败:', error)
     ElMessage.error('加载设置失败')
@@ -468,7 +617,7 @@ const loadSettings = async () => {
 
 const loadExpiryInfo = async () => {
   try {
-    const response = await axios.get('/api/system/expiry-info')
+    const response = await getExpiryInfoApi()
     expiryInfo.value = response.data
   } catch (error) {
     console.error('加载过期信息失败:', error)
@@ -477,7 +626,7 @@ const loadExpiryInfo = async () => {
 
 const loadConfigStatus = async () => {
   try {
-    const response = await axios.get('/api/system/config-status')
+    const response = await getConfigStatusApi()
     configStatus.value = response.data
   } catch (error) {
     console.error('加载配置状态失败:', error)
@@ -487,7 +636,7 @@ const loadConfigStatus = async () => {
 const saveSettings = async () => {
   saving.value = true
   try {
-    await axios.put('/api/system/settings', settings)
+    await updateSettingsApi(settings)
     originalSettings.value = JSON.parse(JSON.stringify(settings))
     ElMessage.success('设置保存成功')
 
@@ -502,22 +651,34 @@ const saveSettings = async () => {
 }
 
 const resetSettings = () => {
-  ElMessageBox.confirm(
-    '确定要重置所有设置吗？这将恢复到上次保存的状态。',
-    '确认重置',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }
-  ).then(() => {
-    Object.assign(settings, originalSettings.value)
-    ElMessage.success('设置已重置')
-  }).catch(() => {
-    // 用户取消
+  ElMessageBox.confirm('确定要重置所有设置吗？这将恢复到上次保存的状态。', '确认重置', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
   })
+    .then(() => {
+      Object.assign(settings, originalSettings.value)
+      ElMessage.success('设置已重置')
+    })
+    .catch(() => {
+      // 用户取消
+    })
 }
 
+const reboot = () => {
+  ElMessageBox.confirm('确定要重启系统吗？', '确认重启', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+    .then(async () => {
+      await rebootApi()
+      ElMessage.success('系统已重启')
+    })
+    .catch(() => {
+      // 用户取消
+    })
+}
 const updateMaxFileSize = (value) => {
   settings.MAX_FILE_SIZE = value * 1024 * 1024
 }
@@ -547,6 +708,20 @@ const handleInputConfirm = () => {
   inputValue.value = ''
 }
 
+const testMarkdownPath = async () => {
+  if (!settings.MARKDOWN_FOLDER_PATH) {
+    ElMessage.warning('请先输入Markdown文件夹路径')
+    return
+  }
+
+  try {
+    // 这里可以调用API测试文件夹路径是否有效
+    ElMessage.success('Markdown文件夹路径测试成功')
+  } catch (error) {
+    ElMessage.error('Markdown文件夹路径测试失败: ' + error.message)
+  }
+}
+
 const generateSecretKey = () => {
   // 生成32位随机密钥
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
@@ -565,9 +740,7 @@ const updateSecretKey = async () => {
 
   updatingKey.value = true
   try {
-    await axios.put('/api/system/settings/secret-key', {
-      secret_key: secretKeyForm.secret_key
-    })
+    await updateSecretKeyApi(secretKeyForm.secret_key)
 
     settings.SECRET_KEY_SET = true
     showSecretKeyDialog.value = false
@@ -588,11 +761,7 @@ const formatDate = (dateString) => {
 
 // 生命周期
 onMounted(async () => {
-  await Promise.all([
-    loadSettings(),
-    loadExpiryInfo(),
-    loadConfigStatus()
-  ])
+  await Promise.all([loadSettings(), loadExpiryInfo(), loadConfigStatus()])
 })
 </script>
 

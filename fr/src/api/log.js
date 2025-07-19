@@ -93,11 +93,8 @@ export const createLogStream1 = (fileName, { onMessage, onError, onOpen }) => {
 export const createLogStream = (fileName, { onMessage, onError, onOpen }) => {
  // 确保文件名经过编码
  const encodedFileName = encodeURIComponent(fileName);
- 
- // 使用完整URL，包含协议、主机和端口
- const host = 'localhost';
- const port = '8000';
- const url = `http://${host}:${port}/api/log/stream/${encodedFileName}`;
+
+ const url = `http://${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/api/log/stream/${encodedFileName}`;
  
  console.log(`创建SSE连接: ${url}`);
  

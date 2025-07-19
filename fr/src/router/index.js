@@ -62,6 +62,18 @@ const router = createRouter({
       meta: { requiresAuth: true, title: '扩展详情' }
     },
     {
+      path: '/markdown',
+      name: 'markdown',
+      component: () => import('../views/MarkdownEditor.vue'),
+      meta: { requiresAuth: true, title: 'Markdown编辑器' }
+    },
+    {
+      path: '/test-icons',
+      name: 'test-icons',
+      component: () => import('../views/TestIcons.vue'),
+      meta: { requiresAuth: true, title: '图标测试' }
+    },
+    {
       path: '/qrfile',
       name: 'qrfile',
       component: () => import('../views/QRFileView.vue'),
@@ -175,6 +187,12 @@ const router = createRouter({
       name: 'newauto',
       component: () => import('../views/extension/newauto.vue'),
       meta: { requiresAuth: true, title: '新自动' }
+    },
+    {
+      path: '/extension/workspace',
+      name: 'extension-workspace',
+      component: () => import('../views/extension/ModernExtensionView.vue'),
+      meta: { requiresAuth: true, title: '扩展工作台' }
     },
     //{
     //  path: '/extension-query/:id',

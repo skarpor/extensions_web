@@ -44,6 +44,13 @@
             <span>扩展管理</span>
           </router-link>
         </li>
+
+        <li>
+          <router-link to="/markdown" active-class="active">
+            <i class="fas fa-edit"></i>
+            <span>Markdown编辑器</span>
+          </router-link>
+        </li>
         
         <li v-if="canManageDatabase">
           <router-link to="/database" active-class="active">

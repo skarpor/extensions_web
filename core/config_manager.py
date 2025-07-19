@@ -14,7 +14,6 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 from core.logger import get_logger
-from config import settings
 
 logger = get_logger(__name__)
 
@@ -63,56 +62,94 @@ class ConfigManager:
     
     def _get_default_config(self) -> Dict[str, Any]:
         """获取默认配置"""
-        # 从当前settings获取默认值
+        # 生成默认密钥
+        import secrets
+        default_secret_key = secrets.token_urlsafe(32)
+
         default_config = {
             # 基础配置
-            "APP_NAME": getattr(settings, 'APP_NAME', 'Extensions Web'),
-            "DEBUG": getattr(settings, 'DEBUG', False),
-            "HOST": getattr(settings, 'HOST', '0.0.0.0'),
-            "PORT": getattr(settings, 'PORT', 8000),
-            
+            "PROJECT_NAME": "Data Query System",
+            "VERSION": "2.0.0",
+            "APP_NAME": "Extensions Web",
+            "DEBUG": False,
+            "HOST": "0.0.0.0",
+            "PORT": 8000,
+            "DATA_DIR": "data",
+
             # 安全配置
-            "SECRET_KEY": getattr(settings, 'SECRET_KEY', ''),
-            "ACCESS_TOKEN_EXPIRE_MINUTES": getattr(settings, 'ACCESS_TOKEN_EXPIRE_MINUTES', 30),
-            "ALGORITHM": getattr(settings, 'ALGORITHM', 'HS256'),
-            
+            "SECRET_KEY": default_secret_key,
+            "ACCESS_TOKEN_EXPIRE_MINUTES": 60 * 24 * 8,  # 8天
+            "ALGORITHM": "HS256",
+            "TOKEN_NAME": "access_token",
+
             # 数据库配置
-            "DATABASE_URL": getattr(settings, 'DATABASE_URL', 'sqlite:///./data/db/app.db'),
-            "DATABASE_TYPE": getattr(settings, 'DATABASE_TYPE', 'sqlite'),
-            
+            "DATABASE_URL": "sqlite:///./data/db/app.db",
+            "DATABASE_TYPE": "sqlite",
+            "SQLALCHEMY_DATABASE_URI": "sqlite+aiosqlite:///database.sqlite",
+            "SYNC_SQLALCHEMY_DATABASE_URI": "sqlite:///database.sqlite",
+
             # 文件配置
-            "UPLOAD_DIR": getattr(settings, 'UPLOAD_DIR', 'data/uploads'),
-            "MAX_FILE_SIZE": getattr(settings, 'MAX_FILE_SIZE', 100 * 1024 * 1024),  # 100MB
-            "ALLOWED_EXTENSIONS": getattr(settings, 'ALLOWED_EXTENSIONS', ['.txt', '.pdf', '.doc', '.docx', '.jpg', '.png']),
-            
+            "UPLOAD_DIR": "data/uploads",
+            "MAX_FILE_SIZE": 100 * 1024 * 1024,  # 100MB
+            "ALLOWED_EXTENSIONS": ['.txt', '.pdf', '.doc', '.docx', '.jpg', '.png', '.gif', '.webp'],
+
+            # 聊天图片配置
+            "ALLOWED_IMAGE_TYPES": ["image/jpeg", "image/png", "image/gif", "image/webp"],
+            "ALLOWED_IMAGE_EXTENSIONS": [".jpg", ".jpeg", ".png", ".gif", ".webp"],
+            "MAX_IMAGE_SIZE": 10 * 1024 * 1024,  # 10MB
+            "CHAT_UPLOAD_DIR": "static/chat/img",
+            "CHAT_IMAGE_URL_PREFIX": "/static/chat/img",
+
+            # 模板配置
+            "TEMPLATES_DIR": "templates",
+
             # 扩展配置
-            "EXTENSIONS_DIR": getattr(settings, 'EXTENSIONS_DIR', 'data/extensions'),
-            "ALLOW_EXTENSION_UPLOAD": getattr(settings, 'ALLOW_EXTENSION_UPLOAD', True),
-            
+            "EXTENSIONS_DIR": "data/extensions",
+            "EXTENSIONS_ENTRY_POINT_PREFIX": "/query/",
+            "ALLOW_EXTENSION_UPLOAD": True,
+
             # 用户配置
-            "ALLOW_REGISTER": getattr(settings, 'ALLOW_REGISTER', True),
-            "DEFAULT_USER_ROLE": getattr(settings, 'DEFAULT_USER_ROLE', 'user'),
-            
+            "ALLOW_REGISTER": True,
+            "DEFAULT_USER_ROLE": "普通用户",
+
             # 日志配置
-            "LOG_LEVEL": getattr(settings, 'LOG_LEVEL', 'INFO'),
-            "LOG_FILE": getattr(settings, 'LOG_FILE', 'data/logs/app.log'),
-            
+            "LOG_LEVEL": "INFO",
+            "LOG_FILE": "data/logs/app.log",
+
             # 邮件配置
-            "SMTP_HOST": getattr(settings, 'SMTP_HOST', ''),
-            "SMTP_PORT": getattr(settings, 'SMTP_PORT', 587),
-            "SMTP_USER": getattr(settings, 'SMTP_USER', ''),
-            "SMTP_PASSWORD": getattr(settings, 'SMTP_PASSWORD', ''),
-            "SMTP_TLS": getattr(settings, 'SMTP_TLS', True),
-            
-            # 系统配置
-            "TIMEZONE": getattr(settings, 'TIMEZONE', 'Asia/Shanghai'),
-            "LANGUAGE": getattr(settings, 'LANGUAGE', 'zh-CN'),
-            
+            "SMTP_HOST": "",
+            "SMTP_PORT": 587,
+            "SMTP_USER": "",
+            "SMTP_PASSWORD": "",
+            "SMTP_TLS": True,
+
+            # 国际化配置
+            "TIMEZONE": "Asia/Shanghai",
+            "LANGUAGE": "zh-CN",
+
+            # Markdown编辑器配置
+            "MARKDOWN_FOLDER_PATH": "data/docs",
+
+            # 外部数据库配置
+            "EXT_DB_TYPE": "sqlite",
+            "EXT_DB_CONFIG": {
+                "sqlite": {"db_url": "sqlite+aiosqlite:///./database.sqlite"},
+                "postgresql": {"db_url": "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres"},
+                "mysql": {"db_url": "mysql+aiomysql://root:root@localhost:3306/mysql"},
+                "mssql": {"db_url": "mssql+pyodbc://sa:123456@localhost:1433/test?driver=ODBC+Driver+17+for+SQL+Server"}
+            },
+
+            # 配置目录
+            "CONFIG_DIR": os.path.join(os.path.expanduser("~"), ".config", "data_query_system"),
+
+            # 应用过期时间
+            "EXPIRE_TIME": (datetime.now() + timedelta(days=90)).strftime("%Y-%m-%d %H:%M:%S"),
+
             # 过期时间（首次初始化时设置，不在页面显示）
             "EXPIRY_DATE": (datetime.now() + timedelta(days=90)).isoformat(),
             "INITIALIZED_AT": datetime.now().isoformat(),
         }
-        
+
         return default_config
     
     def load_config(self) -> Dict[str, Any]:
