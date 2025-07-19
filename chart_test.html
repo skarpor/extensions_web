@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart.js 图表渲染测试</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f7fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+        }
+        .chart-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-top: 20px;
+        }
+        .chart-title {
+            color: #2c3e50;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 8px;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .status {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📈 Chart.js 图表渲染测试</h1>
+        <p>测试扩展工作台中的图表渲染功能</p>
+
+        <div class="status status-success">
+            ✅ Chart.js 库已加载成功！版本: <span id="chartVersion"></span>
+        </div>
+
+        <!-- 折线图测试 -->
+        <div class="chart-section">
+            <div class="chart-title">
+                <h3>📊 折线图测试</h3>
+                <div>
+                    <button class="btn btn-primary" onclick="exportChart('lineChart', 'png')">导出PNG</button>
+                    <button class="btn btn-success" onclick="updateChart('lineChart')">更新数据</button>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="lineChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 柱状图测试 -->
+        <div class="chart-section">
+            <div class="chart-title">
+                <h3>📊 柱状图测试</h3>
+                <div>
+                    <button class="btn btn-primary" onclick="exportChart('barChart', 'png')">导出PNG</button>
+                    <button class="btn btn-success" onclick="updateChart('barChart')">更新数据</button>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="barChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 饼图测试 -->
+        <div class="chart-section">
+            <div class="chart-title">
+                <h3>🥧 饼图测试</h3>
+                <div>
+                    <button class="btn btn-primary" onclick="exportChart('pieChart', 'png')">导出PNG</button>
+                    <button class="btn btn-success" onclick="updateChart('pieChart')">更新数据</button>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+
+        <div class="status status-info">
+            💡 这些图表使用与扩展工作台相同的Chart.js配置和渲染逻辑
+        </div>
+    </div>
+
+    <script>
+        // 显示Chart.js版本
+        document.getElementById('chartVersion').textContent = Chart.version;
+
+        // 存储图表实例
+        const charts = {};
+
+        // 生成随机数据
+        function generateRandomData(count) {
+            return Array.from({length: count}, () => Math.floor(Math.random() * 100) + 10);
+        }
+
+        // 创建折线图
+        function createLineChart() {
+            const ctx = document.getElementById('lineChart').getContext('2d');
+            charts.lineChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+                    datasets: [
+                        {
+                            label: '销售额',
+                            data: generateRandomData(6),
+                            borderColor: '#ff6b6b',
+                            backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: '利润',
+                            data: generateRandomData(6),
+                            borderColor: '#4ecdc4',
+                            backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '月度销售数据',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '金额 (万元)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 创建柱状图
+        function createBarChart() {
+            const ctx = document.getElementById('barChart').getContext('2d');
+            charts.barChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['产品A', '产品B', '产品C', '产品D', '产品E'],
+                    datasets: [
+                        {
+                            label: '本月销量',
+                            data: generateRandomData(5),
+                            backgroundColor: '#45b7d1',
+                            borderColor: '#3498db',
+                            borderWidth: 1
+                        },
+                        {
+                            label: '上月销量',
+                            data: generateRandomData(5),
+                            backgroundColor: '#96ceb4',
+                            borderColor: '#7fb069',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '产品销量对比',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '销量 (件)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 创建饼图
+        function createPieChart() {
+            const ctx = document.getElementById('pieChart').getContext('2d');
+            charts.pieChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['桌面端', '移动端', '平板端', '其他'],
+                    datasets: [{
+                        data: generateRandomData(4),
+                        backgroundColor: [
+                            '#ff6b6b',
+                            '#4ecdc4', 
+                            '#45b7d1',
+                            '#feca57'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '访问设备分布',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        },
+                        legend: {
+                            display: true,
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        }
+
+        // 导出图表
+        function exportChart(chartId, format) {
+            const chart = charts[chartId];
+            if (!chart) {
+                alert('图表未找到');
+                return;
+            }
+
+            try {
+                const url = chart.toBase64Image();
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `${chartId}-${Date.now()}.${format}`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                alert('图表导出成功！');
+            } catch (error) {
+                alert('导出失败: ' + error.message);
+            }
+        }
+
+        // 更新图表数据
+        function updateChart(chartId) {
+            const chart = charts[chartId];
+            if (!chart) {
+                alert('图表未找到');
+                return;
+            }
+
+            // 更新数据
+            chart.data.datasets.forEach(dataset => {
+                dataset.data = generateRandomData(dataset.data.length);
+            });
+
+            // 重新渲染
+            chart.update();
+        }
+
+        // 初始化所有图表
+        function initCharts() {
+            createLineChart();
+            createBarChart();
+            createPieChart();
+            console.log('所有图表初始化完成');
+        }
+
+        // 页面加载完成后初始化图表
+        document.addEventListener('DOMContentLoaded', initCharts);
+    </script>
+</body>
+</html>

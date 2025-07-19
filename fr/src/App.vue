@@ -50,7 +50,7 @@ async function initWebSocket() {
   };
 
   danmuSocket.onclose = () => {
-    setTimeout(initWebSocket, 5000);
+    //setTimeout(initWebSocket, 5000);
   };
 
   danmuSocket.onerror = (error) => {

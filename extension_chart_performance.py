@@ -87,53 +87,66 @@ def execute_query(params, config=None):
         
         # 返回图表配置
         return {
-            "type": chart_type,
-            "data": chart_data,
-            "options": {
-                "responsive": True,
-                "maintainAspectRatio": False,
-                "animation": {
-                    "duration": 1000 if animate else 0
-                },
-                "plugins": {
-                    "title": {
-                        "display": True,
-                        "text": get_chart_title(metric_type, time_range)
+            "type": "chart",
+            "data": {
+                "chart_type": chart_type,
+                "chart_data": chart_data,
+                "options": {
+                    "responsive": True,
+                    "maintainAspectRatio": False,
+                    "animation": {
+                        "duration": 1000 if animate else 0
                     },
-                    "legend": {
-                        "display": show_legend,
-                        "position": "top"
-                    }
-                },
-                "scales": get_chart_scales(chart_type, metric_type)
+                    "plugins": {
+                        "title": {
+                            "display": True,
+                            "text": get_chart_title(metric_type, time_range)
+                        },
+                        "legend": {
+                            "display": show_legend,
+                            "position": "top"
+                        }
+                    },
+                    "scales": get_chart_scales(chart_type, metric_type)
+                }
             },
             "meta": {
                 "metric_type": metric_type,
                 "time_range": time_range,
                 "data_points": data_points,
                 "generated_at": datetime.datetime.now().isoformat(),
-                "chart_type": chart_type
+                "chart_type": chart_type,
+                "show_legend": show_legend,
+                "animate": animate
             }
         }
         
     except Exception as e:
         return {
-            "type": "bar",
+            "type": "chart",
             "data": {
-                "labels": ["错误"],
-                "datasets": [{
-                    "label": "错误信息",
-                    "data": [1],
-                    "backgroundColor": ["#ff6b6b"]
-                }]
-            },
-            "options": {
-                "plugins": {
-                    "title": {
-                        "display": True,
-                        "text": f"图表生成失败: {str(e)}"
+                "chart_type": "bar",
+                "chart_data": {
+                    "labels": ["错误"],
+                    "datasets": [{
+                        "label": "错误信息",
+                        "data": [1],
+                        "backgroundColor": ["#ff6b6b"]
+                    }]
+                },
+                "options": {
+                    "plugins": {
+                        "title": {
+                            "display": True,
+                            "text": f"图表生成失败: {str(e)}"
+                        }
                     }
                 }
+            },
+            "meta": {
+                "error": True,
+                "error_message": str(e),
+                "generated_at": datetime.datetime.now().isoformat()
             }
         }
 

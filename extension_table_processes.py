@@ -76,15 +76,22 @@ def execute_query(params, config=None):
         processes = processes[:max_processes]
         
         return {
+            "type": "table",
             "data": processes,
             "meta": {
                 "查询时间": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                 "总进程数": len(processes),
-                "过滤条件": f"名称包含: {filter_name or '无'}, 最小内存: {min_memory_mb}MB"
+                "过滤条件": f"名称包含: {filter_name or '无'}, 最小内存: {min_memory_mb}MB",
+                "排序方式": sort_by,
+                "最大显示数": max_processes
             }
         }
     except Exception as e:
         return {
+            "type": "table",
             "data": [],
-            "meta": {"错误": f"获取进程信息失败: {str(e)}"}
+            "meta": {
+                "错误": f"获取进程信息失败: {str(e)}",
+                "查询时间": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            }
         }

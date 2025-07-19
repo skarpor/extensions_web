@@ -1,5 +1,5 @@
 <template>
-  <div class="modern-extension-view">
+  <div class="modern-extension-view" :class="themeClass">
     <!-- 顶部导航栏 -->
     <div class="top-navbar">
       <div class="navbar-content">
@@ -29,7 +29,7 @@
     <!-- 主要内容区域 -->
     <div class="main-content">
       <!-- 侧边栏 -->
-      <div class="sidebar">
+      <div class="sidebar" :style="sidebarStyle">
         <div class="sidebar-header">
           <h3>可用扩展</h3>
           <el-tag :type="extensions.length > 0 ? 'success' : 'info'" size="small">
@@ -135,7 +135,12 @@
                 </div>
                 
                 <div v-else-if="selectedExtension.has_query_form" class="dynamic-form">
-                  <div v-html="queryFormHtml" class="form-content"></div>
+                  <div class="form-debug" v-if="queryFormHtml">
+                    <small style="color: #6c757d;">表单HTML长度: {{ queryFormHtml.length }} 字符</small>
+                  </div>
+                  <form class="form-content" @submit.prevent="executeExtension">
+                    <div v-html="queryFormHtml"></div>
+                  </form>
                 </div>
                 
                 <div v-else class="no-params">
@@ -182,7 +187,7 @@
               </template>
 
               <!-- 结果内容 -->
-              <div class="result-content">
+              <div class="result-content" :style="resultContentStyle">
                 <!-- 执行中状态 -->
                 <div v-if="executing" class="executing-state">
                   <div class="execution-progress">
@@ -214,56 +219,181 @@
 
                   <!-- 表格结果 -->
                   <div v-else-if="resultType === 'table'" class="table-result">
-                    <TableResultDisplay 
-                      :data="resultData" 
-                      :meta="resultMeta"
-                      @export="handleTableExport"
-                    />
+                    <div class="table-header">
+                      <h4>📊 表格数据</h4>
+                      <div class="table-meta">
+                        <el-tag type="info" size="small">{{ getTableRowCount() }} 条记录</el-tag>
+                        <el-tag v-if="resultMeta?.查询时间" type="success" size="small">
+                          {{ resultMeta.查询时间 }}
+                        </el-tag>
+                      </div>
+                      <div class="table-actions">
+                        <el-button-group size="small">
+                          <el-button @click="exportTableData('csv')">
+                            <el-icon><Document /></el-icon>
+                            CSV
+                          </el-button>
+                          <el-button @click="exportTableData('json')">
+                            <el-icon><Files /></el-icon>
+                            JSON
+                          </el-button>
+                          <el-button @click="toggleTableFullscreen">
+                            <el-icon><FullScreen /></el-icon>
+                            全屏
+                          </el-button>
+                        </el-button-group>
+                      </div>
+                    </div>
+                    <div class="table-container" :class="{ fullscreen: tableFullscreen }">
+                      <el-table
+                        :data="paginatedTableData"
+                        border
+                        stripe
+                        :height="tableFullscreen ? '70vh' : '400px'"
+                        @sort-change="handleTableSort"
+                      >
+                        <el-table-column
+                          v-for="column in tableColumns"
+                          :key="column.prop"
+                          :prop="column.prop"
+                          :label="column.label"
+                          :sortable="column.sortable"
+                          :width="column.width"
+                          show-overflow-tooltip
+                        >
+                          <template #default="scope">
+                            <span v-if="column.type === 'number'" class="number-cell">
+                              {{ formatNumber(scope.row[column.prop]) }}
+                            </span>
+                            <el-tag
+                              v-else-if="column.type === 'status'"
+                              :type="getStatusType(scope.row[column.prop])"
+                              size="small"
+                            >
+                              {{ scope.row[column.prop] }}
+                            </el-tag>
+                            <span v-else>{{ scope.row[column.prop] }}</span>
+                          </template>
+                        </el-table-column>
+                      </el-table>
+
+                      <!-- 分页器 -->
+                      <div v-if="getTableRowCount() > tablePageSize" class="table-pagination">
+                        <el-pagination
+                          v-model:current-page="tableCurrentPage"
+                          v-model:page-size="tablePageSize"
+                          :page-sizes="[10, 20, 50, 100]"
+                          :total="getTableRowCount()"
+                          layout="total, sizes, prev, pager, next, jumper"
+                          @size-change="handleTableSizeChange"
+                          @current-change="handleTableCurrentChange"
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   <!-- 图片结果 -->
                   <div v-else-if="resultType === 'image'" class="image-result">
-                    <ImageResultDisplay 
-                      :src="resultData"
-                      :meta="resultMeta"
-                      @download="handleImageDownload"
-                    />
+                    <div class="image-header">
+                      <h4>🖼️ 图片结果</h4>
+                    </div>
+                    <div class="image-container">
+                      <img :src="resultData" alt="扩展生成的图片" style="max-width: 100%; height: auto;" />
+                    </div>
                   </div>
 
                   <!-- 文件结果 -->
                   <div v-else-if="resultType === 'file'" class="file-result">
-                    <FileResultDisplay 
-                      :file-info="resultData"
-                      :meta="resultMeta"
-                      @download="handleFileDownload"
-                    />
+                    <div class="file-header">
+                      <h4>📁 文件结果</h4>
+                    </div>
+                    <div class="file-info">
+                      <p><strong>文件名:</strong> {{ resultData?.filename || '未知文件' }}</p>
+                      <p><strong>类型:</strong> {{ resultData?.content_type || '未知类型' }}</p>
+                      <el-button type="primary" @click="handleFileDownload">
+                        <el-icon><Download /></el-icon>
+                        下载文件
+                      </el-button>
+                    </div>
                   </div>
 
                   <!-- 图表结果 -->
                   <div v-else-if="resultType === 'chart'" class="chart-result">
-                    <ChartResultDisplay 
-                      :chart-config="resultData"
-                      :meta="resultMeta"
-                      @export="handleChartExport"
-                    />
+                    <div class="chart-header">
+                      <h4>📈 图表结果</h4>
+                      <el-tag type="success" size="small">{{ resultData?.chart_type || '图表' }}</el-tag>
+                      <div class="chart-actions">
+                        <el-button-group size="small">
+                          <el-button @click="exportChart('png')">
+                            <el-icon><Picture /></el-icon>
+                            PNG
+                          </el-button>
+                          <el-button @click="toggleChartFullscreen">
+                            <el-icon><FullScreen /></el-icon>
+                            全屏
+                          </el-button>
+                          <el-button @click="showChartData = !showChartData">
+                            <el-icon><Grid /></el-icon>
+                            数据
+                          </el-button>
+                        </el-button-group>
+                      </div>
+                    </div>
+                    <div class="chart-container">
+                      <canvas ref="chartCanvas" :style="chartCanvasStyle"></canvas>
+                      <div v-if="chartLoading" class="chart-loading">
+                        <el-icon class="loading-icon"><Loading /></el-icon>
+                        <p>图表渲染中...</p>
+                      </div>
+                      <div v-if="chartError" class="chart-error">
+                        <el-icon class="error-icon"><Warning /></el-icon>
+                        <p>{{ chartError }}</p>
+                        <el-button @click="retryChart" size="small">重试</el-button>
+                      </div>
+                    </div>
+
+                    <!-- 图表数据表格 -->
+                    <div v-if="showChartData && chartTableData.length > 0" class="chart-data-table">
+                      <div class="table-header">
+                        <h5>📊 图表数据</h5>
+                        <el-button @click="showChartData = false" size="small">
+                          <el-icon><Close /></el-icon>
+                          关闭
+                        </el-button>
+                      </div>
+                      <el-table :data="chartTableData" border stripe max-height="300">
+                        <el-table-column
+                          v-for="column in chartTableColumns"
+                          :key="column.prop"
+                          :prop="column.prop"
+                          :label="column.label"
+                          show-overflow-tooltip
+                        />
+                      </el-table>
+                    </div>
                   </div>
 
                   <!-- 文本结果 -->
                   <div v-else-if="resultType === 'text'" class="text-result">
-                    <TextResultDisplay 
-                      :content="resultData"
-                      :meta="resultMeta"
-                      @copy="handleTextCopy"
-                    />
+                    <div class="text-header">
+                      <h4>📝 文本结果</h4>
+                      <el-button @click="copyText" size="small">
+                        <el-icon><CopyDocument /></el-icon>
+                        复制
+                      </el-button>
+                    </div>
+                    <div class="text-content">
+                      <pre>{{ resultData }}</pre>
+                    </div>
                   </div>
 
                   <!-- 未知类型 -->
                   <div v-else class="unknown-result">
-                    <el-alert 
-                      type="warning" 
-                      title="未知的结果类型" 
+                    <el-alert
+                      type="warning"
+                      title="未知的结果类型"
                       :description="`类型: ${resultType}`"
-                      show-icon 
+                      show-icon
                     />
                     <pre class="raw-result">{{ resultData }}</pre>
                   </div>
@@ -277,16 +407,37 @@
 
     <!-- 设置对话框 -->
     <el-dialog v-model="showSettings" title="扩展工作台设置" width="600px">
-      <WorkspaceSettings 
-        v-model="workspaceSettings"
-        @save="saveSettings"
-      />
+      <el-form :model="workspaceSettings" label-width="120px">
+        <el-form-item label="自动刷新">
+          <el-switch v-model="workspaceSettings.autoRefresh" />
+        </el-form-item>
+        <el-form-item label="刷新间隔(秒)" v-if="workspaceSettings.autoRefresh">
+          <el-input-number v-model="workspaceSettings.refreshInterval" :min="5" :max="300" />
+        </el-form-item>
+        <el-form-item label="侧边栏宽度">
+          <el-slider v-model="workspaceSettings.sidebarWidth" :min="250" :max="500" />
+        </el-form-item>
+        <el-form-item label="结果区域高度">
+          <el-slider v-model="workspaceSettings.resultAreaHeight" :min="300" :max="800" />
+        </el-form-item>
+        <el-form-item label="主题模式">
+          <el-radio-group v-model="workspaceSettings.themeMode">
+            <el-radio label="light">浅色</el-radio>
+            <el-radio label="dark">深色</el-radio>
+            <el-radio label="auto">自动</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showSettings = false">取消</el-button>
+        <el-button type="primary" @click="saveSettings(workspaceSettings)">保存</el-button>
+      </template>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { ref, reactive, computed, onMounted, nextTick } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Operation,
@@ -307,13 +458,13 @@ import {
   Memo
 } from '@element-plus/icons-vue'
 
-// 导入结果显示组件
-import TableResultDisplay from './components/TableResultDisplay.vue'
-import ImageResultDisplay from './components/ImageResultDisplay.vue'
-import FileResultDisplay from './components/FileResultDisplay.vue'
-import ChartResultDisplay from './components/ChartResultDisplay.vue'
-import TextResultDisplay from './components/TextResultDisplay.vue'
-import WorkspaceSettings from './components/WorkspaceSettings.vue'
+// 导入结果显示组件（暂时注释掉不存在的组件）
+// import TableResultDisplay from './components/TableResultDisplay.vue'
+// import ImageResultDisplay from './components/ImageResultDisplay.vue'
+// import FileResultDisplay from './components/FileResultDisplay.vue'
+// import ChartResultDisplay from './components/ChartResultDisplay.vue'
+// import TextResultDisplay from './components/TextResultDisplay.vue'
+// import WorkspaceSettings from './components/WorkspaceSettings.vue'
 
 // 导入API
 import { getExtensions, getExtensionQueryForm, executeExtensionQuery } from '@/api/extension'
@@ -336,13 +487,14 @@ export default {
     Picture,
     Files,
     TrendCharts,
-    Memo,
-    TableResultDisplay,
-    ImageResultDisplay,
-    FileResultDisplay,
-    ChartResultDisplay,
-    TextResultDisplay,
-    WorkspaceSettings
+    Memo
+    // 暂时注释掉不存在的组件
+    // TableResultDisplay,
+    // ImageResultDisplay,
+    // FileResultDisplay,
+    // ChartResultDisplay,
+    // TextResultDisplay,
+    // WorkspaceSettings
   },
   setup() {
     // 响应式数据
@@ -363,6 +515,20 @@ export default {
     const resultData = ref(null)
     const resultMeta = ref(null)
     const executionError = ref('')
+
+    // 图表相关
+    const chartCanvas = ref(null)
+    const chartInstance = ref(null)
+    const chartLoading = ref(false)
+    const chartError = ref('')
+    const showChartData = ref(false)
+    const chartFullscreen = ref(false)
+
+    // 表格相关
+    const tableCurrentPage = ref(1)
+    const tablePageSize = ref(20)
+    const tableSortConfig = ref({ prop: '', order: '' })
+    const tableFullscreen = ref(false)
     
     // 设置相关
     const showSettings = ref(false)
@@ -371,8 +537,33 @@ export default {
       refreshInterval: 30,
       showExecutionTime: true,
       enableNotifications: true,
-      defaultResultView: 'auto'
+      defaultResultView: 'auto',
+      themeMode: 'light',
+      sidebarWidth: 320,
+      resultAreaHeight: 600,
+      cacheResults: true,
+      cacheTimeout: 5,
+      maxConcurrency: 3,
+      executionTimeout: 60
     })
+
+    // 从localStorage加载设置
+    const loadSettings = () => {
+      const savedSettings = localStorage.getItem('workspace-settings')
+      if (savedSettings) {
+        try {
+          const parsed = JSON.parse(savedSettings)
+          Object.assign(workspaceSettings, parsed)
+        } catch (error) {
+          console.error('Failed to load settings:', error)
+        }
+      }
+    }
+
+    // 保存设置到localStorage
+    const saveSettingsToStorage = () => {
+      localStorage.setItem('workspace-settings', JSON.stringify(workspaceSettings))
+    }
 
     // 计算属性
     const hasResult = computed(() => {
@@ -385,6 +576,123 @@ export default {
 
     const canDownloadResult = computed(() => {
       return ['file', 'image', 'chart', 'table'].includes(resultType.value)
+    })
+
+    // 样式计算属性
+    const sidebarStyle = computed(() => ({
+      width: `${workspaceSettings.sidebarWidth}px`,
+      minWidth: `${workspaceSettings.sidebarWidth}px`
+    }))
+
+    const resultContentStyle = computed(() => ({
+      maxHeight: `${workspaceSettings.resultAreaHeight}px`
+    }))
+
+    const themeClass = computed(() => {
+      if (workspaceSettings.themeMode === 'auto') {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'theme-dark' : 'theme-light'
+      }
+      return `theme-${workspaceSettings.themeMode}`
+    })
+
+    // 图表相关计算属性
+    const chartCanvasStyle = computed(() => ({
+      width: '100%',
+      height: chartFullscreen.value ? '70vh' : '400px'
+    }))
+
+    const chartTableData = computed(() => {
+      if (!resultData.value?.chart_data?.datasets) return []
+
+      const chartData = resultData.value.chart_data
+      const labels = chartData.labels || []
+      const datasets = chartData.datasets || []
+
+      return labels.map((label, index) => {
+        const row = { 标签: label }
+        datasets.forEach(dataset => {
+          row[dataset.label || '数据'] = dataset.data[index]
+        })
+        return row
+      })
+    })
+
+    const chartTableColumns = computed(() => {
+      if (!resultData.value?.chart_data?.datasets) return []
+
+      const columns = [{ prop: '标签', label: '标签' }]
+      const datasets = resultData.value.chart_data.datasets || []
+
+      datasets.forEach(dataset => {
+        columns.push({
+          prop: dataset.label || '数据',
+          label: dataset.label || '数据'
+        })
+      })
+
+      return columns
+    })
+
+    // 表格相关计算属性
+    const tableColumns = computed(() => {
+      if (!resultData.value || !Array.isArray(resultData.value) || resultData.value.length === 0) {
+        return []
+      }
+
+      const firstRow = resultData.value[0]
+      return Object.keys(firstRow).map(key => {
+        const column = {
+          prop: key,
+          label: key,
+          sortable: true,
+          width: undefined
+        }
+
+        // 根据数据类型设置列属性
+        const value = firstRow[key]
+        if (typeof value === 'number') {
+          column.type = 'number'
+          column.width = 120
+        } else if (key.includes('状态') || key.includes('status') || key.toLowerCase().includes('state')) {
+          column.type = 'status'
+          column.width = 100
+        } else if (typeof value === 'string' && value.length > 50) {
+          column.width = 200
+        }
+
+        return column
+      })
+    })
+
+    const sortedTableData = computed(() => {
+      if (!resultData.value || !Array.isArray(resultData.value)) return []
+
+      if (!tableSortConfig.value.prop) return resultData.value
+
+      const { prop, order } = tableSortConfig.value
+      return [...resultData.value].sort((a, b) => {
+        const aVal = a[prop]
+        const bVal = b[prop]
+
+        if (typeof aVal === 'number' && typeof bVal === 'number') {
+          return order === 'ascending' ? aVal - bVal : bVal - aVal
+        }
+
+        const aStr = String(aVal).toLowerCase()
+        const bStr = String(bVal).toLowerCase()
+
+        if (order === 'ascending') {
+          return aStr.localeCompare(bStr)
+        } else {
+          return bStr.localeCompare(aStr)
+        }
+      })
+    })
+
+    const paginatedTableData = computed(() => {
+      const start = (tableCurrentPage.value - 1) * tablePageSize.value
+      const end = start + tablePageSize.value
+      return sortedTableData.value.slice(start, end)
     })
 
     // 方法
@@ -402,11 +710,15 @@ export default {
     }
 
     const selectExtension = async (extension) => {
+      console.log('选择扩展:', extension)
       selectedExtension.value = extension
       clearResult()
 
       if (extension.has_query_form) {
+        console.log('扩展有查询表单，开始加载...')
         await loadQueryForm(extension.id)
+      } else {
+        console.log('扩展没有查询表单')
       }
     }
 
@@ -415,8 +727,11 @@ export default {
         loadingForm.value = true
         formError.value = ''
         const response = await getExtensionQueryForm(extensionId)
-        queryFormHtml.value = response.data.form_html
+        // 后端返回的字段名是query_form，不是form_html
+        queryFormHtml.value = response.data.query_form || response.data.form_html
+        console.log('加载查询表单成功:', queryFormHtml.value)
       } catch (error) {
+        console.error('加载查询表单失败:', error)
         formError.value = '加载查询表单失败: ' + error.message
       } finally {
         loadingForm.value = false
@@ -450,8 +765,8 @@ export default {
         executionProgress.value = 100
         executionText.value = '执行完成'
 
-        // 处理结果
-        handleExecutionResult(response.data)
+        // 处理结果 - executeExtensionQuery已经返回了data部分
+        handleExecutionResult(response)
 
         if (workspaceSettings.enableNotifications) {
           ElMessage.success('扩展执行成功')
@@ -468,21 +783,62 @@ export default {
     const collectFormData = () => {
       const formData = {}
       if (selectedExtension.value.has_query_form) {
-        const formElement = document.querySelector('.form-content form')
-        if (formElement) {
-          const formDataObj = new FormData(formElement)
-          for (const [key, value] of formDataObj.entries()) {
-            formData[key] = value
-          }
+        // 查找表单容器
+        const formContainer = document.querySelector('.form-content')
+        if (formContainer) {
+          // 收集所有输入元素的值
+          const inputs = formContainer.querySelectorAll('input, select, textarea')
+          inputs.forEach(input => {
+            if (input.name) {
+              if (input.type === 'checkbox') {
+                formData[input.name] = input.checked
+              } else if (input.type === 'radio') {
+                if (input.checked) {
+                  formData[input.name] = input.value
+                }
+              } else {
+                formData[input.name] = input.value
+              }
+            }
+          })
+          console.log('收集到的表单数据:', formData)
         }
       }
       return formData
     }
 
     const handleExecutionResult = (result) => {
-      resultType.value = result.type || 'text'
-      resultData.value = result.data || result.content || result
-      resultMeta.value = result.meta || null
+      console.log('处理执行结果:', result)
+
+      // 检查是否是我们修复后的扩展返回的标准格式
+      if (result && typeof result === 'object' && result.type && result.data !== undefined) {
+        // 标准扩展返回格式: {type: "html", data: "...", meta: {...}}
+        resultType.value = result.type
+        resultData.value = result.data
+        resultMeta.value = result.meta || null
+        console.log('使用标准格式:', resultType.value)
+
+        // 如果是图表类型，渲染图表
+        if (result.type === 'chart') {
+          nextTick(() => {
+            renderChart()
+          })
+        }
+      } else {
+        // 兼容旧格式或其他数据 - 根据扩展的render_type来判断如何显示
+        const renderType = selectedExtension.value?.render_type || 'text'
+        resultType.value = renderType
+        resultData.value = result
+        resultMeta.value = null
+        console.log('使用兼容格式，render_type:', renderType)
+
+        // 如果是图表类型，渲染图表
+        if (renderType === 'chart') {
+          nextTick(() => {
+            renderChart()
+          })
+        }
+      }
     }
 
     const updateExecutionText = () => {
@@ -504,6 +860,15 @@ export default {
       resultMeta.value = null
       executionError.value = ''
       executionProgress.value = 0
+
+      // 清理图表
+      if (chartInstance.value) {
+        chartInstance.value.destroy()
+        chartInstance.value = null
+      }
+      chartError.value = ''
+      showChartData.value = false
+      chartFullscreen.value = false
     }
 
     const getExtensionIcon = (renderType) => {
@@ -585,14 +950,239 @@ export default {
       ElMessage.success('文本已复制')
     }
 
-    const saveSettings = () => {
+    const copyText = async () => {
+      try {
+        await navigator.clipboard.writeText(resultData.value)
+        ElMessage.success('文本已复制到剪贴板')
+      } catch (error) {
+        ElMessage.error('复制失败')
+      }
+    }
+
+    // 表格相关方法
+    const getTableRowCount = () => {
+      return Array.isArray(resultData.value) ? resultData.value.length : 0
+    }
+
+    const handleTableSort = ({ prop, order }) => {
+      tableSortConfig.value = { prop, order }
+    }
+
+    const handleTableSizeChange = (size) => {
+      tablePageSize.value = size
+      tableCurrentPage.value = 1
+    }
+
+    const handleTableCurrentChange = (page) => {
+      tableCurrentPage.value = page
+    }
+
+    const formatNumber = (value) => {
+      if (typeof value !== 'number') return value
+      return value.toLocaleString()
+    }
+
+    const getStatusType = (status) => {
+      const statusMap = {
+        '正常': 'success',
+        '运行': 'success',
+        '运行中': 'success',
+        'running': 'success',
+        '警告': 'warning',
+        '异常': 'danger',
+        '错误': 'danger',
+        '停止': 'info',
+        '已停止': 'info',
+        'stopped': 'info'
+      }
+      return statusMap[status] || 'info'
+    }
+
+    const exportTableData = (format) => {
+      if (!resultData.value || !Array.isArray(resultData.value)) {
+        ElMessage.warning('没有数据可导出')
+        return
+      }
+
+      try {
+        if (format === 'csv') {
+          exportTableToCsv()
+        } else if (format === 'json') {
+          exportTableToJson()
+        }
+      } catch (error) {
+        ElMessage.error('导出失败: ' + error.message)
+      }
+    }
+
+    const exportTableToCsv = () => {
+      const headers = tableColumns.value.map(col => col.label).join(',')
+      const rows = resultData.value.map(row =>
+        tableColumns.value.map(col => {
+          const value = row[col.prop]
+          return typeof value === 'string' && value.includes(',')
+            ? `"${value}"`
+            : value
+        }).join(',')
+      )
+
+      const csvContent = [headers, ...rows].join('\n')
+      downloadFile(csvContent, 'table-data.csv', 'text/csv')
+      ElMessage.success('CSV文件已下载')
+    }
+
+    const exportTableToJson = () => {
+      const jsonContent = JSON.stringify({
+        data: resultData.value,
+        meta: resultMeta.value,
+        exported_at: new Date().toISOString()
+      }, null, 2)
+
+      downloadFile(jsonContent, 'table-data.json', 'application/json')
+      ElMessage.success('JSON文件已下载')
+    }
+
+    const downloadFile = (content, filename, mimeType) => {
+      const blob = new Blob([content], { type: mimeType })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    }
+
+    const toggleTableFullscreen = () => {
+      tableFullscreen.value = !tableFullscreen.value
+    }
+
+    // 图表渲染函数
+    const renderChart = async () => {
+      if (!chartCanvas.value || !resultData.value) return
+
+      try {
+        chartLoading.value = true
+        chartError.value = ''
+
+        // 动态导入Chart.js
+        const { Chart, registerables } = await import('chart.js')
+        Chart.register(...registerables)
+
+        // 销毁现有图表实例
+        if (chartInstance.value) {
+          chartInstance.value.destroy()
+          chartInstance.value = null
+        }
+
+        // 获取图表配置
+        const chartType = resultData.value.chart_type || 'line'
+        const chartData = resultData.value.chart_data || {}
+        const chartOptions = resultData.value.options || {}
+
+        // 创建新的图表实例
+        chartInstance.value = new Chart(chartCanvas.value, {
+          type: chartType,
+          data: chartData,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            ...chartOptions,
+            plugins: {
+              ...chartOptions.plugins,
+              legend: {
+                display: true,
+                position: 'top',
+                ...chartOptions.plugins?.legend
+              },
+              tooltip: {
+                enabled: true,
+                ...chartOptions.plugins?.tooltip
+              }
+            },
+            scales: {
+              ...chartOptions.scales,
+              y: {
+                beginAtZero: true,
+                ...chartOptions.scales?.y
+              }
+            }
+          }
+        })
+
+        chartLoading.value = false
+        console.log('图表渲染成功')
+
+      } catch (error) {
+        chartLoading.value = false
+        chartError.value = '图表渲染失败: ' + error.message
+        console.error('图表渲染失败:', error)
+      }
+    }
+
+    const retryChart = () => {
+      renderChart()
+    }
+
+    const exportChart = (format) => {
+      if (!chartInstance.value) {
+        ElMessage.error('图表未准备就绪')
+        return
+      }
+
+      try {
+        if (format === 'png') {
+          const url = chartInstance.value.toBase64Image()
+          const link = document.createElement('a')
+          link.href = url
+          link.download = `chart-${Date.now()}.png`
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          ElMessage.success('图表已导出为PNG')
+        }
+      } catch (error) {
+        ElMessage.error('导出失败: ' + error.message)
+      }
+    }
+
+    const toggleChartFullscreen = () => {
+      chartFullscreen.value = !chartFullscreen.value
+      // 延迟一下让DOM更新，然后重新渲染图表
+      nextTick(() => {
+        if (chartInstance.value) {
+          chartInstance.value.resize()
+        }
+      })
+    }
+
+    const saveSettings = (newSettings) => {
+      Object.assign(workspaceSettings, newSettings)
+      saveSettingsToStorage()
       ElMessage.success('设置已保存')
       showSettings.value = false
     }
 
     // 生命周期
     onMounted(() => {
+      loadSettings()
       refreshExtensions()
+
+      // 设置自动刷新
+      if (workspaceSettings.autoRefresh) {
+        setInterval(() => {
+          refreshExtensions()
+        }, workspaceSettings.refreshInterval * 1000)
+      }
+    })
+
+    onUnmounted(() => {
+      // 清理图表实例
+      if (chartInstance.value) {
+        chartInstance.value.destroy()
+        chartInstance.value = null
+      }
     })
 
     return {
@@ -630,7 +1220,39 @@ export default {
       handleFileDownload,
       handleChartExport,
       handleTextCopy,
-      saveSettings
+      saveSettings,
+      sidebarStyle,
+      resultContentStyle,
+      themeClass,
+      loadSettings,
+      saveSettingsToStorage,
+      copyText,
+      // 图表相关
+      chartCanvas,
+      chartCanvasStyle,
+      chartLoading,
+      chartError,
+      showChartData,
+      chartTableData,
+      chartTableColumns,
+      renderChart,
+      retryChart,
+      exportChart,
+      toggleChartFullscreen,
+      // 表格相关
+      tableCurrentPage,
+      tablePageSize,
+      tableFullscreen,
+      tableColumns,
+      paginatedTableData,
+      getTableRowCount,
+      handleTableSort,
+      handleTableSizeChange,
+      handleTableCurrentChange,
+      formatNumber,
+      getStatusType,
+      exportTableData,
+      toggleTableFullscreen
     }
   }
 }
@@ -695,13 +1317,13 @@ export default {
 
 /* 侧边栏 */
 .sidebar {
-  width: 320px;
   background: white;
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  transition: width 0.3s ease;
 }
 
 .sidebar-header {
@@ -887,6 +1509,41 @@ export default {
   padding: 16px;
 }
 
+/* 查询表单样式 */
+.form-content .form-group {
+  margin-bottom: 16px;
+}
+
+.form-content .form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #495057;
+}
+
+.form-content .form-control {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-content .form-control:focus {
+  border-color: #667eea;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.form-content input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+.form-content .query-form {
+  padding: 0;
+}
+
 /* 结果区域 */
 .result-section {
   flex: 1;
@@ -999,6 +1656,266 @@ export default {
   .extension-meta {
     align-items: flex-start;
   }
+}
+
+/* 主题样式 */
+.theme-dark {
+  background: #1a1a1a;
+  color: #e0e0e0;
+}
+
+.theme-dark .sidebar,
+.theme-dark .extension-info-card,
+.theme-dark .result-section .el-card {
+  background: #2d2d2d;
+  color: #e0e0e0;
+}
+
+.theme-dark .sidebar-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.theme-dark .extension-item {
+  border-color: #404040;
+}
+
+.theme-dark .extension-item:hover {
+  background: #3a3a3a;
+}
+
+.theme-dark .extension-item.active {
+  background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+  border-color: #667eea;
+}
+
+.theme-dark .query-form-container,
+.theme-dark .text-stats,
+.theme-dark .image-info,
+.theme-dark .chart-info {
+  background: #3a3a3a;
+}
+
+.theme-dark .form-content,
+.theme-dark .stat-item,
+.theme-dark .info-item {
+  background: #2d2d2d;
+  border-color: #404040;
+}
+
+.theme-light {
+  background: #f5f7fa;
+  color: #2c3e50;
+}
+
+/* 结果显示样式 */
+.table-header,
+.image-header,
+.file-header,
+.chart-header,
+.text-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  margin-bottom: 16px;
+}
+
+.table-header h4,
+.image-header h4,
+.file-header h4,
+.chart-header h4,
+.text-header h4 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.table-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.table-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.table-container.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background: white;
+  padding: 20px;
+}
+
+.table-pagination {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+}
+
+.number-cell {
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-weight: 600;
+  text-align: right;
+}
+
+.image-container {
+  text-align: center;
+  padding: 20px;
+}
+
+.file-info {
+  padding: 20px;
+}
+
+.file-info p {
+  margin: 8px 0;
+}
+
+.chart-placeholder {
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  margin: 16px;
+}
+
+.chart-placeholder pre {
+  background: white;
+  padding: 16px;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+  max-height: 300px;
+  overflow: auto;
+}
+
+.text-content {
+  padding: 16px;
+}
+
+.text-content pre {
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  max-height: 400px;
+  overflow: auto;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.raw-result {
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 16px;
+  margin-top: 16px;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 12px;
+  overflow: auto;
+  max-height: 300px;
+}
+
+/* 图表样式 */
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  margin-bottom: 16px;
+}
+
+.chart-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.chart-container {
+  position: relative;
+  padding: 20px;
+  background: white;
+  border-radius: 6px;
+  margin: 16px;
+}
+
+.chart-loading,
+.chart-error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #6c757d;
+  z-index: 10;
+}
+
+.loading-icon,
+.error-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.loading-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.chart-data-table {
+  margin-top: 20px;
+  border-top: 1px solid #e9ecef;
+}
+
+.chart-data-table .table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.chart-data-table .table-header h5 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+/* 图表全屏模式 */
+.chart-result.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background: white;
+  padding: 20px;
+}
+
+.chart-result.fullscreen .chart-container {
+  height: calc(100vh - 200px);
+  margin: 0;
 }
 </style>
 

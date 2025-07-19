@@ -237,10 +237,25 @@ def execute_query(params, config=None):
             report.append(f"完成时间: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         report.append("=" * 60)
         
-        return "\n".join(report)
+        return {
+            "type": "text",
+            "data": "\n".join(report),
+            "meta": {
+                "generated_at": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                "report_format": report_format,
+                "section": section,
+                "include_env": include_env,
+                "include_network": include_network,
+                "show_timestamps": show_timestamps,
+                "line_count": len(report),
+                "character_count": len("\n".join(report))
+            }
+        }
         
     except Exception as e:
-        return f"""
+        return {
+            "type": "text",
+            "data": f"""
 系统信息报告生成失败
 ========================
 
@@ -252,4 +267,10 @@ def execute_query(params, config=None):
 3. 确保Python环境正常
 
 生成时间: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        """
+            """,
+            "meta": {
+                "error": True,
+                "error_message": str(e),
+                "generated_at": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            }
+        }

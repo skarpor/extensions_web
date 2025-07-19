@@ -17,17 +17,21 @@ from core.sandbox import load_module_in_sandbox, execute_query_in_sandbox, Sandb
 from sqlalchemy.ext.asyncio import AsyncSession
 from config import settings
 from api.v1.endpoints.database import db_manager
+
 logger = get_logger("extension")
+
+
 class ExtensionManager:
     """
     扩展管理器类
-    
+
     负责扩展的加载、卸载、配置管理和查询执行
     """
+
     def __init__(self, app: FastAPI):
         """
         初始化扩展管理器
-        
+
         Args:
             app: FastAPI应用实例
             extensions_dir: 扩展文件目录
@@ -37,7 +41,7 @@ class ExtensionManager:
         self.app = app
         # self.db_session_maker = db_session_maker  # 传入会话工厂
         self.loaded_extensions: Dict[str, dict] = {}
-        self.file_manager = None # 文件管理器、不使用了，太罗嗦
+        self.file_manager = None  # 文件管理器、不使用了，太罗嗦
         # 额外的数据库，取决于api中的database
         self.db_manager = db_manager
         # 确保目录存在
@@ -47,10 +51,10 @@ class ExtensionManager:
     def get_route_by_path(self, path: str) -> Optional[APIRoute]:
         """
         获取指定路径的路由对象
-        
+
         Args:
             path: API路径
-            
+
         Returns:
             路由对象，如果不存在则返回None
         """
@@ -62,19 +66,19 @@ class ExtensionManager:
     def route_exists(self, path: str) -> bool:
         """
         检查路由是否已存在
-        
+
         Args:
             path: API路径
-            
+
         Returns:
             如果路由存在返回True，否则返回False
         """
         return self.get_route_by_path(path) is not None
 
-    async def load_extension(self, extension_id: str,db:AsyncSession):
+    async def load_extension(self, extension_id: str, db: AsyncSession):
         """
         加载单个扩展
-        
+
         Args:
             extension_id: 扩展ID
         """
@@ -84,10 +88,10 @@ class ExtensionManager:
         extension = extension.scalar_one_or_none()
         if not extension:
             logger.error(f"扩展配置不存在: {extension_id}")
-            return 
+            return
         try:
             logger.info(f"开始加载扩展: {extension_id}")
-            
+
             # 使用沙箱加载模块
             module = load_module_in_sandbox(filepath)
 
@@ -98,8 +102,8 @@ class ExtensionManager:
                 "has_config_form": hasattr(module, "get_config_form"),
                 "has_query_form": hasattr(module, "get_query_form")
             }
-            extension.has_config_form=hasattr(module, "get_config_form")
-            extension.has_query_form=hasattr(module, "get_query_form")
+            extension.has_config_form = hasattr(module, "get_config_form")
+            extension.has_query_form = hasattr(module, "get_query_form")
             if hasattr(module, "get_default_config") and extension.config is None:
                 extension.config = module.get_default_config()
             await db.commit()
@@ -116,8 +120,7 @@ class ExtensionManager:
                     response_description="Extension query result"
                 )
                 logger.debug(f"扩展 {extension_id} 的API端点注册成功")
-            
-            
+
             logger.info(f"扩展 {extension_id} 加载完成")
             return self.loaded_extensions[extension_id]
 
@@ -130,22 +133,21 @@ class ExtensionManager:
     def create_query_endpoint(self, module, extension_id):
         """
         创建扩展的查询端点
-        
+
         Args:
             module: 扩展模块
             extension_id: 扩展ID
-            
+
         Returns:
             查询端点函数
         """
+
         # 修改路由接口，支持表单和文件上传
         async def query_endpoint(request: Request):
             logger.info(f"执行扩展查询: {extension_id}")
-            
+
             try:
                 config = self.loaded_extensions[extension_id]["extension"].get("config")
-                # print(config)
-                # print(json.dumps(config))
                 # config=json.loads(json.dumps(config))
                 # try:
                 #     if config:
@@ -155,16 +157,13 @@ class ExtensionManager:
                 # except json.JSONDecodeError:
                 #     config = {}  # 如果解析失败，设为空字典
                 #
-                # print(config,type(config))
                 # 使用表单接收数据，包括文件
                 form = await request.form()
                 # 打印所有字段和类型
-                # for key, value in form.multi_items():
-                #     print(f"字段: {key}, 类型: {type(value)}, 值: {value}")
 
                 # 构建查询参数字典
                 query_params = {}
-                files={}
+                files = {}
                 # 统一处理所有表单字段
                 for key, value in form.multi_items():
                     try:
@@ -173,7 +172,6 @@ class ExtensionManager:
                         is_file = False
                     if is_file or isinstance(value, UploadFile):
                         # 处理文件上传
-                        # print("检测到文件字段:", key, value.filename)
 
                         file_content = await value.read()
                         await value.seek(0)  # 重置文件指针
@@ -184,7 +182,6 @@ class ExtensionManager:
                         }
                     else:
                         # 处理普通表单字段
-                        # print("普通字段:", key, value)
                         query_params[key] = value
 
                 # 构建最终参数
@@ -193,7 +190,6 @@ class ExtensionManager:
                     "files": files if files else None,  # 如果没有文件就设为None
                     "extension_id": extension_id
                 }
-                # print(params)
                 # 如果有文件管理器，传递给沙箱环境
                 if self.file_manager:
                     params["file_manager"] = self.file_manager
@@ -202,13 +198,13 @@ class ExtensionManager:
                 logger.debug(f"查询参数: {str(params)[:1000]}...")  # 日志记录部分参数，避免过大
                 if self.db_manager:
                     # 在沙箱中执行查询
-                    result =await execute_query_in_sandbox(module, params, config,db_manager=self.db_manager)
+                    result = await execute_query_in_sandbox(module, params, config, db_manager=self.db_manager)
                 else:
                     # 在沙箱中执行查询
-                    result =await execute_query_in_sandbox(module, params, config)
+                    result = await execute_query_in_sandbox(module, params, config)
                 logger.info(f"扩展 {extension_id} 查询成功完成")
                 return result
-                
+
             except SandboxException as e:
                 raise
                 logger.error(f"扩展 {extension_id} 查询执行失败(沙箱错误): {str(e)}")
@@ -220,21 +216,21 @@ class ExtensionManager:
 
         return query_endpoint
 
-    async def load_all_extensions(self,db:AsyncSession):
+    async def load_all_extensions(self, db: AsyncSession):
         """加载所有扩展"""
         logger.info("开始加载所有扩展")
         count = 0
         for filename in os.listdir(settings.EXTENSIONS_DIR):
             if filename.endswith(".py"):
                 extension_id = filename[:-3]
-                if await self.load_extension(extension_id,db):
+                if await self.load_extension(extension_id, db):
                     count += 1
         logger.info(f"完成加载所有扩展，共 {count} 个")
 
     def remove_route(self, path: str):
         """
         移除路由
-        
+
         Args:
             path: 要移除的API路径
         """
@@ -249,16 +245,16 @@ class ExtensionManager:
         self.app.openapi_schema = None
         self.app.setup()
 
-    async def update_extension(self, extension_id: str, updateExtension: ExtensionUpdate,db:AsyncSession):
+    async def update_extension(self, extension_id: str, updateExtension: ExtensionUpdate, db: AsyncSession):
         """
         更新扩展
-        
+
         Args:
             extension_id: 扩展ID
             updateExtension: 更新扩展模型
         """
-        print(self.loaded_extensions)
-        extension = await db.execute(select(Extension).where(Extension.id == extension_id and Extension.deleted==False)) # deleted=False
+        extension = await db.execute(
+            select(Extension).where(Extension.id == extension_id and Extension.deleted == False))  # deleted=False
         extension = extension.scalar_one_or_none()
         if not extension:
             logger.error(f"扩展配置不存在: {extension_id}")
@@ -268,7 +264,7 @@ class ExtensionManager:
         update_data = updateExtension.model_dump(exclude_unset=True)
         for field, value in update_data.items():
             setattr(extension, field, value)
-        if update_data.get("enabled") and not self.route_exists(settings.EXTENSIONS_ENTRY_POINT_PREFIX+extension_id):
+        if update_data.get("enabled") and not self.route_exists(settings.EXTENSIONS_ENTRY_POINT_PREFIX + extension_id):
             # extension.entry_point=f"/query/{extension_id}"
             # 如果扩展启用，注册API路由
             logger.info(f"为扩展 {extension_id} 注册API端点: {extension.entry_point}")
@@ -286,9 +282,9 @@ class ExtensionManager:
                 response_description="Extension query result"
             )
             logger.debug(f"扩展 {extension_id} 的API端点注册成功")
-        elif extension.deleted==True:
+        elif extension.deleted == True:
             try:
-                self.remove_route(settings.EXTENSIONS_ENTRY_POINT_PREFIX+extension_id)
+                self.remove_route(settings.EXTENSIONS_ENTRY_POINT_PREFIX + extension_id)
                 self.loaded_extensions.pop(extension_id)
             except:
                 pass
@@ -298,10 +294,11 @@ class ExtensionManager:
         await db.refresh(extension)
         logger.info(f"已保存扩展配置到数据库: {extension_id}")
         return extension
-    async def list_extensions(self,db:AsyncSession):
+
+    async def list_extensions(self, db: AsyncSession):
         """
         获取所有扩展的列表
-        
+
         Returns:
             扩展信息列表
         """
@@ -310,12 +307,11 @@ class ExtensionManager:
 
         return extensions.scalars().all()
 
-    async def delete_extension(self, extension_id: str,db:AsyncSession):
+    async def delete_extension(self, extension_id: str, db: AsyncSession):
         """
         删除扩展,修改deleted字段为True
         """
         try:
-            print(self.loaded_extensions)
             extension = await db.execute(select(Extension).where(Extension.id == extension_id))
             extension = extension.scalar_one_or_none()
             if not extension:
@@ -323,19 +319,20 @@ class ExtensionManager:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Extension not loaded")
             extension.deleted = True
             await db.commit()
-            print(self.loaded_extensions)
+
             self.remove_route(f"/query/{extension_id}")
             try:
                 self.loaded_extensions.pop(extension_id)
+                os.remove(os.path.join(settings.EXTENSIONS_DIR, f"{extension_id}.py"))
             except:
                 pass
             logger.info(f"数据库 删除扩展 {extension_id} 成功")
             return True
         except Exception as e:
-            raise
             logger.error(f"数据库 删除扩展 {extension_id} 失败: {str(e)}")
             return False
-    async def create_extension(self, extension_id: str, extension_data: dict, file: UploadFile,db:AsyncSession):
+
+    async def create_extension(self, extension_id: str, extension_data: dict, file: UploadFile, db: AsyncSession):
         """
         创建扩展
         """
@@ -348,13 +345,14 @@ class ExtensionManager:
         extension = Extension(
             id=extension_id,
             **extension_data,
-            entry_point=settings.EXTENSIONS_ENTRY_POINT_PREFIX+extension_id
+            entry_point=settings.EXTENSIONS_ENTRY_POINT_PREFIX + extension_id
         )
         db.add(extension)
         await db.commit()
-        await self.load_extension(extension_id,db)
+        await self.load_extension(extension_id, db)
         return True
-    async def get_extension_document(self, extension_id: str,db:AsyncSession) -> dict:
+
+    async def get_extension_document(self, extension_id: str, db: AsyncSession) -> dict:
         """
         获取扩展文档
         """
@@ -377,7 +375,6 @@ class ExtensionManager:
             "docs": docstring,
             "functions": function_docs
         }
-    
 
     async def get_extension_config(self, extension_id: str, db: AsyncSession):
         """
@@ -393,6 +390,7 @@ class ExtensionManager:
         module = self.loaded_extensions[extension_id]["module"]
         config_form = module.get_config_form()
         return config_form
+
     async def get_extension_query(self, extension_id: str, db: AsyncSession):
         """
         与config类似，可提取合并
@@ -408,8 +406,6 @@ class ExtensionManager:
         query_form = module.get_query_form()
         return query_form
 
-
-
     async def update_extension_config(self, extension_id: str, config: dict, db: AsyncSession):
         """
         更新扩展配置
@@ -423,4 +419,3 @@ class ExtensionManager:
         await db.commit()
         await db.refresh(extension)
         return extension
-

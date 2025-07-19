@@ -6,6 +6,10 @@
                 <h2>扩展查询</h2>
                 <p>查询扩展信息</p>
             </div>
+            <div class="card" @click="navigateTo('/extension/workspace')">
+                <h2>新扩展查询</h2>
+                <p>查询扩展信息</p>
+            </div>
             <div class="card" @click="navigateTo('/extensions')">
                 <h2>扩展管理</h2>
                 <p>管理系统扩展功能</p>

@@ -204,11 +204,13 @@ export default {
     }))
 
     const tableData = computed(() => {
-      if (!props.chartConfig.data?.datasets) return []
-      
-      const labels = props.chartConfig.data.labels || []
-      const datasets = props.chartConfig.data.datasets || []
-      
+      // 处理新的数据格式
+      const chartData = props.chartConfig.chart_data || props.chartConfig.data || {}
+      if (!chartData.datasets) return []
+
+      const labels = chartData.labels || []
+      const datasets = chartData.datasets || []
+
       return labels.map((label, index) => {
         const row = { label }
         datasets.forEach(dataset => {
@@ -219,18 +221,20 @@ export default {
     })
 
     const tableColumns = computed(() => {
-      if (!props.chartConfig.data?.datasets) return []
-      
+      // 处理新的数据格式
+      const chartData = props.chartConfig.chart_data || props.chartConfig.data || {}
+      if (!chartData.datasets) return []
+
       const columns = [{ prop: 'label', label: '标签' }]
-      const datasets = props.chartConfig.data.datasets || []
-      
+      const datasets = chartData.datasets || []
+
       datasets.forEach(dataset => {
         columns.push({
           prop: dataset.label || 'data',
           label: dataset.label || '数据'
         })
       })
-      
+
       return columns
     })
 
@@ -242,11 +246,16 @@ export default {
         Chart.register(...registerables)
 
         if (chartElement.value) {
+          // 处理新的数据格式
+          const chartType = props.chartConfig.chart_type || props.chartConfig.type || 'line'
+          const chartData = props.chartConfig.chart_data || props.chartConfig.data || {}
+          const chartOptions = props.chartConfig.options || {}
+
           chartInstance.value = new Chart(chartElement.value, {
-            type: props.chartConfig.type || 'line',
-            data: props.chartConfig.data || {},
+            type: chartType,
+            data: chartData,
             options: {
-              ...props.chartConfig.options,
+              ...chartOptions,
               responsive: true,
               maintainAspectRatio: false
             }
@@ -272,11 +281,16 @@ export default {
           fullscreenChartInstance.value.destroy()
         }
 
+        // 处理新的数据格式
+        const chartType = props.chartConfig.chart_type || props.chartConfig.type || 'line'
+        const chartData = props.chartConfig.chart_data || props.chartConfig.data || {}
+        const chartOptions = props.chartConfig.options || {}
+
         fullscreenChartInstance.value = new Chart(fullscreenChartElement.value, {
-          type: props.chartConfig.type || 'line',
-          data: props.chartConfig.data || {},
+          type: chartType,
+          data: chartData,
           options: {
-            ...props.chartConfig.options,
+            ...chartOptions,
             responsive: true,
             maintainAspectRatio: false
           }
@@ -354,19 +368,20 @@ export default {
         'area': '面积图',
         'scatter': '散点图'
       }
-      return typeMap[props.chartConfig.type] || props.chartConfig.type || '未知'
+      const chartType = props.chartConfig.chart_type || props.chartConfig.type || '未知'
+      return typeMap[chartType] || chartType
     }
 
     const getDataPointsCount = () => {
-      const data = props.chartConfig.data
-      if (!data) return 0
-      
-      if (data.labels) {
-        return data.labels.length
-      } else if (data.datasets && data.datasets[0]) {
-        return data.datasets[0].data.length
+      const chartData = props.chartConfig.chart_data || props.chartConfig.data || {}
+      if (!chartData) return 0
+
+      if (chartData.labels) {
+        return chartData.labels.length
+      } else if (chartData.datasets && chartData.datasets[0]) {
+        return chartData.datasets[0].data.length
       }
-      
+
       return 0
     }
 

@@ -105,15 +105,37 @@ def execute_query(params, config=None):
             compressed_file = compress_log_file(temp_file.name)
             os.unlink(temp_file.name)  # 删除原文件
             return {
-                "file_path": compressed_file,
-                "filename": filename.replace(f'.{log_format}', '.zip'),
-                "content_type": "application/zip"
+                "type": "file",
+                "data": {
+                    "file_path": compressed_file,
+                    "filename": filename.replace(f'.{log_format}', '.zip'),
+                    "content_type": "application/zip",
+                    "compressed": True
+                },
+                "meta": {
+                    "log_type": log_type,
+                    "time_period": time_period,
+                    "log_format": log_format,
+                    "compressed": True,
+                    "generated_at": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                }
             }
         else:
             return {
-                "file_path": temp_file.name,
-                "filename": filename,
-                "content_type": get_content_type(log_format)
+                "type": "file",
+                "data": {
+                    "file_path": temp_file.name,
+                    "filename": filename,
+                    "content_type": get_content_type(log_format),
+                    "compressed": False
+                },
+                "meta": {
+                    "log_type": log_type,
+                    "time_period": time_period,
+                    "log_format": log_format,
+                    "compressed": False,
+                    "generated_at": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                }
             }
             
     except Exception as e:
@@ -127,9 +149,17 @@ def execute_query(params, config=None):
         error_file.close()
         
         return {
-            "file_path": error_file.name,
-            "filename": f"error_log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-            "content_type": "text/plain"
+            "type": "file",
+            "data": {
+                "file_path": error_file.name,
+                "filename": f"error_log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                "content_type": "text/plain"
+            },
+            "meta": {
+                "error": True,
+                "error_message": str(e),
+                "generated_at": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            }
         }
 
 def generate_log_data(log_type, time_period, max_entries, include_system_info):

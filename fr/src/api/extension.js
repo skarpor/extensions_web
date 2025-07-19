@@ -53,28 +53,29 @@ export const executeExtensionQuery1 = (id, formData) => {
     }
   });
 };
-export const executeExtensionQuery =async (id, formData = {}) => {
+export const executeExtensionQuery = async (id, formData = {}) => {
   // 创建一个FormData对象
-  // const form = new FormData()
-  //
-  // // 即使没有数据，也确保表单格式正确
-  // if (Object.keys(formData).length === 0) {
-  //   // 添加一个空字段确保格式正确
-  //   form.append('_dummy', '')
-  // } else {
-  //   // 将formData中的数据添加到FormData对象
-  //   Object.keys(formData).forEach(key => {
-  //     const value = formData[key]
-  //     if (value instanceof File) {
-  //       form.append(key, value, value.name)
-  //     } else if (value !== null && value !== undefined) {
-  //       form.append(key, value)
-  //     }
-  //   })
-  // }
-  
-  // 发送请求，确保使用正确的content-type
-  return await axios.post(`/query/${id}`, formData, {
+  const form = new FormData()
+
+  // 处理表单数据
+  if (Object.keys(formData).length === 0) {
+    // 如果没有数据，添加一个空字段
+    form.append('_empty', '')
+  } else {
+    // 将formData中的数据添加到FormData对象
+    Object.keys(formData).forEach(key => {
+      const value = formData[key]
+      if (value instanceof File) {
+        form.append(key, value, value.name)
+      } else if (value !== null && value !== undefined) {
+        // 确保值是字符串
+        form.append(key, String(value))
+      }
+    })
+  }
+
+  // 发送请求
+  return await axios.post(`/query/${id}`, form, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }

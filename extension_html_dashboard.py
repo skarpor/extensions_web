@@ -315,13 +315,38 @@ def execute_query(params, config=None):
         </div>
         """
         
-        return html
+        return {
+            "type": "html",
+            "data": html,
+            "meta": {
+                "generated_at": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                "theme": theme,
+                "detail_level": detail_level,
+                "refresh_interval": config.get('refresh_interval', 30),
+                "components": {
+                    "cpu_info": True,
+                    "memory_info": True,
+                    "system_info": True,
+                    "disk_info": include_disk,
+                    "network_info": show_network,
+                    "process_info": show_processes and detail_level in ["detailed", "full"]
+                }
+            }
+        }
         
     except Exception as e:
-        return f"""
-        <div style="color: red; padding: 20px; border: 1px solid red; border-radius: 5px;">
-            <h3>❌ 错误</h3>
-            <p>获取系统信息时发生错误: {str(e)}</p>
-            <p>请确保已安装psutil库: pip install psutil</p>
-        </div>
-        """
+        return {
+            "type": "html",
+            "data": f"""
+            <div style="color: red; padding: 20px; border: 1px solid red; border-radius: 5px;">
+                <h3>❌ 错误</h3>
+                <p>获取系统信息时发生错误: {str(e)}</p>
+                <p>请确保已安装psutil库: pip install psutil</p>
+            </div>
+            """,
+            "meta": {
+                "error": True,
+                "error_message": str(e),
+                "generated_at": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            }
+        }
