@@ -56,7 +56,7 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true, title: '扩展管理' }
     },
     {
-      path: '/extensions/:id',
+      path: '/extension/:id',
       name: 'extension-detail',
       component: () => import('../views/extension/ExtensionDetail.vue'),
       meta: { requiresAuth: true, title: '扩展详情' }

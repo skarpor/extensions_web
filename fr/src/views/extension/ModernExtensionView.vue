@@ -165,6 +165,14 @@
                     <el-tag :type="getResultStatusType()" size="small">
                       {{ getResultStatusText() }}
                     </el-tag>
+                    <el-tag v-if="isAutoExecuting" type="warning" size="small" effect="plain">
+                      <el-icon><Refresh /></el-icon>
+                      自动执行中
+                    </el-tag>
+                    <el-tag v-else-if="workspaceSettings.autoReExecute && selectedExtension" type="success" size="small" effect="plain">
+                      <el-icon><Timer /></el-icon>
+                      自动执行已启用
+                    </el-tag>
                   </div>
                   
                   <div class="result-actions">
@@ -180,6 +188,10 @@
                       <el-button @click="clearResult">
                         <el-icon><Delete /></el-icon>
                         清除
+                      </el-button>
+                      <el-button @click="toggleResultPopup" type="primary">
+                        <el-icon><FullScreen /></el-icon>
+                        弹出显示
                       </el-button>
                     </el-button-group>
                   </div>
@@ -406,13 +418,30 @@
     </div>
 
     <!-- 设置对话框 -->
-    <el-dialog v-model="showSettings" title="扩展工作台设置" width="600px">
-      <el-form :model="workspaceSettings" label-width="120px">
-        <el-form-item label="自动刷新">
-          <el-switch v-model="workspaceSettings.autoRefresh" />
+    <el-dialog v-model="showSettings" title="扩展工作台设置" width="800px">
+      <el-form :model="workspaceSettings" label-width="150px">
+        <el-form-item label="自动刷新扩展列表">
+          <el-switch v-model="workspaceSettings.autoRefreshExtensions" />
+          <div style="font-size: 12px; color: #6c757d; margin-top: 4px;">
+            定期刷新扩展列表，获取最新的扩展状态
+          </div>
         </el-form-item>
-        <el-form-item label="刷新间隔(秒)" v-if="workspaceSettings.autoRefresh">
-          <el-input-number v-model="workspaceSettings.refreshInterval" :min="5" :max="300" />
+        <el-form-item label="扩展列表刷新间隔" v-if="workspaceSettings.autoRefreshExtensions">
+          <el-input-number v-model="workspaceSettings.extensionRefreshInterval" :min="30" :max="600" />
+          <span style="margin-left: 8px; color: #6c757d;">秒</span>
+        </el-form-item>
+        <el-form-item label="自动重新执行">
+          <el-switch v-model="workspaceSettings.autoReExecute" />
+          <div style="font-size: 12px; color: #6c757d; margin-top: 4px;">
+            定期重新执行当前选中的扩展，获取最新结果
+          </div>
+        </el-form-item>
+        <el-form-item label="重新执行间隔" v-if="workspaceSettings.autoReExecute">
+          <el-input-number v-model="workspaceSettings.reExecuteInterval" :min="10" :max="300" />
+          <span style="margin-left: 8px; color: #6c757d;">秒</span>
+          <div style="font-size: 12px; color: #6c757d; margin-top: 4px;">
+            使用当前页面中的查询表单数据进行自动执行
+          </div>
         </el-form-item>
         <el-form-item label="侧边栏宽度">
           <el-slider v-model="workspaceSettings.sidebarWidth" :min="250" :max="500" />
@@ -427,11 +456,257 @@
             <el-radio label="auto">自动</el-radio>
           </el-radio-group>
         </el-form-item>
+        <el-form-item label="结果显示">
+          <el-radio-group v-model="workspaceSettings.defaultResultDisplay">
+            <el-radio label="inline">内嵌显示</el-radio>
+            <el-radio label="popup">弹出显示</el-radio>
+            <el-radio label="auto">自动选择</el-radio>
+          </el-radio-group>
+          <div style="font-size: 12px; color: #6c757d; margin-top: 4px;">
+            自动选择：小结果内嵌显示，大结果弹出显示
+          </div>
+        </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showSettings = false">取消</el-button>
-        <el-button type="primary" @click="saveSettings(workspaceSettings)">保存</el-button>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="font-size: 12px; color: #6c757d;">
+            <div v-if="workspaceSettings.autoRefreshExtensions">
+              🔄 扩展列表自动刷新: 每{{ workspaceSettings.extensionRefreshInterval }}秒
+            </div>
+            <div v-if="workspaceSettings.autoReExecute">
+              ⚡ 自动重新执行: 每{{ workspaceSettings.reExecuteInterval }}秒
+            </div>
+            <div v-if="!workspaceSettings.autoRefreshExtensions && !workspaceSettings.autoReExecute">
+              💤 未启用自动功能
+            </div>
+          </div>
+          <div>
+            <el-button @click="showSettings = false">取消</el-button>
+            <el-button type="primary" @click="saveSettings(workspaceSettings)">保存</el-button>
+          </div>
+        </div>
       </template>
+    </el-dialog>
+
+    <!-- 结果弹出显示对话框 -->
+    <el-dialog
+      v-model="resultPopupVisible"
+      :title="getPopupTitle()"
+      width="90%"
+      :fullscreen="false"
+      :close-on-click-modal="false"
+      class="result-popup-dialog"
+      top="5vh"
+    >
+      <div class="popup-result-container">
+        <!-- 弹出窗口工具栏 -->
+        <div class="popup-toolbar">
+          <div class="popup-toolbar-left">
+            <el-tag :type="getResultStatusType()" size="small">
+              {{ getResultStatusText() }}
+            </el-tag>
+            <el-tag v-if="resultMeta?.generated_at" type="info" size="small">
+              {{ resultMeta.generated_at }}
+            </el-tag>
+          </div>
+          <div class="popup-toolbar-right">
+            <el-button-group size="small">
+              <el-button @click="copyResult" v-if="canCopyResult">
+                <el-icon><CopyDocument /></el-icon>
+                复制
+              </el-button>
+              <el-button @click="downloadResult" v-if="canDownloadResult">
+                <el-icon><Download /></el-icon>
+                下载
+              </el-button>
+              <el-button @click="toggleResultPopup">
+                <el-icon><Close /></el-icon>
+                关闭
+              </el-button>
+            </el-button-group>
+          </div>
+        </div>
+
+        <!-- 弹出窗口内容 -->
+        <div class="popup-content">
+          <!-- HTML结果 -->
+          <div v-if="resultType === 'html'" class="popup-html-result">
+            <div v-html="resultData" class="popup-html-content"></div>
+          </div>
+
+          <!-- 表格结果 -->
+          <div v-else-if="resultType === 'table'" class="popup-table-result">
+            <div class="popup-table-header">
+              <div class="table-meta">
+                <el-tag type="info" size="small">{{ getTableRowCount() }} 条记录</el-tag>
+                <el-tag v-if="resultMeta?.查询时间" type="success" size="small">
+                  {{ resultMeta.查询时间 }}
+                </el-tag>
+              </div>
+              <div class="table-actions">
+                <el-button-group size="small">
+                  <el-button @click="exportTableData('csv')">
+                    <el-icon><Document /></el-icon>
+                    CSV
+                  </el-button>
+                  <el-button @click="exportTableData('json')">
+                    <el-icon><Files /></el-icon>
+                    JSON
+                  </el-button>
+                </el-button-group>
+              </div>
+            </div>
+            <el-table
+              :data="paginatedTableData"
+              border
+              stripe
+              height="60vh"
+              @sort-change="handleTableSort"
+            >
+              <el-table-column
+                v-for="column in tableColumns"
+                :key="column.prop"
+                :prop="column.prop"
+                :label="column.label"
+                :sortable="column.sortable"
+                :width="column.width"
+                show-overflow-tooltip
+              >
+                <template #default="scope">
+                  <span v-if="column.type === 'number'" class="number-cell">
+                    {{ formatNumber(scope.row[column.prop]) }}
+                  </span>
+                  <el-tag
+                    v-else-if="column.type === 'status'"
+                    :type="getStatusType(scope.row[column.prop])"
+                    size="small"
+                  >
+                    {{ scope.row[column.prop] }}
+                  </el-tag>
+                  <span v-else>{{ scope.row[column.prop] }}</span>
+                </template>
+              </el-table-column>
+            </el-table>
+
+            <!-- 分页器 -->
+            <div v-if="getTableRowCount() > tablePageSize" class="popup-table-pagination">
+              <el-pagination
+                v-model:current-page="tableCurrentPage"
+                v-model:page-size="tablePageSize"
+                :page-sizes="[10, 20, 50, 100]"
+                :total="getTableRowCount()"
+                layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleTableSizeChange"
+                @current-change="handleTableCurrentChange"
+              />
+            </div>
+          </div>
+
+          <!-- 图表结果 -->
+          <div v-else-if="resultType === 'chart'" class="popup-chart-result">
+            <div class="popup-chart-container">
+              <canvas ref="popupChartCanvas" style="width: 100%; height: 60vh;"></canvas>
+              <div v-if="chartLoading" class="chart-loading">
+                <el-icon class="loading-icon"><Loading /></el-icon>
+                <p>图表渲染中...</p>
+              </div>
+              <div v-if="chartError" class="chart-error">
+                <el-icon class="error-icon"><Warning /></el-icon>
+                <p>{{ chartError }}</p>
+                <el-button @click="retryPopupChart" size="small">重试</el-button>
+              </div>
+            </div>
+
+            <!-- 图表操作按钮 -->
+            <div class="popup-chart-actions">
+              <el-button-group size="small">
+                <el-button @click="exportPopupChart('png')">
+                  <el-icon><Picture /></el-icon>
+                  导出PNG
+                </el-button>
+                <el-button @click="showChartData = !showChartData">
+                  <el-icon><Grid /></el-icon>
+                  {{ showChartData ? '隐藏数据' : '显示数据' }}
+                </el-button>
+              </el-button-group>
+            </div>
+
+            <!-- 图表数据表格 -->
+            <div v-if="showChartData && chartTableData.length > 0" class="popup-chart-data">
+              <el-table :data="chartTableData" border stripe max-height="300">
+                <el-table-column
+                  v-for="column in chartTableColumns"
+                  :key="column.prop"
+                  :prop="column.prop"
+                  :label="column.label"
+                  show-overflow-tooltip
+                />
+              </el-table>
+            </div>
+          </div>
+
+          <!-- 文本结果 -->
+          <div v-else-if="resultType === 'text'" class="popup-text-result">
+            <div class="popup-text-header">
+              <div class="text-stats">
+                <el-tag type="info" size="small">
+                  {{ resultData?.length || 0 }} 字符
+                </el-tag>
+                <el-tag type="success" size="small">
+                  {{ (resultData || '').split('\n').length }} 行
+                </el-tag>
+              </div>
+              <div class="text-actions">
+                <el-button @click="copyText" size="small">
+                  <el-icon><CopyDocument /></el-icon>
+                  复制全文
+                </el-button>
+              </div>
+            </div>
+            <div class="popup-text-content">
+              <pre>{{ resultData }}</pre>
+            </div>
+          </div>
+
+          <!-- 图片结果 -->
+          <div v-else-if="resultType === 'image'" class="popup-image-result">
+            <div class="popup-image-container">
+              <img :src="resultData" alt="扩展生成的图片" class="popup-image" />
+            </div>
+          </div>
+
+          <!-- 文件结果 -->
+          <div v-else-if="resultType === 'file'" class="popup-file-result">
+            <div class="popup-file-info">
+              <div class="file-icon">
+                <el-icon size="48"><Files /></el-icon>
+              </div>
+              <div class="file-details">
+                <h3>{{ resultData?.filename || '下载文件' }}</h3>
+                <p>类型: {{ resultData?.content_type || '未知类型' }}</p>
+                <p v-if="resultData?.size">大小: {{ formatFileSize(resultData.size) }}</p>
+              </div>
+              <div class="file-actions">
+                <el-button type="primary" @click="handleFileDownload" size="large">
+                  <el-icon><Download /></el-icon>
+                  下载文件
+                </el-button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 未知类型 -->
+          <div v-else class="popup-unknown-result">
+            <el-alert
+              type="warning"
+              title="未知的结果类型"
+              :description="`类型: ${resultType}`"
+              show-icon
+            />
+            <pre class="popup-raw-result">{{ resultData }}</pre>
+          </div>
+        </div>
+      </div>
     </el-dialog>
   </div>
 </template>
@@ -455,7 +730,8 @@ import {
   Picture,
   Files,
   TrendCharts,
-  Memo
+  Memo,
+  Timer
 } from '@element-plus/icons-vue'
 
 // 导入结果显示组件（暂时注释掉不存在的组件）
@@ -505,6 +781,7 @@ export default {
     const executing = ref(false)
     const executionProgress = ref(0)
     const executionText = ref('')
+    const isAutoExecuting = ref(false)
     
     // 表单相关
     const queryFormHtml = ref('')
@@ -529,18 +806,31 @@ export default {
     const tablePageSize = ref(20)
     const tableSortConfig = ref({ prop: '', order: '' })
     const tableFullscreen = ref(false)
+
+    // 结果弹出显示
+    const resultPopupVisible = ref(false)
+
+    // 定时器管理
+    const extensionRefreshTimer = ref(null)
+    const autoExecuteTimer = ref(null)
     
     // 设置相关
     const showSettings = ref(false)
     const workspaceSettings = reactive({
-      autoRefresh: false,
-      refreshInterval: 30,
+      // 刷新设置
+      autoRefreshExtensions: false,
+      extensionRefreshInterval: 60,
+      autoReExecute: false,
+      reExecuteInterval: 30,
+      // 显示设置
       showExecutionTime: true,
       enableNotifications: true,
       defaultResultView: 'auto',
       themeMode: 'light',
       sidebarWidth: 320,
       resultAreaHeight: 600,
+      defaultResultDisplay: 'auto',
+      // 性能设置
       cacheResults: true,
       cacheTimeout: 5,
       maxConcurrency: 3,
@@ -824,6 +1114,9 @@ export default {
             renderChart()
           })
         }
+
+        // 根据设置决定是否自动弹出显示
+        checkAutoPopup()
       } else {
         // 兼容旧格式或其他数据 - 根据扩展的render_type来判断如何显示
         const renderType = selectedExtension.value?.render_type || 'text'
@@ -866,9 +1159,16 @@ export default {
         chartInstance.value.destroy()
         chartInstance.value = null
       }
+      if (popupChartInstance.value) {
+        popupChartInstance.value.destroy()
+        popupChartInstance.value = null
+      }
       chartError.value = ''
       showChartData.value = false
       chartFullscreen.value = false
+
+      // 关闭弹出窗口
+      resultPopupVisible.value = false
     }
 
     const getExtensionIcon = (renderType) => {
@@ -1058,6 +1358,97 @@ export default {
       tableFullscreen.value = !tableFullscreen.value
     }
 
+    // 结果弹出显示方法
+    const toggleResultPopup = () => {
+      resultPopupVisible.value = !resultPopupVisible.value
+
+      // 如果是图表类型，在弹出窗口中重新渲染
+      if (resultPopupVisible.value && resultType.value === 'chart') {
+        nextTick(() => {
+          renderPopupChart()
+        })
+      }
+    }
+
+    const getPopupTitle = () => {
+      const typeMap = {
+        'html': 'HTML页面',
+        'table': '数据表格',
+        'text': '文本内容',
+        'chart': '交互图表',
+        'file': '文件下载',
+        'image': '图片查看'
+      }
+      return typeMap[resultType.value] || '扩展结果'
+    }
+    
+    const formatFileSize = (bytes) => {
+      if (!bytes || bytes === 0) return '0 B'
+      const k = 1024
+      const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
+      const i = Math.floor(Math.log(bytes) / Math.log(k))
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+    }
+
+    const checkAutoPopup = () => {
+      const displayMode = workspaceSettings.defaultResultDisplay
+
+      if (displayMode === 'popup') {
+        // 总是弹出显示
+        setTimeout(() => {
+          resultPopupVisible.value = true
+          if (resultType.value === 'chart') {
+            nextTick(() => renderPopupChart())
+          }
+        }, 500)
+      } else if (displayMode === 'auto') {
+        // 自动判断是否需要弹出
+        const shouldPopup = shouldAutoPopup()
+        if (shouldPopup) {
+          setTimeout(() => {
+            resultPopupVisible.value = true
+            if (resultType.value === 'chart') {
+              nextTick(() => renderPopupChart())
+            }
+          }, 500)
+        }
+      }
+      // inline模式不自动弹出
+    }
+
+    const shouldAutoPopup = () => {
+      if (!resultData.value) return false
+
+      // 根据不同类型判断是否需要弹出
+      switch (resultType.value) {
+        case 'table':
+          // 表格数据超过20行时弹出
+          return Array.isArray(resultData.value) && resultData.value.length > 20
+
+        case 'text':
+          // 文本超过1000字符或20行时弹出
+          const text = resultData.value || ''
+          return text.length > 1000 || text.split('\n').length > 20
+
+        case 'chart':
+          // 图表总是建议弹出以获得更好的交互体验
+          return true
+
+        case 'html':
+          // HTML内容较长时弹出
+          const html = resultData.value || ''
+          return html.length > 2000
+
+        case 'image':
+        case 'file':
+          // 图片和文件建议弹出以获得更好的查看体验
+          return true
+
+        default:
+          return false
+      }
+    }
+
     // 图表渲染函数
     const renderChart = async () => {
       if (!chartCanvas.value || !resultData.value) return
@@ -1157,33 +1548,223 @@ export default {
       })
     }
 
+    // 弹出窗口图表相关
+    const popupChartCanvas = ref(null)
+    const popupChartInstance = ref(null)
+
+    const renderPopupChart = async () => {
+      if (!popupChartCanvas.value || !resultData.value) return
+
+      try {
+        chartLoading.value = true
+        chartError.value = ''
+
+        // 动态导入Chart.js
+        const { Chart, registerables } = await import('chart.js')
+        Chart.register(...registerables)
+
+        // 销毁现有图表实例
+        if (popupChartInstance.value) {
+          popupChartInstance.value.destroy()
+          popupChartInstance.value = null
+        }
+
+        // 获取图表配置
+        const chartType = resultData.value.chart_type || 'line'
+        const chartData = resultData.value.chart_data || {}
+        const chartOptions = resultData.value.options || {}
+
+        // 创建新的图表实例
+        popupChartInstance.value = new Chart(popupChartCanvas.value, {
+          type: chartType,
+          data: chartData,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            ...chartOptions,
+            plugins: {
+              ...chartOptions.plugins,
+              legend: {
+                display: true,
+                position: 'top',
+                ...chartOptions.plugins?.legend
+              },
+              tooltip: {
+                enabled: true,
+                ...chartOptions.plugins?.tooltip
+              }
+            },
+            scales: {
+              ...chartOptions.scales,
+              y: {
+                beginAtZero: true,
+                ...chartOptions.scales?.y
+              }
+            }
+          }
+        })
+
+        chartLoading.value = false
+        console.log('弹出窗口图表渲染成功')
+
+      } catch (error) {
+        chartLoading.value = false
+        chartError.value = '图表渲染失败: ' + error.message
+        console.error('弹出窗口图表渲染失败:', error)
+      }
+    }
+
+    const retryPopupChart = () => {
+      renderPopupChart()
+    }
+
+    const exportPopupChart = (format) => {
+      if (!popupChartInstance.value) {
+        ElMessage.error('图表未准备就绪')
+        return
+      }
+
+      try {
+        if (format === 'png') {
+          const url = popupChartInstance.value.toBase64Image()
+          const link = document.createElement('a')
+          link.href = url
+          link.download = `chart-popup-${Date.now()}.png`
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          ElMessage.success('图表已导出为PNG')
+        }
+      } catch (error) {
+        ElMessage.error('导出失败: ' + error.message)
+      }
+    }
+
     const saveSettings = (newSettings) => {
       Object.assign(workspaceSettings, newSettings)
       saveSettingsToStorage()
+
+      // 重新启动定时器以应用新设置
+      startTimers()
+
       ElMessage.success('设置已保存')
       showSettings.value = false
+    }
+
+    // 启动定时器
+    const startTimers = () => {
+      // 清除现有定时器
+      stopTimers()
+
+      // 设置自动刷新扩展列表
+      if (workspaceSettings.autoRefreshExtensions) {
+        extensionRefreshTimer.value = setInterval(() => {
+          refreshExtensions()
+          console.log('自动刷新扩展列表')
+        }, workspaceSettings.extensionRefreshInterval * 1000)
+      }
+
+      // 设置自动重新执行
+      if (workspaceSettings.autoReExecute) {
+        autoExecuteTimer.value = setInterval(() => {
+          autoReExecuteExtension()
+        }, workspaceSettings.reExecuteInterval * 1000)
+      }
+    }
+
+    // 停止定时器
+    const stopTimers = () => {
+      if (extensionRefreshTimer.value) {
+        clearInterval(extensionRefreshTimer.value)
+        extensionRefreshTimer.value = null
+      }
+      if (autoExecuteTimer.value) {
+        clearInterval(autoExecuteTimer.value)
+        autoExecuteTimer.value = null
+      }
     }
 
     // 生命周期
     onMounted(() => {
       loadSettings()
       refreshExtensions()
-
-      // 设置自动刷新
-      if (workspaceSettings.autoRefresh) {
-        setInterval(() => {
-          refreshExtensions()
-        }, workspaceSettings.refreshInterval * 1000)
-      }
+      startTimers()
     })
 
     onUnmounted(() => {
+      // 清理定时器
+      stopTimers()
+
       // 清理图表实例
       if (chartInstance.value) {
         chartInstance.value.destroy()
         chartInstance.value = null
       }
+      if (popupChartInstance.value) {
+        popupChartInstance.value.destroy()
+        popupChartInstance.value = null
+      }
     })
+
+    // 自动重新执行扩展
+    const autoReExecuteExtension = async () => {
+      // 只有在有选中扩展且没有正在执行时才自动执行
+      if (!selectedExtension.value || executing.value) {
+        return
+      }
+
+      try {
+        console.log(`自动重新执行扩展: ${selectedExtension.value.name}`)
+
+        // 如果扩展有查询表单，使用当前表单中的数据
+        let formData = {}
+        if (selectedExtension.value.has_query_form) {
+          formData = collectFormData()
+          console.log('使用当前表单数据进行自动执行:', formData)
+        }
+
+        // 设置自动执行状态
+        isAutoExecuting.value = true
+        executing.value = true
+        executionProgress.value = 0
+        executionError.value = ''
+
+        // 模拟进度
+        const progressInterval = setInterval(() => {
+          if (executionProgress.value < 90) {
+            executionProgress.value += Math.random() * 20
+          }
+        }, 200)
+
+        executionText.value = '🔄 自动执行中...'
+
+        // 执行查询
+        const response = await executeExtensionQuery(selectedExtension.value.id, formData)
+
+        clearInterval(progressInterval)
+        executionProgress.value = 100
+        executionText.value = '✅ 自动执行完成'
+
+        // 处理结果
+        handleExecutionResult(response)
+
+        if (workspaceSettings.enableNotifications) {
+          ElMessage.success(`${selectedExtension.value.name} 自动执行完成`)
+        }
+
+      } catch (error) {
+        console.error('自动执行失败:', error)
+        executionError.value = error.message || '自动执行失败'
+        executionText.value = '❌ 自动执行失败'
+
+        if (workspaceSettings.enableNotifications) {
+          ElMessage.warning(`${selectedExtension.value.name} 自动执行失败: ${error.message}`)
+        }
+      } finally {
+        executing.value = false
+        isAutoExecuting.value = false
+      }
+    }
 
     return {
       extensions,
@@ -1193,6 +1774,7 @@ export default {
       executing,
       executionProgress,
       executionText,
+      isAutoExecuting,
       queryFormHtml,
       formError,
       resultType,
@@ -1211,8 +1793,6 @@ export default {
       getExtensionIcon,
       getTypeLabel,
       getTypeColor,
-      getResultStatusType,
-      getResultStatusText,
       copyResult,
       downloadResult,
       handleTableExport,
@@ -1252,7 +1832,23 @@ export default {
       formatNumber,
       getStatusType,
       exportTableData,
-      toggleTableFullscreen
+      toggleTableFullscreen,
+      // 弹出显示相关
+      resultPopupVisible,
+      toggleResultPopup,
+      getPopupTitle,
+      getResultStatusType,
+      getResultStatusText,
+      formatFileSize,
+      popupChartCanvas,
+      renderPopupChart,
+      retryPopupChart,
+      exportPopupChart,
+      checkAutoPopup,
+      shouldAutoPopup,
+      autoReExecuteExtension,
+      startTimers,
+      stopTimers
     }
   }
 }
@@ -1563,6 +2159,15 @@ export default {
   font-size: 16px;
   font-weight: 600;
   color: #2c3e50;
+  flex-wrap: wrap;
+}
+
+.result-title .el-tag {
+  margin-left: 8px;
+}
+
+.result-title .el-tag .el-icon {
+  margin-right: 4px;
 }
 
 .result-content {
@@ -1916,6 +2521,261 @@ export default {
 .chart-result.fullscreen .chart-container {
   height: calc(100vh - 200px);
   margin: 0;
+}
+
+/* 弹出显示对话框样式 */
+.result-popup-dialog {
+  --el-dialog-padding-primary: 0;
+  ;
+}
+
+.result-popup-dialog :deep(.el-dialog__body) {
+  padding: 0;
+  max-height: 85vh;
+  overflow: hidden;
+}
+
+.popup-result-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.popup-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.popup-toolbar-left {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+
+.popup-toolbar-right {
+  display: flex;
+  gap: 8px;
+}
+
+.popup-content {
+  top: 4vh;
+  flex: 1;
+  overflow: auto;
+  background: #f8f9fa;
+}
+
+/* 弹出窗口HTML结果 */
+.popup-html-result {
+  padding: 24px;
+  overflow: auto;
+}
+
+.popup-html-content {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  min-height: 100%;
+}
+
+/* 弹出窗口表格结果 */
+.popup-table-result {
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.popup-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.popup-table-pagination {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+  background: white;
+  border-radius: 0 0 6px 6px;
+  margin-top: 16px;
+}
+
+/* 弹出窗口图表结果 */
+.popup-chart-result {
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.popup-chart-container {
+  position: relative;
+  flex: 1;
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.popup-chart-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.popup-chart-data {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+/* 弹出窗口文本结果 */
+.popup-text-result {
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.popup-text-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.popup-text-content {
+  flex: 1;
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  overflow: auto;
+}
+
+.popup-text-content pre {
+  margin: 0;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* 弹出窗口图片结果 */
+.popup-image-result {
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popup-image-container {
+  max-width: 100%;
+  max-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popup-image {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 弹出窗口文件结果 */
+.popup-file-result {
+  padding: 40px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popup-file-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+}
+
+.popup-file-info .file-icon {
+  color: #409eff;
+  margin-bottom: 20px;
+}
+
+.popup-file-info h3 {
+  margin: 0 0 16px 0;
+  color: #2c3e50;
+}
+
+.popup-file-info p {
+  margin: 8px 0;
+  color: #6c757d;
+}
+
+.popup-file-info .file-actions {
+  margin-top: 24px;
+}
+
+/* 弹出窗口未知结果 */
+.popup-unknown-result {
+  padding: 20px;
+  height: 100%;
+}
+
+.popup-raw-result {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 16px;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 12px;
+  overflow: auto;
+  max-height: 60vh;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .result-popup-dialog {
+    width: 95% !important;
+  }
+
+  .popup-toolbar {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .popup-table-header,
+  .popup-text-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
 }
 </style>
 

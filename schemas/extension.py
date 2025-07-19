@@ -32,7 +32,7 @@ class ExtensionUpdate(BaseModel):
     config: Optional[Dict] = None
     show_in_home: Optional[bool] = None
     render_type: Optional[str] = None
-
+    execution_mode: Optional[str] = None
 
 class ExtensionInDBBase(ExtensionBase, BaseSchema):
     """数据库中的扩展模型"""

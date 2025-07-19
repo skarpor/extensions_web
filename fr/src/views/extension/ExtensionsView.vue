@@ -271,7 +271,7 @@
               </el-col>
               <el-col :span="12">
             <el-form-item label="执行模式" prop="executionMode">
-              <el-select v-model="installForm.executionMode" placeholder="选择执行模式" style="width: 100%">
+              <el-select v-model="configValues.executionMode" placeholder="选择执行模式" style="width: 100%">
                 <el-option label="手动" value="manual" />
                 <el-option label="自动" value="auto" />
               </el-select>
@@ -785,6 +785,7 @@ export default {
           return_type: extensionData.render_type || 'html',
           showinindex: extensionData.show_in_home || false,
           enabled: extensionData.enabled || false,
+          executionMode: extensionData.execution_mode || 'manual',
           config: {} // 初始化config对象
         }
         
@@ -851,7 +852,8 @@ export default {
           endpoint: this.configValues.endpoint,
           return_type: this.configValues.return_type,
           showinindex: this.configValues.showinindex,
-          enabled: this.configValues.enabled
+          enabled: this.configValues.enabled,
+          execution_mode:this.configValues.executionMode,
         }
 
         // 添加扩展配置数据

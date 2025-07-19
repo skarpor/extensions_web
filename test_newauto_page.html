@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>newauto.vue 页面功能测试</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f7fa;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+        }
+        .feature-section {
+            margin-bottom: 40px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .feature-title {
+            color: #2c3e50;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .feature-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .feature-card {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .feature-card h4 {
+            margin: 0 0 12px 0;
+            color: #495057;
+        }
+        .feature-card p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 16px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+        .highlight {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .highlight h3 {
+            margin: 0 0 12px 0;
+        }
+        .highlight p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .comparison-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+        .comparison-table tr:hover {
+            background: #f8f9fa;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🚀 newauto.vue 页面功能测试</h1>
+        <p>测试和验证newauto.vue页面的新功能和改进。</p>
+
+        <div class="highlight">
+            <h3>✨ 主要改进</h3>
+            <p>响应式返回值类型适配 + 自动执行逻辑优化 + 定时功能 + 结果显示改进</p>
+        </div>
+
+        <!-- 功能改进概览 -->
+        <div class="feature-section">
+            <div class="feature-title">
+                <div class="feature-icon">📊</div>
+                <h2>功能改进概览</h2>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🎯 智能结果识别</h4>
+                    <p>自动识别返回值类型（HTML、表格、文本、图表、文件、图片），提供对应的显示方式。</p>
+                </div>
+                <div class="feature-card">
+                    <h4>⏰ 定时器控制</h4>
+                    <p>右上角添加定时器控制按钮，支持启动/暂停自动刷新，可配置刷新间隔。</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📱 自适应显示</h4>
+                    <p>结果内容自适应放大，支持大数据量显示，提供详情弹窗查看。</p>
+                </div>
+                <div class="feature-card">
+                    <h4>⚙️ 自动执行优化</h4>
+                    <p>自动执行使用配置数据而非查询表单，适合监控类扩展的自动化需求。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 返回值类型适配 -->
+        <div class="feature-section">
+            <div class="feature-title">
+                <div class="feature-icon">🔄</div>
+                <h2>返回值类型适配</h2>
+            </div>
+            
+            <h3>支持的返回值类型</h3>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>类型</th>
+                        <th>识别方式</th>
+                        <th>预览功能</th>
+                        <th>详情功能</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>HTML</td>
+                        <td>包含HTML标签的字符串</td>
+                        <td>渲染HTML内容</td>
+                        <td>完整HTML显示</td>
+                    </tr>
+                    <tr>
+                        <td>Table</td>
+                        <td>数组格式数据</td>
+                        <td>前3行预览 + 统计信息</td>
+                        <td>完整表格 + 排序 + 导出</td>
+                    </tr>
+                    <tr>
+                        <td>Text</td>
+                        <td>纯文本字符串</td>
+                        <td>前200字符预览</td>
+                        <td>完整文本 + 统计 + 复制</td>
+                    </tr>
+                    <tr>
+                        <td>Chart</td>
+                        <td>包含chart_type或chart_data</td>
+                        <td>图表类型标识</td>
+                        <td>Chart.js渲染 + 交互 + 导出</td>
+                    </tr>
+                    <tr>
+                        <td>Image</td>
+                        <td>图片URL或base64</td>
+                        <td>缩略图显示</td>
+                        <td>全尺寸图片 + 下载</td>
+                    </tr>
+                    <tr>
+                        <td>File</td>
+                        <td>包含filename或file_path</td>
+                        <td>文件信息摘要</td>
+                        <td>文件详情 + 下载</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>智能识别逻辑</h3>
+            <div class="code-block">
+const getResultType = (result) => {
+  if (result && typeof result === 'object' && result.type) {
+    return result.type  // 标准格式
+  }
+  
+  // 根据数据结构推断类型
+  if (typeof result === 'string') {
+    if (result.includes('<') && result.includes('>')) {
+      return 'html'
+    }
+    return 'text'
+  }
+  
+  if (Array.isArray(result)) {
+    return 'table'
+  }
+  
+  if (result && typeof result === 'object') {
+    if (result.chart_type || result.chart_data) {
+      return 'chart'
+    }
+    if (result.filename || result.file_path) {
+      return 'file'
+    }
+  }
+  
+  return 'unknown'
+}
+            </div>
+        </div>
+
+        <!-- 定时器功能 -->
+        <div class="feature-section">
+            <div class="feature-title">
+                <div class="feature-icon">⏰</div>
+                <h2>定时器功能</h2>
+            </div>
+            
+            <h3>右上角控制面板</h3>
+            <div class="code-block">
+<!-- 定时器状态显示 -->
+&lt;el-tag v-if="autoRefreshEnabled" type="success"&gt;
+  &lt;el-icon&gt;&lt;Timer /&gt;&lt;/el-icon&gt;
+  {{ autoRefreshInterval }}s
+&lt;/el-tag&gt;
+&lt;el-tag v-else type="info"&gt;
+  &lt;el-icon&gt;&lt;VideoPause /&gt;&lt;/el-icon&gt;
+  已暂停
+&lt;/el-tag&gt;
+
+<!-- 控制按钮 -->
+&lt;el-button-group&gt;
+  &lt;el-button @click="toggleAutoRefresh"&gt;
+    启动/暂停
+  &lt;/el-button&gt;
+  &lt;el-button @click="showTimerSettings = true"&gt;
+    设置
+  &lt;/el-button&gt;
+&lt;/el-button-group&gt;
+            </div>
+
+            <h3>设置对话框</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>启用自动刷新</h4>
+                    <p>开关控制是否启用自动刷新功能</p>
+                </div>
+                <div class="feature-card">
+                    <h4>刷新间隔</h4>
+                    <p>5-300秒可调，默认30秒</p>
+                </div>
+                <div class="feature-card">
+                    <h4>刷新提醒</h4>
+                    <p>可选择是否显示刷新完成通知</p>
+                </div>
+                <div class="feature-card">
+                    <h4>设置持久化</h4>
+                    <p>设置保存到localStorage，重启后保持</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 自动执行逻辑 -->
+        <div class="feature-section">
+            <div class="feature-title">
+                <div class="feature-icon">⚙️</div>
+                <h2>自动执行逻辑优化</h2>
+            </div>
+            
+            <h3>执行方式对比</h3>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>执行类型</th>
+                        <th>数据来源</th>
+                        <th>适用场景</th>
+                        <th>优势</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>手动执行</td>
+                        <td>用户填写的查询表单</td>
+                        <td>交互式查询</td>
+                        <td>灵活性高，参数可变</td>
+                    </tr>
+                    <tr>
+                        <td>自动执行</td>
+                        <td>数据库中的配置数据</td>
+                        <td>监控类扩展</td>
+                        <td>无需用户干预，稳定可靠</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>自动执行实现</h3>
+            <div class="code-block">
+// 自动执行时使用配置数据，不获取查询表单
+const executeAutoExtension = async (extension) => {
+  try {
+    // 直接使用扩展的配置数据执行
+    const response = await executeExtensionQuery(extension.id, {})
+    
+    // 更新扩展结果
+    extension.result = response.data
+    extension.lastUpdate = new Date().toISOString()
+    
+  } catch (error) {
+    extension.error = error.message
+  }
+}
+            </div>
+        </div>
+
+        <!-- 结果显示改进 -->
+        <div class="feature-section">
+            <div class="feature-title">
+                <div class="feature-icon">📱</div>
+                <h2>结果显示改进</h2>
+            </div>
+            
+            <h3>自适应显示特性</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>卡片预览</h4>
+                    <p>在扩展卡片中显示结果预览，支持点击查看详情</p>
+                </div>
+                <div class="feature-card">
+                    <h4>详情弹窗</h4>
+                    <p>90%屏幕宽度的弹窗，支持全屏切换</p>
+                </div>
+                <div class="feature-card">
+                    <h4>数据导出</h4>
+                    <p>表格支持CSV/JSON导出，图表支持PNG导出</p>
+                </div>
+                <div class="feature-card">
+                    <h4>响应式设计</h4>
+                    <p>完美适配桌面和移动设备</p>
+                </div>
+            </div>
+
+            <h3>大数据量处理</h3>
+            <div class="code-block">
+// 表格预览：只显示前3行
+const getTablePreview = (result) => {
+  return getTableData(result).slice(0, 3)
+}
+
+// 文本预览：只显示前200字符
+const getTextPreview = (result) => {
+  const text = getResultData(result)
+  return text.length > 200 ? text.substring(0, 200) + '...' : text
+}
+
+// 详情页面：完整数据 + 分页 + 搜索
+            </div>
+        </div>
+
+        <!-- 技术实现 -->
+        <div class="feature-section">
+            <div class="feature-title">
+                <div class="feature-icon">🔧</div>
+                <h2>技术实现要点</h2>
+            </div>
+            
+            <h3>核心改进</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>图标修复</h4>
+                    <p>修复了Pause图标不存在的问题，使用VideoPause替代</p>
+                </div>
+                <div class="feature-card">
+                    <h4>方法补全</h4>
+                    <p>添加了模板中使用但缺失的方法定义</p>
+                </div>
+                <div class="feature-card">
+                    <h4>生命周期管理</h4>
+                    <p>正确处理定时器的创建和销毁</p>
+                </div>
+                <div class="feature-card">
+                    <h4>错误处理</h4>
+                    <p>完善的错误处理和用户提示</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 使用指南 -->
+        <div class="feature-section">
+            <div class="feature-title">
+                <div class="feature-icon">📖</div>
+                <h2>使用指南</h2>
+            </div>
+            
+            <h3>页面访问</h3>
+            <p>访问 <code>/extension/newauto</code> 路由进入扩展查询中心</p>
+
+            <h3>定时器设置</h3>
+            <ol>
+                <li>点击右上角的设置按钮</li>
+                <li>配置自动刷新间隔（5-300秒）</li>
+                <li>选择是否显示刷新通知</li>
+                <li>保存设置</li>
+            </ol>
+
+            <h3>查看结果详情</h3>
+            <ol>
+                <li>在扩展卡片中点击结果区域</li>
+                <li>或点击"查看详情"按钮</li>
+                <li>在弹窗中查看完整结果</li>
+                <li>使用工具栏功能（导出、复制等）</li>
+            </ol>
+        </div>
+
+        <!-- 总结 -->
+        <div class="highlight">
+            <h3>🎯 改进总结</h3>
+            <p>newauto.vue页面现在具备了完整的响应式返回值类型适配、智能的自动执行逻辑、便捷的定时器控制和优秀的结果显示体验。无论是监控类扩展还是数据分析扩展，都能获得最佳的自动化体验！</p>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; color: #6c757d;">
+            <p>🚀 扩展查询中心 - 让自动化扩展管理更加智能高效！</p>
+        </div>
+    </div>
+</body>
+</html>
