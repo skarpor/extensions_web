@@ -218,11 +218,11 @@ async def get_log_content(
 
 
 @router.get("/stream/{file_name}")
-async def stream_logs(file_name: str,current_user: User = Depends(manage_logs)):
+async def stream_logs(file_name: str):
     """SSE流式传输日志内容"""
     try:
         file_path = validate_log_file(file_name)
-        print(file_path)
+        # print(file_path)
                 # 添加CORS相关头信息
         headers = {
             "Cache-Control": "no-cache",
@@ -242,6 +242,6 @@ async def stream_logs(file_name: str,current_user: User = Depends(manage_logs)):
     except HTTPException:
         raise
     except Exception as e:
-        raise
+        # raise
         logger.error(f"SSE流式传输失败: {file_name}, 错误: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

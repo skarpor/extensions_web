@@ -778,8 +778,8 @@ async def serialize_file(
 
 @router.post("/generate-qrcodes")
 async def generate_qrcodes(
-    session_id: str = Body(...),
-    chunk_size: int = Body(1800),
+    session_id: str = Form(...),
+    chunk_size: int = Form(1800),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -1454,8 +1454,8 @@ async def get_qr_files_by_session_id(
     """
     try:
         # 检查权限
-        if not current_user.is_superuser:
-            raise HTTPException(status_code=403, detail="权限不足，仅管理员可执行此操作")
+        # if not current_user.is_superuser:
+        #     raise HTTPException(status_code=403, detail="权限不足，仅管理员可执行此操作")
         
         # 查询二维码文件
         qr_dir = os.path.join(QR_DIR, session_id)

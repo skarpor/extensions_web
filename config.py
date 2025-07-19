@@ -98,6 +98,7 @@ class Settings(BaseSettings):
         case_sensitive = True
         env_file = ".env"
 
+    DEFAULT_ROLE:str = "普通用户"
 # 获取配置信息，若存在默认配置文件，则直接读取，
 # 否则，删除数据库，重新创建默认配置，参考系统设置接口
 # 创建设置实例

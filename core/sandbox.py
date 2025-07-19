@@ -91,10 +91,11 @@ async def execute_query_in_sandbox(module: Any, params: Dict, config: Dict, file
         # 执行查询,根据参数名称注入所需的参数
         # 获取execute_query方法的参数
         sig = inspect.signature(module.execute_query)
+        # print(params)
         # 根据参数名称注入所需的参数
         for param in sig.parameters.values():
             if param.name == "params":
-                parameters.append(params)
+                parameters.append(params.get("query"))
             elif param.name == "config":
                 parameters.append(config)
             elif param.name == "db_manager":

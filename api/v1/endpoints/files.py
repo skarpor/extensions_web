@@ -17,6 +17,7 @@ from db.session import get_db
 from schemas.file import File as FileSchema
 from models.user import User as UserModel
 from core.logger import get_logger
+from urllib.parse import quote
 
 logger = get_logger(__name__)
 
@@ -93,8 +94,10 @@ async def download_file(
     def file_stream():
         with open(file_path, "rb") as f:
             yield from f
+    # 对文件名进行URL编码
+    encoded_filename = quote(file.filename)
     # 返回文件流
-    return StreamingResponse(file_stream(), media_type='application/octet-stream',headers={"Content-Disposition": f"attachment; filename={file.filename}"})
+    return StreamingResponse(file_stream(), media_type='application/octet-stream',headers={"Content-Disposition": f"attachment; filename={encoded_filename}"})
 
 @router.delete("/file/{file_id}")
 async def delete_file(

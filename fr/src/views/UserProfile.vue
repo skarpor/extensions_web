@@ -15,8 +15,8 @@
                   v-if="userForm.avatar"
                   :src="userForm.avatar"
                   alt="用户头像"
-                  max-width="120"
-                  max-height="120"
+                  width="120"
+                  height="120"
                   class="avatar-preview"
                   cover
                 ></v-img>
@@ -203,7 +203,7 @@
 </template>
 
 <script>
-import { fetchUserInfo, updateUserInfo, updatePassword } from '@/api/auth'
+import { fetchUserInfo, updateUserInfo, updatePassword, uploadAvatarApi } from '@/api/auth'
 import Toast from '@/utils/toast'
 
 export default {
@@ -215,8 +215,10 @@ export default {
         username: '',
         email: '',
         nickname: '',
+        avatar: '',
       },
       originalUserForm: {},
+      avatarFile: null, // 保存选择的头像文件
       loading: false,
       valid: true,
       emailRules: [
@@ -238,7 +240,13 @@ export default {
   },
   computed: {
     hasChanges() {
-      return JSON.stringify(this.userForm) !== JSON.stringify(this.originalUserForm)
+      // 检查表单数据是否有变化
+      const formChanged = JSON.stringify(this.userForm) !== JSON.stringify(this.originalUserForm)
+
+      // 检查是否有新的头像文件
+      const avatarFileChanged = this.avatarFile !== null
+
+      return formChanged || avatarFileChanged
     },
   },
   async created() {
@@ -254,12 +262,55 @@ export default {
       const file = event.target.files[0]
       if (!file) return
 
-      // 预览图片（临时URL）
-      this.userForm.avatar = URL.createObjectURL(file)
-      //设置预览图片大小，width:100px,height:100px
+      // 验证文件类型
+      if (!file.type.startsWith('image/')) {
+        Toast.error('请选择图片文件')
+        return
+      }
 
-      // 实际处理上传逻辑
-      // this.uploadAvatar(file);
+      // 验证文件大小（限制为5MB）
+      if (file.size > 10 * 1024 * 1024) {
+        Toast.error('图片大小不能超过10MB')
+        return
+      }
+
+      // 保存文件对象，用于后续上传
+      this.avatarFile = file
+
+      // 显示预览图片
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        this.userForm.avatar = e.target.result
+        console.log('头像预览已更新')
+      }
+      reader.readAsDataURL(file)
+    },
+
+    async uploadAvatar(file) {
+      try {
+        this.loading = true
+
+        // 创建FormData对象
+        const formData = new FormData()
+        formData.append('avatar', file)
+
+        // 调用头像上传API
+        const response = await uploadAvatarApi(formData)
+
+        // 更新用户头像URL
+        this.userForm.avatar = response.avatar_url
+
+        Toast.success('头像上传成功')
+
+        // 刷新用户资料
+        await this.fetchUserProfile()
+
+      } catch (error) {
+        console.error('头像上传失败:', error)
+        Toast.error('头像上传失败')
+      } finally {
+        this.loading = false
+      }
     },
 
     async fetchUserProfile() {
@@ -273,7 +324,12 @@ export default {
           username: this.userInfo.username,
           email: this.userInfo.email,
           nickname: this.userInfo.nickname || '',
+          avatar: this.userInfo.avatar || '',
         }
+
+        // 调试头像数据
+        console.log('用户头像数据:', this.userInfo.avatar)
+        console.log('表单头像数据:', this.userForm.avatar)
 
         // 保存原始表单数据用于比较
         this.originalUserForm = { ...this.userForm }
@@ -290,14 +346,49 @@ export default {
 
       try {
         this.loading = true
-        await updateUserInfo(this.userForm)
+
+        let avatarUrl = this.userForm.avatar
+
+        // 1. 如果用户选择了新的头像文件，先上传头像
+        if (this.avatarFile) {
+          console.log('检测到新头像文件，开始上传...')
+
+          const formData = new FormData()
+          formData.append('avatar', this.avatarFile)
+
+          try {
+            const uploadResponse = await uploadAvatarApi(formData)
+            avatarUrl = uploadResponse.avatar_url
+            console.log('头像上传成功:', avatarUrl)
+            Toast.success('头像上传成功')
+          } catch (uploadError) {
+            console.error('头像上传失败:', uploadError)
+            Toast.error('头像上传失败，但其他信息将继续保存')
+            // 头像上传失败时，使用原来的头像URL
+            avatarUrl = this.originalUserForm.avatar
+          }
+        }
+
+        // 2. 更新用户信息（包含新的头像URL）
+        const updateData = {
+          username: this.userForm.username,
+          email: this.userForm.email,
+          nickname: this.userForm.nickname,
+          avatar: avatarUrl
+        }
+
+        await updateUserInfo(updateData)
         Toast.success('个人资料更新成功')
 
-        // 更新原始表单数据
-        this.originalUserForm = { ...this.userForm }
+        // 3. 清理临时数据
+        this.avatarFile = null
 
-        // 刷新用户资料
+        // 4. 更新原始表单数据
+        this.originalUserForm = { ...updateData }
+
+        // 5. 刷新用户资料
         await this.fetchUserProfile()
+
       } catch (error) {
         console.error('更新个人资料失败', error)
         Toast.error('更新个人资料失败')
@@ -383,10 +474,13 @@ export default {
 }
 
 .avatar-preview {
+  width: 120px !important;
+  height: 120px !important;
   border-radius: 50%;
   border: 3px solid #eee;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  object-fit: cover;
 }
 
 .avatar-preview:hover {

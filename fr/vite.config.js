@@ -26,7 +26,7 @@ export default defineConfig({
         changeOrigin: true,
         //rewrite: (path) => path.replace(/^\/api/, '') // 可选：去掉 /api 前缀
       },
-      '/static/backend/': {
+      '/static/avatars/': {
         target: 'http://localhost:8000', // 后端地址
         changeOrigin: true,
         //rewrite: (path) => path.replace(/^\/api/, '') // 可选：去掉 /api 前缀

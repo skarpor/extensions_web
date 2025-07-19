@@ -4,7 +4,7 @@
 from datetime import timedelta
 from typing import Any, Dict, List
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status, UploadFile, File
 from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,6 +19,9 @@ from schemas.user import UserCreate, User, LoginResponse, UserUpdate, Role, Role
 from core import auth
 from core.auth import logger
 from core.auth import PermissionChecker, get_password_hash, has_permission
+import os
+import uuid
+from pathlib import Path
 
 router = APIRouter()
 
@@ -250,7 +253,7 @@ async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
             "username": user_data.username,
             "password": user_data.password,
             "nickname": user_data.nickname or user_data.username,
-            # "role": "user",  # 默认角色为普通用户
+            # "role": settings.DEFAULT_ROLE,  # 默认角色为普通用户
             "email": user_data.email,
             "avatar": user_data.avatar
         })
@@ -834,5 +837,71 @@ async def assign_user_roles(
     ).where(DBUser.id == db_user.id)
     result = await db.execute(query)
     return result.scalar_one()
+
+# 头像上传API
+@router.post("/upload-avatar")
+async def upload_avatar(
+    avatar: UploadFile = File(...),
+    current_user: DBUser = Depends(auth.get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    上传用户头像
+
+    Args:
+        avatar: 头像文件
+        current_user: 当前用户
+        db: 数据库会话
+
+    Returns:
+        包含头像URL的响应
+    """
+    try:
+        # 验证文件类型
+        if not avatar.content_type.startswith('image/'):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="只能上传图片文件"
+            )
+
+        # 验证文件大小（5MB限制）
+        if avatar.size > 10 * 1024 * 1024:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="文件大小不能超过10MB"
+            )
+
+        # 创建上传目录
+        upload_dir = Path("static/avatars")
+        upload_dir.mkdir(parents=True, exist_ok=True)
+
+        # 生成唯一文件名
+        file_extension = Path(avatar.filename).suffix
+        unique_filename = f"{uuid.uuid4()}{file_extension}"
+        file_path = upload_dir / unique_filename
+
+        # 保存文件
+        with open(file_path, "wb") as buffer:
+            content = await avatar.read()
+            buffer.write(content)
+
+        # 生成访问URL
+        avatar_url = f"/static/avatars/{unique_filename}"
+
+        logger.info(f"用户 {current_user.username} 上传头像成功: {avatar_url}")
+
+        return {
+            "message": "头像上传成功",
+            "avatar_url": avatar_url
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"头像上传失败: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="头像上传失败"
+        )
 
 # 获取用户列表

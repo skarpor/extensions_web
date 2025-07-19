@@ -100,6 +100,8 @@ class ExtensionManager:
             }
             extension.has_config_form=hasattr(module, "get_config_form")
             extension.has_query_form=hasattr(module, "get_query_form")
+            if hasattr(module, "get_default_config") and extension.config is None:
+                extension.config = module.get_default_config()
             await db.commit()
             # 如果扩展启用，注册API路由
             if extension.enabled:

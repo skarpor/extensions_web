@@ -430,7 +430,7 @@ async def create_user(db: AsyncSession, user_in: Dict[str, Any], assign_default_
     # 为新用户分配默认角色
     if assign_default_role:
         # 查找"普通用户"角色
-        default_role_query = select(DBRole).where(DBRole.name == "普通用户")
+        default_role_query = select(DBRole).where(DBRole.name == settings.DEFAULT_ROLE)
         result = await db.execute(default_role_query)
         default_role = result.scalar_one_or_none()
 
@@ -454,12 +454,29 @@ async def create_user(db: AsyncSession, user_in: Dict[str, Any], assign_default_
 async def update_user(db: AsyncSession, db_obj: User, obj_in: UserCreate) -> User:
     """更新用户"""
     user = db_obj
+
+    # 调试信息
+    logger.info(f"更新用户信息: {user.username}")
+    logger.info(f"输入数据: username={obj_in.username}, nickname={obj_in.nickname}, email={obj_in.email}")
+    logger.info(f"头像字段: hasattr={hasattr(obj_in, 'avatar')}, avatar={getattr(obj_in, 'avatar', 'NOT_FOUND')}")
+
     user.username = obj_in.username
     user.nickname = obj_in.nickname
     user.email = obj_in.email
+
+    # 更新头像字段
+    if hasattr(obj_in, 'avatar') and obj_in.avatar is not None:
+        logger.info(f"更新头像: {obj_in.avatar}")
+        user.avatar = obj_in.avatar
+    else:
+        logger.info("头像字段为空或不存在，不更新头像")
+
     # user.password = get_password_hash(obj_in.password)
     db.add(user)
     await db.commit()
+    await db.refresh(user)
+
+    logger.info(f"用户更新完成，最终头像: {user.avatar}")
     return user
 async def update_password(db: AsyncSession, db_obj: User, new_password: str) -> User:
     """更新用户密码"""

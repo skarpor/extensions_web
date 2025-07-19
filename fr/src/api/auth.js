@@ -4,7 +4,7 @@ import toast from '@/utils/toast'
 // 登录接口
 export const loginApi = async (credentials) => {
   try {
-    const response = await axios.post('/api/auth/login-json', credentials)
+    const response = await axios.post('/api/auth/login', credentials)
     // 如果登录成功，将token存储到localStorage
     if (response.data.access_token) {
       localStorage.setItem('token', response.data.access_token)
@@ -265,5 +265,20 @@ export const assignUserRolesApi = async (data) => {
   } catch (error) {
     console.error('分配用户角色失败:', error.response?.data || error.message)
     throw new Error(error.response?.data?.detail || '分配用户角色失败')
+  }
+}
+
+// 上传用户头像
+export const uploadAvatarApi = async (formData) => {
+  try {
+    const response = await axios.post('/api/auth/upload-avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    return response.data
+  } catch (error) {
+    console.error('头像上传失败:', error.response?.data || error.message)
+    throw new Error(error.response?.data?.detail || '头像上传失败')
   }
 }

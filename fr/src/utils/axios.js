@@ -16,9 +16,9 @@ axios.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`
     }
     // 确保Content-Type正确设置
-    if (!config.headers['Content-Type'] && config.data) {
-      config.headers['Content-Type'] = 'application/json'
-    }
+    // if (!config.headers['Content-Type'] && config.data) {
+    //   config.headers['Content-Type'] = 'application/json'
+    // }
     return config
   },
   function (error) {
