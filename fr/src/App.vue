@@ -4,13 +4,31 @@ import {useUserStore} from '@/stores/user'
 import {storeToRefs} from 'pinia'
 import Toast from '@/utils/toast'
 import 'vue-toastification/dist/index.css'
+import { useRouter } from 'vue-router'
+import { User, ArrowDown, Setting, SwitchButton } from '@element-plus/icons-vue'
 
 // 直接从 store 获取响应式状态
 const userStore = useUserStore()
 const {user, isLoggedIn} = storeToRefs(userStore)
 const {logout, init} = userStore
+const router = useRouter()
 let danmuSocket = ref(null)
 let damu_container = ref(null)
+
+// 处理用户下拉菜单命令
+const handleUserCommand = (command) => {
+  switch (command) {
+    case 'profile':
+      router.push('/profile')
+      break
+    case 'settings':
+      router.push('/settings')
+      break
+    case 'logout':
+      logout()
+      break
+  }
+}
 onMounted(async () => {
   try {
     Toast.info('欢迎访问！')
@@ -140,6 +158,11 @@ function createDanmu(text, color) {
             <i class="fas fa-comments"></i> 聊天
           </RouterLink>
         </li>
+        <li class="nav-item" v-if="isLoggedIn">
+          <RouterLink class="nav-link" to="/email" :class="{ 'active': $route.path === '/email' }">
+            <i class="fas fa-envelope"></i> 邮件发送
+          </RouterLink>
+        </li>
         <li class="nav-item">
           <RouterLink class="nav-link" to="/settings" :class="{ 'active': $route.path === '/settings' }">
             <i class="fas fa-cog"></i> 设置
@@ -160,9 +183,41 @@ function createDanmu(text, color) {
             <i class="fas fa-question-circle"></i> 帮助中心
           </RouterLink>
         </li>
-        <li class="nav-item">
-          <RouterLink v-if="!isLoggedIn" class="nav-link" to="/login">登录</RouterLink>
-          <a v-else class="nav-link" href="javascript:void(0)" @click="logout">退出</a>
+        <li class="nav-item user-info" v-if="isLoggedIn && user">
+          <div class="user-profile">
+            <el-avatar :size="32" :src="user.avatar" class="user-avatar">
+              <el-icon><User /></el-icon>
+            </el-avatar>
+            <div class="user-details">
+              <span class="user-name">{{ user.nickname || user.username }}</span>
+              <span class="user-role" v-if="user.is_superuser">超级管理员</span>
+            </div>
+            <el-dropdown @command="handleUserCommand">
+              <el-icon class="user-menu-icon"><ArrowDown /></el-icon>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="profile">
+                    <el-icon><User /></el-icon>
+                    个人资料
+                  </el-dropdown-item>
+                  <el-dropdown-item command="settings">
+                    <el-icon><Setting /></el-icon>
+                    设置
+                  </el-dropdown-item>
+                  <el-dropdown-item divided command="logout">
+                    <el-icon><SwitchButton /></el-icon>
+                    退出登录
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
+        </li>
+        <li class="nav-item" v-else>
+          <RouterLink class="nav-link" to="/login">
+            <el-icon><User /></el-icon>
+            登录
+          </RouterLink>
         </li>
       </ul>
     </div>
@@ -301,6 +356,18 @@ body {
   .nav-item {
     display: inline-block;
   }
+
+  .user-info {
+    margin-left: 10px;
+  }
+
+  .user-details {
+    display: none; /* 在小屏幕上隐藏用户名 */
+  }
+
+  .user-profile {
+    padding: 4px;
+  }
 }
 
 
@@ -369,6 +436,58 @@ body {
 .nav-link.active {
   color: rgba(38,38,38,38);
   background-color: #4bc482;
+}
+
+/* 用户信息样式 */
+.user-info {
+  margin-left: 20px;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: background-color 0.2s;
+}
+
+.user-profile:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.user-avatar {
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.user-name {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.user-role {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.user-menu-icon {
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.user-menu-icon:hover {
+  color: white;
 }
 
 .partial-content {

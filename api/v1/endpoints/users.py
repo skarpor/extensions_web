@@ -52,8 +52,31 @@ async def read_users(
     """
     获取用户列表（仅超级管理员）
     """
-    users = await auth.get_users(db, skip=skip, limit=limit)
-    return users
+    from sqlalchemy import select
+
+    # 获取用户列表，按创建时间倒序
+    query = select(UserModel).offset(skip).limit(limit).order_by(UserModel.created_at.desc())
+    result = await db.execute(query)
+    users = result.scalars().all()
+
+    # 转换为包含更多信息的响应
+    user_list = []
+    for user in users:
+        user_dict = {
+            "id": user.id,
+            "username": user.username,
+            "nickname": user.nickname,
+            "email": user.email,
+            "avatar": user.avatar,
+            "is_active": user.is_active,
+            "is_superuser": user.is_superuser,
+            "last_login": user.last_login.isoformat() if user.last_login else None,
+            "created_at": user.created_at.isoformat() if user.created_at else None,
+            "updated_at": user.updated_at.isoformat() if user.updated_at else None,
+        }
+        user_list.append(user_dict)
+
+    return user_list
 
 @router.post("", response_model=User)
 async def create_user(
@@ -115,6 +138,77 @@ async def update_user(
         )
     user = await auth.update_user(db, db_obj=user, obj_in=user_in)
     return user
+
+@router.delete("/{user_id}")
+async def delete_user(
+    *,
+    db: AsyncSession = Depends(get_db),
+    user_id: int,
+    current_user: UserModel = Depends(auth.get_current_superuser),
+) -> Any:
+    """
+    删除用户（仅超级管理员）
+    """
+    user = await auth.get_user_by_id(db, id=user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="用户不存在"
+        )
+
+    # 不能删除自己
+    if user.id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="不能删除自己"
+        )
+
+    # 软删除：设置为非活跃状态
+    from sqlalchemy import update
+    await db.execute(
+        update(UserModel)
+        .where(UserModel.id == user_id)
+        .values(is_active=False)
+    )
+    await db.commit()
+
+    return {"message": "用户删除成功"}
+
+@router.patch("/{user_id}/superuser")
+async def toggle_user_superuser(
+    *,
+    db: AsyncSession = Depends(get_db),
+    user_id: int,
+    is_superuser: bool,
+    current_user: UserModel = Depends(auth.get_current_superuser),
+) -> Any:
+    """
+    修改用户超级管理员状态（仅超级管理员）
+    """
+    user = await auth.get_user_by_id(db, id=user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="用户不存在"
+        )
+
+    # 不能修改自己的超级管理员状态
+    if user.id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="不能修改自己的超级管理员状态"
+        )
+
+    from sqlalchemy import update
+    await db.execute(
+        update(UserModel)
+        .where(UserModel.id == user_id)
+        .values(is_superuser=is_superuser)
+    )
+    await db.commit()
+
+    action = "设置为" if is_superuser else "取消"
+    return {"message": f"已{action}超级管理员"}
 
 @router.get("/search/users")
 async def search_users(

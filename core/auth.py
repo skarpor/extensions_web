@@ -171,36 +171,6 @@ class PermissionChecker:
                     detail=f"Permission {permission} is required"
                 )
         return user
-
-def get_user_permissions(user: User) -> List[str]:
-    """获取用户的所有权限代码列表"""
-    if user.is_superuser:
-        # 超级用户拥有所有权限，这里返回一个特殊标识
-        return ["*"]  # 特殊标识，表示拥有所有权限
-
-    permissions = set()
-    for role in user.roles:
-        for permission in role.permissions:
-            permissions.add(permission.code)
-
-    return list(permissions)
-
-def has_permission(user: User, permission: str) -> bool:
-    """检查用户是否具有指定权限"""
-    if user.is_superuser:
-        return True
-
-    user_permissions = get_user_permissions(user)
-    return permission in user_permissions
-
-def has_role(user: User, role: str) -> bool:
-    """检查用户是否具有指定角色"""
-    if user.is_superuser:
-        return True
-    return role in user.roles
-
-# ==================== 权限验证装饰器 ====================
-
 def require_permissions(*permissions: str):
     """权限验证装饰器 - 要求用户具有指定权限"""
     return PermissionChecker(list(permissions))
@@ -236,135 +206,36 @@ def require_any_permission(*permissions: str):
 
     return AnyPermissionChecker(list(permissions))
 
-# ==================== 预定义权限验证函数 ====================
+def get_user_permissions(user: User) -> List[str]:
+    """获取用户的所有权限代码列表"""
+    if user.is_superuser:
+        # 超级用户拥有所有权限，这里返回一个特殊标识
+        return ["*"]  # 特殊标识，表示拥有所有权限
 
-# 系统管理权限
-manage_system = require_permissions("system:manage")
-manage_logs = require_permissions("system:logs")
-view_settings = require_permissions("settings:view")
-update_settings = require_permissions("settings:update")
+    permissions = set()
+    for role in user.roles:
+        for permission in role.permissions:
+            permissions.add(permission.code)
 
-# 用户管理权限
-manage_users = require_permissions("user:create", "user:update", "user:delete")
-create_users = require_permissions("user:create")
-view_users = require_permissions("user:read")
-update_users = require_permissions("user:update")
-delete_users = require_permissions("user:delete")
+    return list(permissions)
 
-# 角色权限管理
-manage_roles = require_permissions("role:create","role:read","role:update","role:delete")
-create_roles = require_permissions("role:create")
-view_roles = require_permissions("role:read")
-update_roles = require_permissions("role:update")
-delete_roles = require_permissions("role:delete")
-assign_roles = require_permissions("role:assign")
-# 数据库、表管理权限
-manage_database = require_permissions("database:manage")
-view_database = require_permissions("database:view")
-update_database = require_permissions("database:update")
-delete_database = require_permissions("database:delete")
-view_table_p = require_permissions("table:view")
-update_table_p = require_permissions("table:update")
-delete_table_p = require_permissions("table:delete")
+def has_permission(user: User, permission: str) -> bool:
+    """检查用户是否具有指定权限"""
+    if user.is_superuser:
+        return True
 
-# 文件管理权限
-manage_files = require_permissions("file:manage")
-upload_files = require_permissions("file:upload")
-download_files = require_permissions("file:download")
-view_files = require_permissions("file:view")
-delete_files = require_permissions("file:delete")
-# 文件夹管理
-create_dir = require_permissions("file:createdir")
-delete_dir = require_permissions("file:deletedir")
+    user_permissions = get_user_permissions(user)
+    return permission in user_permissions
 
-# 扩展管理权限
-manage_extensions = require_permissions(
-    "extension:view",
-    "extension:upload",
-    "extension:update",
-    "extension:delete",
-    "extension:execute",
-    "extension:config",
-)
-upload_extensions = require_permissions("extension:upload")
-view_extensions = require_permissions("extension:view")
-update_extensions = require_permissions("extension:update")
-delete_extensions = require_permissions("extension:delete")
-query_extensions = require_permissions("extension:execute")
-config_extensions = require_permissions("extension:config")
+def has_role(user: User, role: str) -> bool:
+    """检查用户是否具有指定角色"""
+    if user.is_superuser:
+        return True
+    return role in user.roles
 
-# 聊天管理权限
-manage_chats = require_permissions(
-    "chat:create",
-    "chat:delete"
-    "chat:update"
-    "chat:read"
-)
-create_chats = require_permissions("chat:create")
-view_chats = require_permissions("chat:read")
-update_chats = require_permissions("chat:update")
-delete_chats = require_permissions("chat:delete")
+# ==================== 权限验证装饰器 ====================
 
-# 现代化聊天室权限
-create_chat_rooms = require_permissions("chat:create")
-view_chat_rooms = require_permissions("chat:read")
-update_chat_rooms = require_permissions("chat:update")
-delete_chat_rooms = require_permissions("chat:delete")
-manage_chat_rooms = require_permissions("chat:room")
-send_chat_messages = require_permissions("chat:message")
-join_chat_rooms = require_permissions("chat:read")
-search_chat_rooms = require_permissions("chat:read")
 
-# 消息管理权限
-manage_messages = require_permissions("message:create", "message:update", "message:delete")
-create_messages = require_permissions("message:create")
-view_messages = require_permissions("message:read")
-update_messages = require_permissions("message:update")
-delete_messages = require_permissions("message:delete")
-
-# 日志权限
-# view_logs = require_permissions("log:read")
-
-# 帮助文档权限
-view_help = require_permissions("help:view")
-delete_help = require_permissions("help:delete")
-upload_help = require_permissions("help:upload")
-download_help = require_permissions("help:download")
-list_help = require_permissions("help:list")
-
-# 二维码文件权限
-manage_qrfile = require_permissions(
-    "qrfile:create",
-    "qrfile:serialize",
-    "qrfile:restore",
-    "qrfile:download",
-    "qrfile:download",
-)
-create_qrfile = require_permissions("qrfile:create")
-serialize_qrfile = require_permissions("qrfile:read")
-restore_qrfile = require_permissions("qrfile:delete")
-download_qrfile = require_permissions("qrfile:download")
-
-# 调度器权限
-manage_scheduler = require_permissions(
-    "scheduler:create",
-    "scheduler:read",
-    "scheduler:update",
-    "scheduler:delete",
-    "scheduler:execute",
-    "scheduler:resume",
-    "scheduler:pause",
-)
-create_scheduler = require_permissions("scheduler:create")
-view_scheduler = require_permissions("scheduler:read")
-update_scheduler = require_permissions("scheduler:update")
-delete_scheduler = require_permissions("scheduler:delete")
-execute_scheduler = require_permissions("scheduler:execute")
-resume_scheduler = require_permissions("scheduler:resume")
-pause_scheduler = require_permissions("scheduler:pause")
-# 组合权限验证
-file_read_write = require_any_permission("file:upload", "file:download", "file:view")
-extension_read_write = require_any_permission("extension:upload", "extension:view", "extension:update")
 
 def get_user_info(user: User) -> Dict[str, Any]:
 
@@ -701,7 +572,20 @@ async def init_permissions(db: AsyncSession):
                 {"code": "message:update", "name": "更新消息", "url": "/api/v1/message/update", "description": "可以更新消息信息"},
                 {"code": "message:delete", "name": "删除消息", "url": "/api/v1/message/delete", "description": "可以删除消息"},
             ]
-        }
+        },
+        {
+            "code": "markdown_management",
+            "name": "markdown文档管理",
+            "description": "markdown文档管理相关权限",
+            "sort_order": 8,
+            "icon": "Markdown",
+            "permissions": [
+                {"code": "message:create", "name": "创建消息", "url": "/api/v1/message/create", "description": "可以markdown文档"},
+                {"code": "message:read", "name": "查看消息", "url": "/api/v1/message/read", "description": "可以查看markdown文档"},
+                {"code": "message:update", "name": "更新消息", "url": "/api/v1/message/update", "description": "可以更新markdown文档"},
+                {"code": "markdown:delete", "name": "删除文档", "url": "/api/v1/message/delete", "description": "可以删除markdown文档"},
+            ]
+        },
     ]
 
     # 创建分组和权限

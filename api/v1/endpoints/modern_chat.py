@@ -13,8 +13,7 @@ import os
 import uuid
 
 
-from core.auth import (
-    get_current_active_user,
+from core.permissions import (
     create_chat_rooms,
     view_chat_rooms,
     update_chat_rooms,
@@ -24,6 +23,7 @@ from core.auth import (
     join_chat_rooms,
     search_chat_rooms
 , create_chats, view_chats, update_chats, delete_chats)
+from core.auth import get_current_active_user
 from db.session import get_db
 from config import settings
 from models.user import User as DBUser

@@ -92,6 +92,12 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true, title: '系统设置' }
     },
     {
+      path: '/email',
+      name: 'email',
+      component: () => import('../views/EmailSender.vue'),
+      meta: { requiresAuth: true, title: '邮件发送' }
+    },
+    {
       path: '/permissions',
       name: 'permissions',
       component: () => import('../views/settings/PermissionGroupView.vue'),

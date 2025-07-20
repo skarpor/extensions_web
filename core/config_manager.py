@@ -15,7 +15,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 from core.logger import get_logger
 
-logger = get_logger(__name__)
+logger = get_logger("config")
 
 class ConfigManager:
     """配置管理器"""
@@ -168,7 +168,7 @@ class ConfigManager:
             decrypted_data = cipher.decrypt(encrypted_data)
             config = json.loads(decrypted_data.decode('utf-8'))
             
-            logger.info("成功加载配置文件")
+            # logger.info("成功加载配置文件")
             return config
             
         except Exception as e:

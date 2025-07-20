@@ -18,7 +18,7 @@
               刷新
             </el-button>
             <el-button @click="showSettings = true" size="small">
-              <el-icon><Setting /></el-icon>
+              <el-icon><Tools /></el-icon>
               设置
             </el-button>
           </el-button-group>
@@ -178,7 +178,7 @@
                   <div class="result-actions">
                     <el-button-group size="small">
                       <el-button @click="copyResult" v-if="canCopyResult">
-                        <el-icon><CopyDocument /></el-icon>
+                        <el-icon><DocumentCopy /></el-icon>
                         复制
                       </el-button>
                       <el-button @click="downloadResult" v-if="canDownloadResult">
@@ -246,7 +246,7 @@
                             CSV
                           </el-button>
                           <el-button @click="exportTableData('json')">
-                            <el-icon><Files /></el-icon>
+                            <el-icon><Folder /></el-icon>
                             JSON
                           </el-button>
                           <el-button @click="toggleTableFullscreen">
@@ -358,7 +358,7 @@
                         <p>图表渲染中...</p>
                       </div>
                       <div v-if="chartError" class="chart-error">
-                        <el-icon class="error-icon"><Warning /></el-icon>
+                        <el-icon class="error-icon"><WarningFilled /></el-icon>
                         <p>{{ chartError }}</p>
                         <el-button @click="retryChart" size="small">重试</el-button>
                       </div>
@@ -390,7 +390,7 @@
                     <div class="text-header">
                       <h4>📝 文本结果</h4>
                       <el-button @click="copyText" size="small">
-                        <el-icon><CopyDocument /></el-icon>
+                        <el-icon><DocumentCopy /></el-icon>
                         复制
                       </el-button>
                     </div>
@@ -512,7 +512,7 @@
           <div class="popup-toolbar-right">
             <el-button-group size="small">
               <el-button @click="copyResult" v-if="canCopyResult">
-                <el-icon><CopyDocument /></el-icon>
+                <el-icon><DocumentCopy /></el-icon>
                 复制
               </el-button>
               <el-button @click="downloadResult" v-if="canDownloadResult">
@@ -550,7 +550,7 @@
                     CSV
                   </el-button>
                   <el-button @click="exportTableData('json')">
-                    <el-icon><Files /></el-icon>
+                    <el-icon><Folder /></el-icon>
                     JSON
                   </el-button>
                 </el-button-group>
@@ -611,7 +611,7 @@
                 <p>图表渲染中...</p>
               </div>
               <div v-if="chartError" class="chart-error">
-                <el-icon class="error-icon"><Warning /></el-icon>
+                <el-icon class="error-icon"><WarningFilled /></el-icon>
                 <p>{{ chartError }}</p>
                 <el-button @click="retryPopupChart" size="small">重试</el-button>
               </div>
@@ -658,7 +658,7 @@
               </div>
               <div class="text-actions">
                 <el-button @click="copyText" size="small">
-                  <el-icon><CopyDocument /></el-icon>
+                  <el-icon><DocumentCopy /></el-icon>
                   复制全文
                 </el-button>
               </div>
@@ -679,7 +679,7 @@
           <div v-else-if="resultType === 'file'" class="popup-file-result">
             <div class="popup-file-info">
               <div class="file-icon">
-                <el-icon size="48"><Files /></el-icon>
+                <el-icon size="48"><Folder /></el-icon>
               </div>
               <div class="file-details">
                 <h3>{{ resultData?.filename || '下载文件' }}</h3>
@@ -717,21 +717,25 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Operation,
   Refresh,
-  Setting,
+  Tools,
   Edit,
   CaretRight,
   Check,
   DataAnalysis,
-  CopyDocument,
+  DocumentCopy,
   Download,
   Delete,
   Document,
   Grid,
   Picture,
-  Files,
-  TrendCharts,
+  Folder,
+  PieChart,
   Memo,
-  Timer
+  Timer,
+  FullScreen,
+  Loading,
+  WarningFilled,
+  Close
 } from '@element-plus/icons-vue'
 
 // 导入结果显示组件（暂时注释掉不存在的组件）
@@ -748,22 +752,28 @@ import { getExtensions, getExtensionQueryForm, executeExtensionQuery } from '@/a
 export default {
   name: 'ModernExtensionView',
   components: {
+    // Element Plus 图标组件
     Operation,
     Refresh,
-    Setting,
+    Tools,
     Edit,
     CaretRight,
     Check,
     DataAnalysis,
-    CopyDocument,
+    DocumentCopy,
     Download,
     Delete,
     Document,
     Grid,
     Picture,
-    Files,
-    TrendCharts,
-    Memo
+    Folder,
+    PieChart,
+    Memo,
+    Timer,
+    FullScreen,
+    Loading,
+    WarningFilled,
+    Close,
     // 暂时注释掉不存在的组件
     // TableResultDisplay,
     // ImageResultDisplay,
@@ -1176,8 +1186,8 @@ export default {
         'html': Document,
         'table': Grid,
         'image': Picture,
-        'file': Files,
-        'chart': TrendCharts,
+        'file': Folder,
+        'chart': PieChart,
         'text': Memo
       }
       return iconMap[renderType] || Operation
@@ -2168,6 +2178,130 @@ export default {
 
 .result-title .el-tag .el-icon {
   margin-right: 4px;
+}
+
+.result-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.result-actions .el-button-group {
+  display: flex;
+  gap: 0;
+}
+
+.result-actions .el-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.result-actions .el-button .el-icon {
+  font-size: 14px;
+  margin-right: 4px;
+}
+
+.result-actions .el-button span {
+  display: inline-block;
+}
+
+/* 确保按钮文字正确显示 */
+.el-button-group .el-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.el-button .el-icon + span,
+.el-button .el-icon + * {
+  margin-left: 4px;
+    display: inline !important;  /* 添加这一行 */
+
+}
+
+/* 修复按钮文字可能被隐藏的问题 */
+.el-button {
+  overflow: visible !important;
+  min-width: auto !important;
+  width: auto !important;
+}
+
+/* 强制显示按钮文字 - 使用更高优先级 */
+.result-actions .el-button span,
+.el-button-group .el-button span,
+.el-button span {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: inline !important;
+  color: inherit !important;
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+  white-space: nowrap !important;
+}
+
+/* 确保图标和文字都显示 */
+.result-actions .el-button .el-icon,
+.el-button-group .el-button .el-icon,
+.el-button .el-icon {
+  display: inline-block !important;
+  margin-right: 4px !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* 按钮内容容器 */
+.result-actions .el-button,
+.el-button-group .el-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  padding: 6px 12px !important;
+  min-height: 28px !important;
+  box-sizing: border-box !important;
+}
+
+/* 悬停状态确保文字显示 */
+.el-button:hover span,
+.el-button:focus span,
+.el-button:active span {
+  opacity: 1 !important;
+  visibility: visible !important;
+  color: inherit !important;
+}
+
+
+.result-actions .el-button .el-icon {
+  font-size: 14px !important;
+  display: inline-block !important;
+}
+
+.result-actions .el-button span,
+.result-actions .el-button > span {
+  font-size: 12px !important;
+  display: inline !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  color: currentColor !important;
+  margin-left: 4px !important;
+}
+
+/* 确保按钮内容正确布局 */
+.result-actions .el-button-group .el-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+}
+
+/* 强制覆盖可能的隐藏样式 */
+.result-actions .el-button * {
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 .result-content {

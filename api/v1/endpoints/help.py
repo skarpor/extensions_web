@@ -16,13 +16,13 @@ from schemas.user import User
 from config import settings
 logger = get_logger("help")
 router = APIRouter()
-
+from core.permissions import delete_help,upload_help,download_help,view_help
 
 @router.get("/view/{filename}")
 async def view_example(
     request: Request, 
     filename: str = Path(..., description="文件名"), 
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(view_help)
 ):
     """
     查看示例文件内容
@@ -136,7 +136,7 @@ async def view_example(
     
 # 添加一个路由，用于上传示例文件
 @router.post("/upload", response_class=JSONResponse)
-async def upload_example(files: List[UploadFile] = File(..., alias="files[]"), current_user: User = Depends(get_current_user)):
+async def upload_example(files: List[UploadFile] = File(..., alias="files[]"), current_user: User = Depends(upload_help)):
     """
     上传示例文件
     
@@ -174,7 +174,7 @@ async def upload_example(files: List[UploadFile] = File(..., alias="files[]"), c
 
 # 添加一个路由，用于删除示例文件
 @router.delete("/delete/{filename}", response_class=JSONResponse)
-async def delete_example(filename: str, current_user: User = Depends(get_current_user)):
+async def delete_example(filename: str, current_user: User = Depends(delete_help)):
     """
     删除示例文件
     """
@@ -194,7 +194,7 @@ async def delete_example(filename: str, current_user: User = Depends(get_current
 
 # 添加一个路由，用于下载示例文件
 @router.get("/download/{filename}", response_class=FileResponse)
-async def download_example(filename: str, current_user: User = Depends(get_current_user)):
+async def download_example(filename: str, current_user: User = Depends(download_help)):
     """
     下载示例文件
     """
@@ -206,7 +206,7 @@ async def download_example(filename: str, current_user: User = Depends(get_curre
 
 # 添加一个路由，用于获取示例文件列表
 @router.get("/list", response_class=JSONResponse)
-async def get_example_list():
+async def get_example_list(current_user: User = Depends(get_current_user)):
     """
     获取示例文件列表,返回和/example接口中examples一样的格式
     """

@@ -21,7 +21,7 @@ pillow==10.1.0
 python-socketio>=5.4.0
 psutil>=5.9.0
 markdown
-
+fastapi-mail
 # For extensions, include any functionality you need.
 pandas
 openpyxl

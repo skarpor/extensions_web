@@ -130,11 +130,11 @@ async def lifespan(app: FastAPI):
     logger.info("应用启动...")
     extension_manager = ExtensionManager(app)
     app.state.extension_manager = extension_manager
-
-    await start_scheduler()
-    # 创建一个简化的接口供应用使用
-    app.state.scheduler =AppScheduler()
-    logger.info("应用调度器已初始化")
+    if settings.SCHEDULER_ENABLE:
+        await start_scheduler()
+        # 创建一个简化的接口供应用使用
+        app.state.scheduler =AppScheduler()
+        logger.info("应用调度器已初始化")
 
     await init_models()  # 创建表
     async with AsyncSessionLocal() as db:
@@ -152,8 +152,9 @@ async def lifespan(app: FastAPI):
     # 启动聊天室清理任务 (已移除)
     yield
     # Clean up the ML models and release the resources
-    await stop_scheduler()
-    logger.info("应用调度器已关闭")
+    if settings.SCHEDULER_ENABLE:
+        await stop_scheduler()
+        logger.info("应用调度器已关闭")
     logger.info("应用关闭...")
 
 

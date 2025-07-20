@@ -156,7 +156,10 @@ class Settings(BaseSettings):
     SCHEDULER_ENABLE: bool = _config_data.get("SCHEDULER_ENABLE", False)
     LOG_ENABLE: bool = _config_data.get("LOG_ENABLE", False)
     DATABASE_ENABLE: bool = _config_data.get("DATABASE_ENABLE", False)
-    
+    HELP_ENABLE: bool = _config_data.get("HELP_ENABLE", False)
+    MARKDOWN_ENABLE: bool = _config_data.get("MARKDOWN_ENABLE", False)
+    DANMU_ENABLE: bool = _config_data.get("DANMU_ENABLE", False)
+    DASHBOARD_ENABLE:bool = _config_data.get("DASHBOARD_ENABLE", False)
     # 国际化配置 - 从配置文件读取
     TIMEZONE: str = _config_data.get("TIMEZONE", "Asia/Shanghai")
     LANGUAGE: str = _config_data.get("LANGUAGE", "zh-CN")

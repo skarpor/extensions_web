@@ -52,7 +52,7 @@
                 <td>{{ example.size_formatted }}</td>
                 <td>{{ example.modified_time }}</td>
                 <td>
-                  <a :href="`/help/${example.filename}`" class="btn btn-sm btn-primary" target="_blank">
+                  <a :href="`/help/${example.filename}`" class="btn btn-sm btn-primary">
                     <i class="fas fa-eye"></i> 查看
                   </a>&ensp;
                   <a href="javascript:void(0)" class="btn btn-sm btn-success" @click="downloadFile(example.filename)">

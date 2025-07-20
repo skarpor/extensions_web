@@ -11,7 +11,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Path, Body, Upload
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 
-from core.auth import get_current_active_user, RoleChecker, PermissionChecker, view_database, view_table_p, update_table_p, delete_table_p, manage_database
+from core.auth import get_current_active_user, RoleChecker, PermissionChecker
+from core.permissions import view_database, view_table_p, update_table_p, delete_table_p, manage_database
 from core.db_manager import DBManager
 from schemas.database import (
     TableSchema, 

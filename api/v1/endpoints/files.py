@@ -11,7 +11,7 @@ from fastapi.security import SecurityScopes
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core import auth
-from core.auth import upload_files, download_files, view_files, delete_files, manage_files, create_dir, delete_dir
+from core.permissions import upload_files, download_files, view_files, delete_files, manage_files, create_dir, delete_dir
 from core.file_manager import FileManager
 from db.session import get_db
 from schemas.file import File as FileSchema

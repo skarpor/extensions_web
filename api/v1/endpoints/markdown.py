@@ -2,21 +2,19 @@
 Markdown文件管理API
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel
-from typing import Optional
 import os
-import aiofiles
-from pathlib import Path
-import logging
+from typing import Optional
 
-from db.session import get_db
-from core.auth import get_current_user
-from models.user import User as DBUser
-from core.config_manager import ConfigManager
+import aiofiles
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
+
 from config import settings
-logger = logging.getLogger(__name__)
+from core.auth import get_current_user
+from core.logger import get_logger
+from models.user import User as DBUser
+from core.permissions import update_markdown,delete_markdown,view_markdown,create_markdown,list_markdown
+logger = get_logger("markdown")
 router = APIRouter()
 
 class MarkdownContent(BaseModel):
@@ -118,7 +116,6 @@ def get_markdown_folder_path() -> str:
     try:
         return settings.MARKDOWN_FOLDER_PATH
     except Exception as e:
-        raise
         logger.warning(f"获取Markdown文件夹路径失败: {e}")
         return "data/docs"
 

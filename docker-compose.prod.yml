@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  # 后端服务
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: extensions-web-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DATABASE_URL=${DATABASE_URL:-sqlite+aiosqlite:///app/data/database.sqlite}
+      - SECRET_KEY=${SECRET_KEY}
+      - ALLOW_REGISTER=${ALLOW_REGISTER:-true}
+      - DATA_DIR=/app/data
+      - EXTENSIONS_DIR=/app/data/extensions
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - EXT_DB_TYPE=${EXT_DB_TYPE:-sqlite}
+      - EXT_DB_DIR=${EXT_DB_DIR:-/app/data/db}
+      - EXT_DB_FILE=${EXT_DB_FILE:-app.db}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost}
+    volumes:
+      # 数据目录映射 - 持久化重要数据
+      - ./docker-data/data:/app/data
+      - ./docker-data/logs:/app/logs
+      # 扩展脚本目录映射 - 方便开发和管理扩展
+      - ./docker-data/extensions:/app/data/extensions
+      # 文件上传目录映射 - 持久化用户文件
+      - ./docker-data/uploads:/app/data/file
+      # 数据库文件目录映射 - 持久化外部数据库文件
+      - ./docker-data/db:/app/data/db
+    depends_on:
+      - redis
+    networks:
+      - extensions-web-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 前端服务 (Nginx)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      args:
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:8000}
+        - VITE_WS_URL=${VITE_WS_URL:-ws://localhost:8000}
+    container_name: extensions-web-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Nginx配置文件
+      - ./docker-config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker-config/default.conf:/etc/nginx/conf.d/default.conf:ro
+      # SSL证书目录 (如果需要HTTPS)
+      - ./docker-data/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - backend
+    networks:
+      - extensions-web-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis 服务 (用于缓存和会话存储)
+  redis:
+    image: redis:7-alpine
+    container_name: extensions-web-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./docker-data/redis:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis123}
+    networks:
+      - extensions-web-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  extensions-web-network:
+    driver: bridge
+
+volumes:
+  # 定义命名卷（可选，如果不想使用绑定挂载）
+  redis_data:
+  app_data:

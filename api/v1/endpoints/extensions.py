@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from config import settings
-from core import auth
+from core import auth,permissions
 from core.extension_manager import ExtensionManager
 from db.session import get_db
 from models.extension import Extension
@@ -67,7 +67,7 @@ async def create_extension(
         render_type: str = Form(...),
         show_in_home: Optional[bool] = Form(None),
         file: UploadFile = File(...),
-        current_user: User = Depends(auth.upload_extensions),
+        current_user: User = Depends(permissions.upload_extensions),
 ) -> Any:
     """
     创建新扩展
@@ -130,7 +130,7 @@ async def get_extension(
         extension_id: str,
         # *,
         db: AsyncSession = Depends(get_db),
-        current_user: User = Depends(auth.view_extensions),
+        current_user: User = Depends(permissions.view_extensions),
 ) -> Any:
     """
     获取扩展信息
@@ -152,7 +152,7 @@ async def update_extension(
         db: AsyncSession = Depends(get_db),
         extension_id: str,
         extension_in: ExtensionUpdate,
-        current_user: User = Depends(auth.update_extensions),
+        current_user: User = Depends(permissions.update_extensions),
 ) -> Any:
     """
     更新扩展信息
@@ -183,7 +183,7 @@ async def delete_extension(
         *,
         db: AsyncSession = Depends(get_db),
         extension_id: str,
-        current_user: User = Depends(auth.delete_extensions),
+        current_user: User = Depends(permissions.delete_extensions),
 ) -> Any:
     """
     删除扩展
@@ -215,7 +215,7 @@ async def get_extension_config(
         *,
         db: AsyncSession = Depends(get_db),
         extension_id: str,
-        current_user: User = Depends(auth.view_extensions),
+        current_user: User = Depends(permissions.view_extensions),
 ) -> Any:
     """
     获取扩展配置
@@ -236,7 +236,7 @@ async def get_extension_config(
         *,
         db: AsyncSession = Depends(get_db),
         extension_id: str,
-        current_user: User = Depends(auth.query_extensions),
+        current_user: User = Depends(permissions.query_extensions),
 ) -> Any:
     """
     获取扩展配置

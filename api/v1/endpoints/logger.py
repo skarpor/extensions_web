@@ -16,7 +16,7 @@ from pathlib import Path
 from config import settings
 import logging
 from schemas.user import User
-from core.auth import manage_logs
+from core.permissions import manage_logs
 router = APIRouter()
 
 # 设置日志

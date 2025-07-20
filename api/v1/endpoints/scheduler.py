@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from api.v1.endpoints.extensions import get_extensions, get_extension
-from core.auth import create_scheduler, view_scheduler, update_scheduler, delete_scheduler, execute_scheduler, \
+from core.permissions import create_scheduler, view_scheduler, update_scheduler, delete_scheduler, execute_scheduler, \
     view_extensions, resume_scheduler
 from core.sandbox import execute_query_in_sandbox
 from db.session import get_db
