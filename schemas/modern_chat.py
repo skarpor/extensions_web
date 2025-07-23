@@ -213,7 +213,10 @@ class ChatRoom(ChatRoomBase):
     is_active: bool = True
     created_at: datetime
     updated_at: datetime
-    
+    max_file_size:int = 10
+    allow_file_upload: bool = True
+    allow_member_invite: bool = True
+    allow_member_modify_info: bool = True
     class Config:
         from_attributes = True
 

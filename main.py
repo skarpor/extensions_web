@@ -61,7 +61,7 @@ def create_app() -> FastAPI:
     app.add_middleware(ExpiryCheckMiddleware)
 
     # 挂载静态文件
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+    app.mount("/api/static", StaticFiles(directory="static"), name="static")
 
     # 设置模板引擎
     # app.state.templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
@@ -189,8 +189,8 @@ if __name__ == "__main__":
     # 删除数据库
     uvicorn.run(
         app,
-        host=settings.HOST,
-        port=settings.PORT,
+        host='0.0.0.0',# settings.HOST,
+        port=8000,# settings.PORT,
         reload=False,
         workers=1
     )

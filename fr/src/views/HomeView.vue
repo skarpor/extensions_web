@@ -19,10 +19,6 @@
                 <h2>新自动</h2>
                 <p>新自动功能</p>
              </div>
-            <div class="card" @click="navigateTo('/chat')">
-                <h2>聊天</h2>
-                <p>实时聊天功能，支持群聊和私聊</p>
-            </div>
             <div class="card" @click="navigateTo('/files')">
                 <h2>文件管理</h2>
                 <p>上传、下载和管理文件</p>

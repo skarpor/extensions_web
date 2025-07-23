@@ -333,7 +333,11 @@ async def get_chat_room(
             last_message_at=room.last_message_at,
             is_active=room.is_active,
             created_at=room.created_at,
-            updated_at=room.updated_at
+            updated_at=room.updated_at,
+            allow_file_upload=room.allow_file_upload,
+            max_file_size=room.max_file_size,
+            allow_search=room.allow_search,
+
         )
         
     except HTTPException:
@@ -376,6 +380,7 @@ async def update_chat_room(
         
         # 更新字段
         update_data = room_data.dict(exclude_unset=True)
+        print(room_data.dict(exclude_unset=True))
         for field, value in update_data.items():
             setattr(room, field, value)
         

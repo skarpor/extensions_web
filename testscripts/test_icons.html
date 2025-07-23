@@ -1,0 +1,35 @@
+python -c "
+import requests
+import time
+
+print('开始API重启测试...')
+
+# 记录当前子进程PID
+print('测试前子进程PID: 5980')
+
+# 执行重启命令
+try:
+    execute_data = {'command': 'data\\\\restart_service.bat', 'name': '最终测试'}
+    response = requests.post('http://localhost:8000/api/system/system/execute-command', json=execute_data, timeout=10)
+    print(f'API响应: {response.status_code}')
+    if response.status_code == 200:
+        result = response.json()
+        success = result.get('success')
+        output = result.get('output')
+        print(f'执行成功: {success}')
+        print(f'输出: {output}')
+    else:
+        print(f'错误: {response.text}')
+except Exception as e:
+    print(f'异常: {e}')
+
+print('等待10秒检查重启结果...')
+time.sleep(10)
+
+# 检查服务是否重新启动
+try:
+    response = requests.get('http://localhost:8000/', timeout=5)
+    print(f'服务状态: {response.status_code} - 服务正常运行')
+except Exception as e:
+    print(f'服务检查失败: {e}')
+"

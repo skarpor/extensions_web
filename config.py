@@ -91,7 +91,7 @@ class Settings(BaseSettings):
     ALLOWED_IMAGE_EXTENSIONS: List[str] = _config_data.get("ALLOWED_IMAGE_EXTENSIONS", [".jpg", ".jpeg", ".png", ".gif", ".webp"])
     MAX_IMAGE_SIZE: int = _config_data.get("MAX_IMAGE_SIZE", 10 * 1024 * 1024)
     CHAT_UPLOAD_DIR: str = _config_data.get("CHAT_UPLOAD_DIR", "static/chat/img")
-    CHAT_IMAGE_URL_PREFIX: str = _config_data.get("CHAT_IMAGE_URL_PREFIX", "/static/chat/img")
+    CHAT_IMAGE_URL_PREFIX: str = _config_data.get("CHAT_IMAGE_URL_PREFIX", "/api/static/chat/img")
 
     # 模板目录 - 从配置文件读取
     TEMPLATES_DIR: str = _config_data.get("TEMPLATES_DIR", "templates")

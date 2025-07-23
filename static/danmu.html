@@ -80,7 +80,7 @@
             return;
         }
 
-        danmuSocket = new WebSocket(`ws://{{host}}:{{port}}/api/danmu/ws`);
+        danmuSocket = new WebSocket(`ws://${window.location.host}/api/danmu/ws`);
 
         danmuSocket.onopen = () => {
             console.log("弹幕WebSocket连接已建立");
@@ -134,7 +134,7 @@
         const color = "#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
 
         try {
-            const response = await fetch('http://{{host}}:{{port}}/api/danmu/send_danmu', {
+            const response = await fetch('http://${window.location.host}/api/danmu/send_danmu', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

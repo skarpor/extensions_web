@@ -886,7 +886,7 @@ async def upload_avatar(
             buffer.write(content)
 
         # 生成访问URL
-        avatar_url = f"/static/avatars/{unique_filename}"
+        avatar_url = f"/api/static/avatars/{unique_filename}"
 
         logger.info(f"用户 {current_user.username} 上传头像成功: {avatar_url}")
 

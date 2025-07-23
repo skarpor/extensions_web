@@ -19,7 +19,7 @@
           </el-button>
         </div>
       </div>
-      
+
       <div class="room-search">
         <el-input
           v-model="searchQuery"
@@ -28,7 +28,7 @@
           size="small"
         />
       </div>
-      
+
       <div class="room-list">
         <div
           v-for="room in filteredRooms"
@@ -56,7 +56,7 @@
               {{ room.unread_count > 99 ? '99+' : room.unread_count }}
             </span>
           </div>
-          
+
           <div class="room-info">
             <div class="room-name-container">
               <span class="room-name" :class="getRoomNameClass(room)">{{ room.name }}</span>
@@ -72,7 +72,7 @@
               <span v-else class="no-message">暂无消息</span>
             </div>
           </div>
-          
+
           <div class="room-meta">
             <div class="room-time">
               {{ formatTime(room.last_message_at) }}
@@ -88,7 +88,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- 主聊天区域 -->
     <div class="chat-main">
       <!-- 移动端顶部栏 -->
@@ -98,7 +98,7 @@
         </el-button>
         <span v-if="currentRoom">{{ currentRoom.name }}</span>
       </div>
-      
+
       <!-- 聊天头部 -->
       <div class="chat-header" v-if="currentRoom">
         <div class="room-info">
@@ -116,7 +116,7 @@
             <p>{{ currentRoom.member_count }} 名成员 · {{ onlineCount }} 人在线</p>
           </div>
         </div>
-        
+
         <div class="header-actions">
           <el-button @click="showRoomInfo = true" text>
             <el-icon><InfoFilled /></el-icon>
@@ -126,7 +126,7 @@
           </el-button>
         </div>
       </div>
-      
+
       <!-- 消息区域 -->
       <div class="chat-messages" ref="messagesContainer" v-if="currentRoom">
         <!-- 置顶消息区域 -->
@@ -291,14 +291,14 @@
                 {{ message.sender.username.charAt(0).toUpperCase() }}
               </div>
             </div>
-            
+
             <div class="message-content">
               <div class="message-header">
                 <span class="sender-name">{{ message.sender.nickname || message.sender.username }}</span>
                 <span class="message-time">{{ formatMessageTime(message.created_at) }}</span>
                 <el-tag v-if="message.is_edited" size="small" type="info">已编辑</el-tag>
               </div>
-              
+
               <!-- 回复消息 -->
               <div v-if="message.reply_to" class="reply-message">
                 <div class="reply-content">
@@ -306,7 +306,7 @@
                   <span class="reply-text">{{ message.reply_to.content }}</span>
                 </div>
               </div>
-              
+
               <!-- 消息内容 -->
               <div v-if="!message.is_deleted">
                 <!-- 文本消息 -->
@@ -359,7 +359,7 @@
                 <el-icon><Delete /></el-icon>
                 此消息已被删除
               </div>
-              
+
               <!-- 消息操作 -->
               <div class="message-actions" v-if="!message.is_deleted">
                 <el-button @click="replyToMessage(message)" text size="small" title="回复">
@@ -391,7 +391,7 @@
                   <el-icon><DocumentCopy /></el-icon>
                 </el-button>
               </div>
-              
+
               <!-- 表情反应 -->
               <div v-if="message.reactions && message.reactions.length > 0" class="message-reactions">
                 <span
@@ -408,7 +408,7 @@
           </div>
           </template>
         </div>
-        
+
         <!-- 正在输入提示 -->
         <div v-if="typingUsers.length > 0" class="typing-indicator">
           <div class="typing-dots">
@@ -421,7 +421,7 @@
           </span>
         </div>
       </div>
-      
+
       <!-- 消息输入区域 -->
       <div class="chat-input" v-if="currentRoom">
         <!-- 回复预览 -->
@@ -434,7 +434,7 @@
             <el-icon><Close /></el-icon>
           </el-button>
         </div>
-        
+
         <!-- 编辑提示 -->
         <div v-if="editingMessage" class="edit-preview">
           <div class="edit-info">
@@ -510,13 +510,13 @@
           </div>
         </div>
       </div>
-      
+
       <!-- 空状态 -->
       <div v-else class="empty-state">
         <el-empty description="选择一个聊天室开始聊天" />
       </div>
     </div>
-    
+
     <!-- 创建聊天室对话框 -->
     <el-dialog v-model="showCreateRoomDialog" title="创建聊天室" width="800px">
       <el-form :model="newRoom" label-width="100px">
@@ -578,7 +578,7 @@
           </el-form-item>
         </div>
       </el-form>
-      
+
       <template #footer>
         <el-button @click="showCreateRoomDialog = false">取消</el-button>
         <el-button type="primary" @click="createRoom" :loading="creating">创建</el-button>
@@ -896,7 +896,7 @@
           <h3>{{ currentRoom.name }}</h3>
           <p>{{ currentRoom.description || '暂无描述' }}</p>
         </div>
-        
+
         <div class="room-stats">
           <div class="stat-item">
             <span class="label">成员数量</span>
@@ -913,7 +913,7 @@
         </div>
       </div>
     </el-drawer>
-    
+
     <!-- 成员列表侧边栏 -->
     <el-drawer v-model="showMemberList" title="成员列表" size="400px">
       <div class="member-list">
@@ -929,12 +929,12 @@
             </div>
             <div class="online-indicator" :class="{ online: member.is_online }"></div>
           </div>
-          
+
           <div class="member-info">
             <div class="member-name">{{ member.nickname || member.username }}</div>
             <div class="member-role">{{ getRoleName(member.role) }}</div>
           </div>
-          
+
           <div class="member-actions">
             <el-tag v-if="member.role === 'admin'" type="warning" size="small">管理员</el-tag>
             <el-tag v-if="member.is_muted" type="danger" size="small">已静音</el-tag>
@@ -1837,7 +1837,9 @@ const selectRoom = async (room) => {
 const loadRoomDetails = async (roomId) => {
   try {
     const response = await axios.get(`/api/modern-chat/rooms/${roomId}`)
+    console.log(response.data)
     currentRoom.value = response.data
+    console.log(currentRoom.value)
   } catch (error) {
     console.error('加载聊天室详情失败:', error)
   }
@@ -1936,6 +1938,22 @@ const handleGlobalWebSocketMessage = (message) => {
       }
       break
 
+    case 'message_updated':
+      handleMessageUpdated(message.data)
+      break
+
+    case 'message_deleted':
+      handleMessageDeleted(message.data)
+      break
+
+    case 'user_joined':
+      handleUserJoined(message.data)
+      break
+
+    case 'user_left':
+      handleUserLeft(message.data)
+      break
+
     case 'room_created':
       handleRoomCreated(message.data)
       break
@@ -1979,6 +1997,141 @@ const handleGlobalWebSocketMessage = (message) => {
   }
 }
 
+// WebSocket消息处理函数
+const handleNewMessage1 = (data) => {
+  const { message, room_id } = data
+
+  // 如果是当前聊天室的消息，添加到消息列表
+  if (currentRoom.value && currentRoom.value.id === room_id) {
+    // 检查消息是否已存在（避免重复）
+    const existingMessage = messages.value.find(m => m.id === message.id)
+    if (!existingMessage) {
+      messages.value.push(message)
+
+      // 滚动到底部
+      nextTick(() => {
+        scrollToBottom()
+      })
+    }
+  }
+
+  // 更新聊天室列表中的最后消息
+  const roomIndex = rooms.value.findIndex(r => r.id === room_id)
+  if (roomIndex !== -1) {
+    rooms.value[roomIndex].last_message = {
+      content: message.content,
+      sender: message.sender,
+      created_at: message.created_at
+    }
+    rooms.value[roomIndex].last_message_at = message.created_at
+
+    // 如果不是当前聊天室，增加未读计数
+    if (!currentRoom.value || currentRoom.value.id !== room_id) {
+      rooms.value[roomIndex].unread_count = (rooms.value[roomIndex].unread_count || 0) + 1
+    }
+  }
+}
+
+const handleMessageUpdated = (data) => {
+  const { message, room_id } = data
+
+  // 如果是当前聊天室的消息，更新消息列表
+  if (currentRoom.value && currentRoom.value.id === room_id) {
+    const messageIndex = messages.value.findIndex(m => m.id === message.id)
+    if (messageIndex !== -1) {
+      messages.value[messageIndex] = { ...messages.value[messageIndex], ...message }
+    }
+  }
+}
+
+const handleMessageDeleted = (data) => {
+  const { message_id, room_id } = data
+
+  // 如果是当前聊天室的消息，从消息列表中移除或标记为已删除
+  if (currentRoom.value && currentRoom.value.id === room_id) {
+    const messageIndex = messages.value.findIndex(m => m.id === message_id)
+    if (messageIndex !== -1) {
+      messages.value[messageIndex].is_deleted = true
+      messages.value[messageIndex].content = '[此消息已被删除]'
+    }
+  }
+}
+
+const handleUserJoined = (data) => {
+  const { user, room_id, room_name } = data
+
+  // 显示用户加入提示
+  if (currentRoom.value && currentRoom.value.id === room_id) {
+    ElNotification({
+      title: '用户加入',
+      message: `${user.nickname || user.username} 加入了聊天室`,
+      type: 'info',
+      duration: 3000,
+      position: 'top-right'
+    })
+
+    // 添加系统消息
+    const systemMessage = {
+      id: `system_${Date.now()}`,
+      content: `${user.nickname || user.username} 加入了聊天室`,
+      message_type: 'system',
+      sender: { username: 'system', nickname: '系统' },
+      created_at: new Date().toISOString(),
+      is_system: true
+    }
+    messages.value.push(systemMessage)
+
+    // 更新成员列表
+    if (currentRoom.value.members) {
+      const existingMember = currentRoom.value.members.find(m => m.id === user.id)
+      if (!existingMember) {
+        currentRoom.value.members.push(user)
+      }
+    }
+
+    nextTick(() => {
+      scrollToBottom()
+    })
+  }
+}
+
+const handleUserLeft = (data) => {
+  const { user, room_id, room_name } = data
+
+  // 显示用户离开提示
+  if (currentRoom.value && currentRoom.value.id === room_id) {
+    ElNotification({
+      title: '用户离开',
+      message: `${user.nickname || user.username} 离开了聊天室`,
+      type: 'warning',
+      duration: 3000,
+      position: 'top-right'
+    })
+
+    // 添加系统消息
+    const systemMessage = {
+      id: `system_${Date.now()}`,
+      content: `${user.nickname || user.username} 离开了聊天室`,
+      message_type: 'system',
+      sender: { username: 'system', nickname: '系统' },
+      created_at: new Date().toISOString(),
+      is_system: true
+    }
+    messages.value.push(systemMessage)
+
+    // 从成员列表中移除
+    if (currentRoom.value.members) {
+      const memberIndex = currentRoom.value.members.findIndex(m => m.id === user.id)
+      if (memberIndex !== -1) {
+        currentRoom.value.members.splice(memberIndex, 1)
+      }
+    }
+
+    nextTick(() => {
+      scrollToBottom()
+    })
+  }
+}
 
 
 
@@ -1988,8 +2141,8 @@ const sendMessage = async () => {
 
   try {
     if (editingMessage.value) {
-      // 编辑消息 - 这里可以添加编辑消息的API调用
-      ElMessage.info('编辑消息功能待实现')
+      // 编辑消息
+      await editMessage(editingMessage.value.id, messageInput.value.trim())
       editingMessage.value = null
     } else {
       // 发送新消息
@@ -2006,48 +2159,8 @@ const sendMessage = async () => {
 
       if (response.data) {
         console.log('消息发送成功')
-
-        // 立即将消息添加到当前聊天室的消息列表中，提供即时反馈
-        const newMessage = {
-          id: response.data.id,
-          content: response.data.content,
-          message_type: response.data.message_type,
-          sender: {
-            id: userStore.user.id,
-            username: userStore.user.username,
-            nickname: userStore.user.nickname,
-            avatar: userStore.user.avatar
-          },
-          file_url: response.data.file_url,
-          file_name: response.data.file_name,
-          file_size: response.data.file_size,
-          created_at: response.data.created_at,
-          reply_to_id: response.data.reply_to_id,
-          is_edited: false,
-          is_deleted: false,
-          is_pinned: false,
-          edit_count: 0,
-          read_count: 0,
-          reactions: []
-        }
-
-        messages.value.push(newMessage)
-
-        // 滚动到底部
-        nextTick(() => {
-          scrollToBottom()
-        })
-
-        // 更新聊天室列表中的最后消息
-        const roomIndex = rooms.value.findIndex(r => r.id === currentRoom.value.id)
-        if (roomIndex !== -1) {
-          rooms.value[roomIndex].last_message = {
-            content: newMessage.content,
-            sender: newMessage.sender,
-            created_at: newMessage.created_at
-          }
-          rooms.value[roomIndex].last_message_at = newMessage.created_at
-        }
+        // 注意：不要在这里手动添加消息到列表，等待WebSocket推送
+        // 这样可以确保消息的一致性和避免重复
       }
     }
 
@@ -2102,6 +2215,59 @@ const cancelReply = () => {
 const cancelEdit = () => {
   editingMessage.value = null
   messageInput.value = ''
+}
+
+// 编辑消息
+const editMessage = async (messageId, newContent) => {
+  try {
+    const response = await axios.put(`/api/modern-chat/messages/${messageId}`, {
+      content: newContent
+    })
+
+    if (response.data) {
+      // 更新本地消息（WebSocket也会推送更新）
+      const messageIndex = messages.value.findIndex(m => m.id === messageId)
+      if (messageIndex !== -1) {
+        messages.value[messageIndex].content = newContent
+        messages.value[messageIndex].is_edited = true
+        messages.value[messageIndex].edit_count = (messages.value[messageIndex].edit_count || 0) + 1
+      }
+
+      ElMessage.success('消息编辑成功')
+    }
+  } catch (error) {
+    console.error('编辑消息失败:', error)
+    ElMessage.error('编辑消息失败: ' + (error.response?.data?.detail || error.message))
+  }
+}
+
+// 撤回/删除消息
+const recallMessage = async (messageId) => {
+  try {
+    await ElMessageBox.confirm('确定要撤回这条消息吗？', '确认撤回', {
+      confirmButtonText: '撤回',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+
+    const response = await axios.delete(`/api/modern-chat/messages/${messageId}`)
+
+    if (response.data) {
+      // 本地更新（WebSocket也会推送删除通知）
+      const messageIndex = messages.value.findIndex(m => m.id === messageId)
+      if (messageIndex !== -1) {
+        messages.value[messageIndex].is_deleted = true
+        messages.value[messageIndex].content = '[此消息已被撤回]'
+      }
+
+      ElMessage.success('消息撤回成功')
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('撤回消息失败:', error)
+      ElMessage.error('撤回消息失败: ' + (error.response?.data?.detail || error.message))
+    }
+  }
 }
 
 
@@ -2371,39 +2537,74 @@ const handleMessageReaction1 = (data) => {
 const handleSystemNotification = (data) => {
   console.log('收到系统通知:', data)
 
-  // 如果是加入申请通知，显示在聊天室中
-  if (data.type === 'join_request') {
-    // 创建系统消息
-    const systemMessage = {
-      id: `system_${Date.now()}`,
-      content: data.message,
-      message_type: 'system',
-      sender: {
-        id: 0,
-        username: 'System',
-        nickname: '系统',
-        avatar: null
-      },
-      created_at: new Date().toISOString(),
-      is_system: true,
-      system_data: {
-        type: 'join_request',
-        user_id: data.user_id,
-        username: data.username,
-        room_id: data.room_id
-      }
+  // 创建系统消息
+  const systemMessage = {
+    id: `system_${Date.now()}`,
+    content: data.message,
+    message_type: 'system',
+    sender: {
+      id: 0,
+      username: 'System',
+      nickname: '系统',
+      avatar: null
+    },
+    created_at: new Date().toISOString(),
+    is_system: true,
+    system_data: {
+      type: data.type,
+      user_id: data.user_id,
+      username: data.username,
+      room_id: data.room_id,
+      ...data.extra_data
     }
+  }
 
-    // 如果是当前聊天室，添加到消息列表
-    if (currentRoom.value && data.room_id === currentRoom.value.id) {
-      messages.value.push(systemMessage)
-      nextTick(() => {
-        scrollToBottom()
+  // 如果是当前聊天室，添加到消息列表
+  if (currentRoom.value && data.room_id === currentRoom.value.id) {
+    messages.value.push(systemMessage)
+    nextTick(() => {
+      scrollToBottom()
+    })
+  }
+
+  // 根据消息类型显示不同的通知
+  switch (data.type) {
+    case 'join_request':
+      ElMessage.info(data.message)
+      break
+    case 'member_joined':
+      ElNotification({
+        title: '新成员加入',
+        message: data.message,
+        type: 'success',
+        duration: 3000
       })
-    }
-
-    // 显示通知
-    ElMessage.info(data.message)
+      break
+    case 'member_left':
+      ElNotification({
+        title: '成员离开',
+        message: data.message,
+        type: 'warning',
+        duration: 3000
+      })
+      break
+    case 'member_kicked':
+      ElNotification({
+        title: '成员被踢出',
+        message: data.message,
+        type: 'error',
+        duration: 3000
+      })
+      break
+    case 'room_settings_updated':
+      ElMessage.success(data.message)
+      // 如果是当前聊天室，重新加载聊天室信息
+      if (currentRoom.value && data.room_id === currentRoom.value.id) {
+        loadRoomDetails(currentRoom.value.id)
+      }
+      break
+    default:
+      ElMessage.info(data.message)
   }
 }
 
@@ -2582,9 +2783,9 @@ const handleImageUpload = async (file) => {
   }
 
   // 验证文件大小 (10MB)
-  const maxSize = 10 * 1024 * 1024
+  const maxSize = currentRoom.max_file_size * 1024 * 1024
   if (file.size > maxSize) {
-    ElMessage.error('图片大小不能超过 10MB')
+    ElMessage.error(`图片大小不能超过 ${currentRoom.max_file_size}MB`)
     return false
   }
 
@@ -2738,7 +2939,7 @@ const getRoomTypeText = (room) => {
   }
 }
 
-const editMessage = (message) => {
+const editMessage1 = (message) => {
   // 设置编辑状态
   editingMessage.value = message
   messageInput.value = message.content
@@ -2926,10 +3127,19 @@ const handleFileUpload = async (file) => {
     ElMessage.error('请先选择聊天室')
     return false
   }
+  if (!currentRoom.allow_file_upload) {
+    ElMessage.error('当前聊天室禁止上传文件')
+    return false
+  }
 
-  // 检查文件大小 (10MB限制)
-  if (file.size > 10 * 1024 * 1024) {
-    ElMessage.error('文件大小不能超过10MB')
+  // // 检查文件大小 (10MB限制)
+  // if (file.size > 10 * 1024 * 1024) {
+  //   ElMessage.error('文件大小不能超过10MB')
+  //   return false
+  // }
+  const maxSize = currentRoom.max_file_size * 1024 * 1024
+  if (file.size > maxSize) {
+    ElMessage.error(`图片大小不能超过 ${currentRoom.max_file_size}MB`)
     return false
   }
 
@@ -2962,29 +3172,32 @@ const handleFileUpload = async (file) => {
 
     if (response.data && response.data.length > 0) {
       const uploadedFile = response.data[0]
-      // 发送文件消息
+
+      // 使用HTTP API发送文件消息，确保消息能正确显示
       const messageData = {
-        type: 'send_message',
-        data: {
-          content: `[文件] ${file.name}`,
-          message_type: file.type.startsWith('image/') ? 'image' : 'file',
-          file_url: uploadedFile.download_url,
-          file_name: file.name,
-          file_size: file.size
+        content: `[文件] ${file.name}`,
+        message_type: file.type.startsWith('image/') ? 'image' : 'file',
+        file_url: uploadedFile.download_url,
+        file_name: file.name,
+        file_size: file.size
+      }
+
+      try {
+        const messageResponse = await axios.post(
+          `/api/modern-chat/rooms/${currentRoom.value.id}/messages`,
+          messageData
+        )
+
+        if (messageResponse.data) {
+          console.log('文件消息发送成功')
+          // WebSocket会推送新消息，不需要手动添加到列表
         }
-      }
 
-      if (websocket && websocket.isAuthenticated()) {
-        websocket.sendChatMessage({
-          content: `[文件] ${file.name}`,
-          message_type: file.type.startsWith('image/') ? 'image' : 'file',
-          file_url: uploadedFile.download_url,
-          file_name: file.name,
-          file_size: file.size
-        })
+        ElMessage.success('文件上传并发送成功')
+      } catch (messageError) {
+        console.error('发送文件消息失败:', messageError)
+        ElMessage.error('文件上传成功，但发送消息失败')
       }
-
-      ElMessage.success('文件上传成功')
     }
   } catch (error) {
     console.error('文件上传失败:', error)

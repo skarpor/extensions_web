@@ -26,12 +26,6 @@ const router = createRouter({
       meta: { title: '注册', guest: true }
     },
     {
-      path: '/chat',
-      name: 'chat',
-      component: () => import('../views/ChatView.vue'),
-      meta: { requiresAuth: true, title: '聊天' }
-    },
-    {
       path: '/log',
       name: 'log',
       component: () => import('../views/log.vue'),
@@ -68,12 +62,6 @@ const router = createRouter({
       meta: { requiresAuth: true, title: 'Markdown编辑器' }
     },
     {
-      path: '/test-icons',
-      name: 'test-icons',
-      component: () => import('../views/TestIcons.vue'),
-      meta: { requiresAuth: true, title: '图标测试' }
-    },
-    {
       path: '/qrfile',
       name: 'qrfile',
       component: () => import('../views/QRFileView.vue'),
@@ -104,12 +92,6 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true, title: '权限管理' }
     },
     {
-      path: '/permissions-old',
-      name: 'permissions-old',
-      component: () => import('../views/settings/PermissionView.vue'),
-      meta: { requiresAuth: true, requiresAdmin: true, title: '权限管理(旧版)' }
-    },
-    {
       path: '/system-settings',
       name: 'system-settings',
       component: () => import('../views/settings/SystemSettingsView.vue'),
@@ -120,12 +102,6 @@ const router = createRouter({
       name: 'modern-chat',
       component: () => import('../views/chat/ModernChatView.vue'),
       meta: { requiresAuth: true, title: '现代化聊天室' }
-    },
-    {
-      path: '/debug/token',
-      name: 'token-debug',
-      component: () => import('../views/debug/TokenDebug.vue'),
-      meta: { requiresAuth: false, title: 'Token调试' }
     },
     {
       path: '/scheduler',
